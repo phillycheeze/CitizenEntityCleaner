@@ -57,37 +57,39 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Gets current entity statistics without performing cleanup
+        /// Gets detailed entity statistics for display
         /// </summary>
-        public (int totalCitizens, int totalHouseholds, int brokenHouseholds) GetEntityStatistics()
+        public (int totalCitizens, int totalHouseholds, int corruptedCitizens, int corruptedHouseholds) GetDetailedEntityStatistics()
         {
             try
             {
                 int totalCitizens = m_householdMemberQuery.CalculateEntityCount();
                 int totalHouseholds = m_householdQuery.CalculateEntityCount();
                 int householdsWithProperty = m_propertyRenterQuery.CalculateEntityCount();
-                int brokenHouseholds = totalHouseholds - householdsWithProperty;
+                int corruptedHouseholds = totalHouseholds - householdsWithProperty;
                 
-                return (totalCitizens, totalHouseholds, brokenHouseholds);
+                // Count corrupted citizens (those in households without PropertyRenter)
+                int corruptedCitizens = GetCorruptedCitizenCount();
+                
+                return (totalCitizens, totalHouseholds, corruptedCitizens, corruptedHouseholds);
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting entity statistics: {ex.Message}");
-                return (0, 0, 0);
+                s_log.Warn($"Error getting detailed entity statistics: {ex.Message}");
+                return (0, 0, 0, 0);
             }
         }
 
         /// <summary>
-        /// Gets entities that would be affected by cleanup (for preview/counting)
+        /// Gets count of corrupted citizens (those in households without PropertyRenter)
         /// </summary>
-        public int GetCleanupCandidateCount()
+        private int GetCorruptedCitizenCount()
         {
             try
             {
                 var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-                var entities = m_householdMemberQuery.ToEntityArray(Allocator.TempJob);
                 
-                int candidateCount = 0;
+                int corruptedCount = 0;
                 
                 try
                 {
@@ -102,7 +104,7 @@ namespace CitizenEntityCleaner
                             if (EntityManager.HasBuffer<Game.Citizens.HouseholdCitizen>(householdEntity))
                             {
                                 DynamicBuffer<Game.Citizens.HouseholdCitizen> hhCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
-                                candidateCount += hhCitizens.Length;
+                                corruptedCount += hhCitizens.Length;
                             }
                         }
                     }
@@ -110,14 +112,13 @@ namespace CitizenEntityCleaner
                 finally
                 {
                     householdMembers.Dispose();
-                    entities.Dispose();
                 }
                 
-                return candidateCount;
+                return corruptedCount;
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error counting cleanup candidates: {ex.Message}");
+                s_log.Warn($"Error counting corrupted citizens: {ex.Message}");
                 return 0;
             }
         }

@@ -4,6 +4,7 @@ using Game;
 using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
+using Unity.Entities;
 using UnityEngine;
 
 namespace CitizenEntityCleaner
@@ -15,6 +16,9 @@ namespace CitizenEntityCleaner
         public static ProxyAction m_ButtonAction;
         public static ProxyAction m_AxisAction;
         public static ProxyAction m_VectorAction;
+        
+        // Reference to our cleanup system
+        public static CitizenCleanupSystem CleanupSystem { get; private set; }
 
         public const string kButtonActionName = "ButtonBinding";
         public const string kAxisActionName = "FloatBinding";
@@ -46,6 +50,10 @@ namespace CitizenEntityCleaner
             m_VectorAction.onInteraction += (_, phase) => log.Info($"[{m_VectorAction.name}] On{phase} {m_VectorAction.ReadValue<Vector2>()}");
 
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
+            
+            // Register our cleanup system
+            CleanupSystem = updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.GameSimulation);
+            log.Info("CitizenCleanupSystem registered");
         }
 
         public void OnDispose()
@@ -56,6 +64,9 @@ namespace CitizenEntityCleaner
                 m_Setting.UnregisterInOptionsUI();
                 m_Setting = null;
             }
+            
+            // Clean up system reference
+            CleanupSystem = null;
         }
     }
 }

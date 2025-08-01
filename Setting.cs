@@ -40,6 +40,25 @@ namespace CitizenEntityCleaner
         [SettingsUISection(kSection, kButtonGroup)]
         public bool ButtonWithConfirmation { set { Mod.log.Info("ButtonWithConfirmation clicked"); } }
 
+        [SettingsUIButton]
+        [SettingsUIConfirmation]
+        [SettingsUISection(kSection, kButtonGroup)]
+        public bool CleanupEntitiesButton 
+        { 
+            set 
+            { 
+                Mod.log.Info("Cleanup entities button clicked");
+                if (Mod.CleanupSystem != null)
+                {
+                    Mod.CleanupSystem.TriggerCleanup();
+                }
+                else
+                {
+                    Mod.log.Warn("CleanupSystem is not available");
+                }
+            } 
+        }
+
         [SettingsUISection(kSection, kToggleGroup)]
         public bool Toggle { get; set; }
 
@@ -157,6 +176,10 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ButtonWithConfirmation)), "Button with confirmation" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.ButtonWithConfirmation)), $"Button can show confirmation message. Use [{nameof(SettingsUIConfirmationAttribute)}]" },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.ButtonWithConfirmation)), "is it confirmation text which you want to show here?" },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Entities" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "Removes entities based on your configured criteria. This action cannot be undone." },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "Are you sure you want to delete the selected entities? This action cannot be undone." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.Toggle)), "Toggle" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.Toggle)), $"Use bool property with setter and getter to get toggable option" },

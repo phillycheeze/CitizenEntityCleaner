@@ -11,7 +11,7 @@ namespace CitizenEntityCleaner
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
-        private static ILog s_log = LogManager.GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(CitizenCleanupSystem)}");
+        private static ILog s_log = Mod.log;
         
         // Flag to trigger the cleanup operation
         private bool m_shouldRunCleanup = false;

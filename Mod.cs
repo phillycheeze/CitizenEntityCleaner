@@ -53,6 +53,7 @@ namespace CitizenEntityCleaner
             
             // Register our cleanup system
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.GameSimulation);
+            CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             log.Info("CitizenCleanupSystem registered");
         }
 
@@ -68,5 +69,7 @@ namespace CitizenEntityCleaner
             // Clean up system reference
             CleanupSystem = null;
         }
+
+
     }
 }

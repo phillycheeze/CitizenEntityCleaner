@@ -1,6 +1,8 @@
 using Unity.Entities;
 using Unity.Collections;
 using Colossal.Logging;
+using Game.Common;
+using System.Linq;
 
 namespace CitizenEntityCleaner
 {
@@ -48,22 +50,22 @@ namespace CitizenEntityCleaner
         /// </summary>
         private void RunEntityCleanup()
         {
-            // TODO: Replace this with your actual entity deletion query
-            // Example structure for entity deletion:
-            
-            /*
-            // Example: Query for entities you want to delete
-            var query = GetEntityQuery(ComponentType.ReadOnly<YourComponentType>());
-            var entities = query.ToEntityArray(Allocator.TempJob);
-            
-            s_log.Info($"Found {entities.Length} entities to delete");
-            
-            // Delete the entities
-            EntityManager.DestroyEntity(entities);
-            
-            entities.Dispose();
-            */
-            
+            // Temporary deleting of all broken citizen and household entities
+            var query = SystemAPI.QueryBuilder().WithAll<Game.Citizens.HouseholdMember>().Build();
+            foreach (var (householdMember, entity) in query.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.Temp).Zip(query.ToEntityArray(Allocator.Temp), (h, e) => (h, e)))
+            {
+                Entity householdEntity = householdMember.m_Household;
+                if (!EntityManager.HasComponent<Game.Buildings.PropertyRenter>(householdEntity))
+                {
+                    DynamicBuffer<Game.Citizens.HouseholdCitizen> hhCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
+                    foreach (var householdCitizen in hhCitizens)
+                    {
+                        Entity citizenEntity = householdCitizen.m_Citizen;
+                        EntityManager.AddComponent<Deleted>(citizenEntity);
+                    }
+                }
+            }
+
             s_log.Info("Entity cleanup completed (placeholder - add your query here)");
         }
 

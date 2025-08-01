@@ -52,7 +52,7 @@ namespace CitizenEntityCleaner
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
             
             // Register our cleanup system
-            CleanupSystem = updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.GameSimulation);
             log.Info("CitizenCleanupSystem registered");
         }
 

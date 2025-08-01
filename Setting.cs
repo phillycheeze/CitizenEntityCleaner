@@ -128,6 +128,9 @@ namespace CitizenEntityCleaner
             return new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), "CitizenEntityCleaner" },
+
+                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Main" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Corrupted Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "Removes citizens from households that no longer have a PropertyRenter component. This also includes homeless citizens.\n\nBE CAREFUL: this is a hacky workaround and may corrupt other data. Create a backup of your save first!" },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "This will permanently delete citizens from corrupted and homeless households. Please backup your save first!\nContinue?" },

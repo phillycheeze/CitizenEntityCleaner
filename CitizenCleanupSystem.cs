@@ -81,15 +81,16 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Gets count of corrupted citizens (those in households without PropertyRenter)
+        /// Gets all corrupted citizen entities (those in households without PropertyRenter)
         /// </summary>
-        private int GetCorruptedCitizenCount()
+        private NativeList<Entity> GetCorruptedCitizenEntities(Allocator allocator)
         {
+            var corruptedCitizens = new NativeList<Entity>(allocator);
+            
             try
             {
                 var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-                
-                int corruptedCount = 0;
+                var processedHouseholds = new NativeHashSet<Entity>(householdMembers.Length, Allocator.TempJob);
                 
                 try
                 {
@@ -98,13 +99,30 @@ namespace CitizenEntityCleaner
                         var householdMember = householdMembers[i];
                         Entity householdEntity = householdMember.m_Household;
                         
+                        // Skip if we've already processed this household
+                        if (processedHouseholds.Contains(householdEntity))
+                            continue;
+                            
+                        processedHouseholds.Add(householdEntity);
+                        
                         if (EntityManager.Exists(householdEntity) && 
                             !EntityManager.HasComponent<Game.Buildings.PropertyRenter>(householdEntity))
                         {
                             if (EntityManager.HasBuffer<Game.Citizens.HouseholdCitizen>(householdEntity))
                             {
                                 DynamicBuffer<Game.Citizens.HouseholdCitizen> hhCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
-                                corruptedCount += hhCitizens.Length;
+                                
+                                foreach (var householdCitizen in hhCitizens)
+                                {
+                                    Entity citizenEntity = householdCitizen.m_Citizen;
+                                    
+                                    // Validate citizen entity exists and doesn't already have Deleted component
+                                    if (EntityManager.Exists(citizenEntity) && 
+                                        !EntityManager.HasComponent<Deleted>(citizenEntity))
+                                    {
+                                        corruptedCitizens.Add(citizenEntity);
+                                    }
+                                }
                             }
                         }
                     }
@@ -112,15 +130,26 @@ namespace CitizenEntityCleaner
                 finally
                 {
                     householdMembers.Dispose();
+                    processedHouseholds.Dispose();
                 }
-                
-                return corruptedCount;
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error counting corrupted citizens: {ex.Message}");
-                return 0;
+                s_log.Warn($"Error getting corrupted citizen entities: {ex.Message}");
             }
+            
+            return corruptedCitizens;
+        }
+
+        /// <summary>
+        /// Gets count of corrupted citizens
+        /// </summary>
+        private int GetCorruptedCitizenCount()
+        {
+            var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
+            int count = corruptedCitizens.Length;
+            corruptedCitizens.Dispose();
+            return count;
         }
 
         /// <summary>
@@ -128,55 +157,24 @@ namespace CitizenEntityCleaner
         /// </summary>
         private void RunEntityCleanup()
         {
-            // Use the cached query for consistency
-            var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-            var entities = m_householdMemberQuery.ToEntityArray(Allocator.TempJob);
+            // Get all corrupted citizen entities using shared query logic
+            var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
             
             int deletedCount = 0;
             
             try
             {
-                for (int i = 0; i < householdMembers.Length; i++)
+                // Mark all corrupted citizens for deletion
+                for (int i = 0; i < corruptedCitizens.Length; i++)
                 {
-                    var householdMember = householdMembers[i];
-                    var entity = entities[i];
-                    
-                    Entity householdEntity = householdMember.m_Household;
-                    
-                    // Validate household entity still exists and doesn't have PropertyRenter
-                    if (EntityManager.Exists(householdEntity) && 
-                        !EntityManager.HasComponent<Game.Buildings.PropertyRenter>(householdEntity))
-                    {
-                        // Check if the household still has the citizen buffer
-                        if (EntityManager.HasBuffer<Game.Citizens.HouseholdCitizen>(householdEntity))
-                        {
-                            DynamicBuffer<Game.Citizens.HouseholdCitizen> hhCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
-                            
-                            // Create a copy of the buffer to avoid iteration issues if buffer changes
-                            var citizensCopy = hhCitizens.ToNativeArray(Allocator.Temp);
-                            
-                            foreach (var householdCitizen in citizensCopy)
-                            {
-                                Entity citizenEntity = householdCitizen.m_Citizen;
-                                
-                                // Validate citizen entity exists and doesn't already have Deleted component
-                                if (EntityManager.Exists(citizenEntity) && 
-                                    !EntityManager.HasComponent<Deleted>(citizenEntity))
-                                {
-                                    EntityManager.AddComponent<Deleted>(citizenEntity);
-                                    deletedCount++;
-                                }
-                            }
-                            
-                            citizensCopy.Dispose();
-                        }
-                    }
+                    Entity citizenEntity = corruptedCitizens[i];
+                    EntityManager.AddComponent<Deleted>(citizenEntity);
+                    deletedCount++;
                 }
             }
             finally
             {
-                householdMembers.Dispose();
-                entities.Dispose();
+                corruptedCitizens.Dispose();
             }
 
             s_log.Info($"Entity cleanup completed. Marked {deletedCount} citizens for deletion.");

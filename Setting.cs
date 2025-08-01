@@ -62,6 +62,18 @@ namespace CitizenEntityCleaner
         private string _corruptedCitizens = "Click Refresh to load";
         private string _corruptedHouseholds = "Click Refresh to load";
         
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string TotalCitizensDisplay { get => _totalCitizens; }
+        
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string TotalHouseholdsDisplay { get => _totalHouseholds; }
+        
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string CorruptedCitizensDisplay { get => _corruptedCitizens; }
+        
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string CorruptedHouseholdsDisplay { get => _corruptedHouseholds; }
+        
 
         public override void SetDefaults()
         {

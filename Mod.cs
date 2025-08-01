@@ -35,7 +35,7 @@ namespace CitizenEntityCleaner
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
 
-            m_Setting.RegisterKeyBindings();
+            //m_Setting.RegisterKeyBindings();
 
             m_ButtonAction = m_Setting.GetAction(kButtonActionName);
             m_AxisAction = m_Setting.GetAction(kAxisActionName);

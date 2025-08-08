@@ -34,8 +34,7 @@ namespace CitizenEntityCleaner
                 if (Mod.CleanupSystem != null)
                 {
                     Mod.CleanupSystem.TriggerCleanup();
-                    // Refresh the counts after cleanup
-                    RefreshEntityCounts();
+                    RefreshEntityCounts(); // Refresh counts after cleanup
                 }
                 else
                 {
@@ -44,7 +43,6 @@ namespace CitizenEntityCleaner
             } 
         }
 
-        // Manual refresh button
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
         public bool RefreshCountsButton 
@@ -58,30 +56,20 @@ namespace CitizenEntityCleaner
 
         // Statistics display fields
         private string _totalCitizens = "Click Refresh to load";
-        private string _totalHouseholds = "Click Refresh to load";
         private string _corruptedCitizens = "Click Refresh to load";
-        private string _corruptedHouseholds = "Click Refresh to load";
         
         [SettingsUISection(kSection, kButtonGroup)]
         public string TotalCitizensDisplay { get => _totalCitizens; }
         
         [SettingsUISection(kSection, kButtonGroup)]
-        public string TotalHouseholdsDisplay { get => _totalHouseholds; }
-        
-        [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay { get => _corruptedCitizens; }
-        
-        [SettingsUISection(kSection, kButtonGroup)]
-        public string CorruptedHouseholdsDisplay { get => _corruptedHouseholds; }
         
 
         public override void SetDefaults()
         {
             // Initialize with default messages
             _totalCitizens = "Click Refresh to load";
-            _totalHouseholds = "Click Refresh to load";
             _corruptedCitizens = "Click Refresh to load";
-            _corruptedHouseholds = "Click Refresh to load";
         }
 
         public void RefreshEntityCounts()
@@ -90,28 +78,22 @@ namespace CitizenEntityCleaner
             {
                 if (Mod.CleanupSystem != null)
                 {
-                    var stats = Mod.CleanupSystem.GetDetailedEntityStatistics();
+                    var stats = Mod.CleanupSystem.GetCitizenStatistics();
                     
                     _totalCitizens = $"{stats.totalCitizens:N0}";
-                    _totalHouseholds = $"{stats.totalHouseholds:N0}";
                     _corruptedCitizens = $"{stats.corruptedCitizens:N0}";
-                    _corruptedHouseholds = $"{stats.corruptedHouseholds:N0}";
                 }
                 else
                 {
                     _totalCitizens = "System not available";
-                    _totalHouseholds = "System not available";
                     _corruptedCitizens = "System not available";
-                    _corruptedHouseholds = "System not available";
                 }
             }
             catch (System.Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
                 _totalCitizens = "Error";
-                _totalHouseholds = "Error";
                 _corruptedCitizens = "Error";
-                _corruptedHouseholds = "Error";
             }
         }
     }
@@ -141,14 +123,8 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities currently in the simulation." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalHouseholdsDisplay)), "Total Households" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalHouseholdsDisplay)), "Total number of household entities currently in the simulation." },
-
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Corrupted/Homeless Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizens in households without PropertyRenter components that will be cleaned up and deleted." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedHouseholdsDisplay)), "Corrupted/Homeless Households" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedHouseholdsDisplay)), "Number of households without PropertyRenter components indicating corruption, homelessness, or another issue." },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
 
                 //{ m_Setting.GetBindingMapLocaleID(), "Mod settings sample" },

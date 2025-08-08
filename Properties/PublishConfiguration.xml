@@ -10,8 +10,6 @@
 	<LongDescription>
 # Citizen Entity Cleaner
 
-# Citizen Entity Cleaner
-
 ## ⚠️ **WARNING** ⚠️
 
 **<span style="color:red">This is a hacky workaround mod that touches sensitive game components. Backup your saved game before using this mod!</span>**
@@ -52,6 +50,11 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introducted that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
 
+## Thanks to
+yenyang
+Konsi
+krzychu124
+Honu
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
@@ -63,7 +66,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.0.0" />
+	<ModVersion Value="1.1.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.3.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -71,9 +74,14 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog># 1.0.0 Initial release</ChangeLog>
+	<ChangeLog>
+		# 1.1.0
+		* Safer cleanup with Modification1 update phase; no longer need to hit Refresh after cleaning
+		* Remove household count
+	</ChangeLog>
 	<!--<ChangeLog>
 	</ChangeLog>-->
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />
+	<ExternalLink Type="discord" Url="https://discord.gg/qYVEt5y9DV" />
 </Publish>

@@ -41,3 +41,9 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 ## What is causing the issue?
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introducted that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. Also, if you notice a sudden drop in population when loading up a save and a bunch of households moving back in, its seems like this issue is related to that as well.
+
+## Thanks to
+yenyang
+Konsi
+krzychu124
+Honu

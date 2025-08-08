@@ -29,8 +29,8 @@ namespace CitizenEntityCleaner
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
             
-            // Register our cleanup system
-            updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.GameSimulation);
+            // Register our cleanup system to run before the game's deletion system (Modification2)
+            updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             log.Info("CitizenCleanupSystem registered");
         }

@@ -31,8 +31,9 @@ namespace CitizenEntityCleaner
         // Entity command buffer system for deferred operations
         private ModificationBarrier1 m_commandBufferSystem;
         
-        // Callback for when cleanup is completed
+        // Callback for when cleanup is in progress and completed
         public System.Action OnCleanupCompleted;
+        public System.Action<float> OnCleanupProgress;
         
         protected override void OnCreate()
         {   
@@ -239,7 +240,10 @@ namespace CitizenEntityCleaner
             
             m_cleanupIndex += chunkSize;
             
-            s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens");
+            float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
+            OnCleanupProgress?.Invoke(progress);
+            
+            s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens ({progress:P0})");
         }
         
         /// <summary>

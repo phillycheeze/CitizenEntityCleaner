@@ -32,6 +32,7 @@ namespace CitizenEntityCleaner
             // Register our cleanup system to run before the game's deletion system (Modification2)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
+            CleanupSystem.SetSettings(m_Setting);
             log.Info("CitizenCleanupSystem registered");
         }
 

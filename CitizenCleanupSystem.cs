@@ -19,6 +19,9 @@ namespace CitizenEntityCleaner
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
         
+        // Reference to settings
+        private Setting m_settings;
+        
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -41,6 +44,22 @@ namespace CitizenEntityCleaner
             
             // Your entity deletion query will go here
             RunEntityCleanup();
+        }
+
+        /// <summary>
+        /// Sets the settings reference for filtering
+        /// </summary>
+        public void SetSettings(Setting settings)
+        {
+            m_settings = settings;
+        }
+
+        /// <summary>
+        /// Gets the current settings for filtering
+        /// </summary>
+        public Setting GetSettings()
+        {
+            return m_settings;
         }
 
         /// <summary>
@@ -73,6 +92,7 @@ namespace CitizenEntityCleaner
 
         /// <summary>
         /// Gets all corrupted citizen entities (those in households without PropertyRenter)
+        /// Applies additional filtering based on settings for homeless and commuters
         /// </summary>
         private NativeList<Entity> GetCorruptedCitizenEntities(Allocator allocator)
         {
@@ -106,7 +126,11 @@ namespace CitizenEntityCleaner
                             // Add valid, non-deleted citizens to cleanup list
                             if (EntityManager.Exists(citizenEntity) && !EntityManager.HasComponent<Deleted>(citizenEntity))
                             {
-                                corruptedCitizens.Add(citizenEntity);
+                                // Apply additional filtering based on settings
+                                if (ShouldIncludeCitizen(citizenEntity))
+                                {
+                                    corruptedCitizens.Add(citizenEntity);
+                                }
                             }
                         }
                     }
@@ -127,6 +151,37 @@ namespace CitizenEntityCleaner
         {
             using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
             return corruptedCitizens.Length;
+        }
+
+        /// <summary>
+        /// Determines whether a citizen should be included in cleanup based on filter settings
+        /// </summary>
+        private bool ShouldIncludeCitizen(Entity citizenEntity)
+        {
+            var settings = m_settings;
+            if (settings == null) return true; // Include all if settings unavailable
+            
+            // Check if citizen is a commuter and filter is disabled
+            if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
+            {
+                var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
+                if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
+                {
+                    return false; // Skip commuters when filter is disabled
+                }
+            }
+            
+            // Check if citizen is homeless and filter is disabled  
+            if (EntityManager.HasComponent<Game.Creatures.Human>(citizenEntity))
+            {
+                var human = EntityManager.GetComponentData<Game.Creatures.Human>(citizenEntity);
+                if ((human.m_Flags & (Game.Creatures.HumanFlags)0x40u) != 0 && !settings.IncludeHomeless)
+                {
+                    return false; // Skip homeless when filter is disabled
+                }
+            }
+            
+            return true; // Include by default
         }
 
         /// <summary>

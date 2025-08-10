@@ -57,7 +57,6 @@ namespace CitizenEntityCleaner
                 if (Mod.CleanupSystem != null)
                 {
                     Mod.CleanupSystem.TriggerCleanup();
-                    RefreshEntityCounts();
                 }
                 else
                 {

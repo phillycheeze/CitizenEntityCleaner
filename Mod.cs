@@ -30,6 +30,10 @@ namespace CitizenEntityCleaner
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
+            
+            // Set up callback to refresh counts when cleanup completes
+            CleanupSystem.OnCleanupCompleted += () => m_Setting.RefreshEntityCounts();
+            
             log.Info("CitizenCleanupSystem registered");
         }
 
@@ -42,7 +46,11 @@ namespace CitizenEntityCleaner
                 m_Setting = null;
             }
             
-            // Clean up system reference
+            // Clean up system reference and callbacks
+            if (CleanupSystem != null)
+            {
+                CleanupSystem.OnCleanupCompleted -= () => m_Setting.RefreshEntityCounts();
+            }
             CleanupSystem = null;
         }
 

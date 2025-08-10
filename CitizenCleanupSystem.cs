@@ -31,6 +31,9 @@ namespace CitizenEntityCleaner
         // Entity command buffer system for deferred operations
         private ModificationBarrier1 m_commandBufferSystem;
         
+        // Callback for when cleanup is completed
+        public System.Action OnCleanupCompleted;
+        
         protected override void OnCreate()
         {   
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
@@ -252,6 +255,9 @@ namespace CitizenEntityCleaner
             
             m_isChunkedCleanupInProgress = false;
             m_cleanupIndex = 0;
+            
+            // Notify settings that cleanup is complete
+            OnCleanupCompleted?.Invoke();
         }
 
         protected override void OnDestroy()

@@ -20,16 +20,13 @@ namespace CitizenEntityCleaner
         private NativeList<Entity> m_entitiesToCleanup;
         private int m_cleanupIndex = 0;
         private bool m_isChunkedCleanupInProgress = false;
-        private const int CLEANUP_CHUNK_SIZE = 10000;
+        private const int CLEANUP_CHUNK_SIZE = 2000;
         
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
         
         // Reference to settings
         private Setting m_settings;
-        
-        // Entity command buffer system for deferred operations
-        private ModificationBarrier1 m_commandBufferSystem;
         
         // Callback for when cleanup is in progress and completed
         public System.Action OnCleanupCompleted;
@@ -42,7 +39,6 @@ namespace CitizenEntityCleaner
                 All = new ComponentType[] { ComponentType.ReadOnly<Game.Citizens.HouseholdMember>() },
                 None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
             });
-            m_commandBufferSystem = World.GetOrCreateSystemManaged<ModificationBarrier1>();
             
             RequireForUpdate(m_householdMemberQuery);
             base.OnCreate();

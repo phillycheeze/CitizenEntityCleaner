@@ -67,7 +67,7 @@ Honu
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.2.0" />
+	<ModVersion Value="1.3.0" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.3.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -75,9 +75,9 @@ Honu
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog># 1.2.0 
-* Add Homeless and Commuter filter settings
-* Performance: batch deleted Citizens to speed up very large cleanup jobs
+	<ChangeLog># 1.3.0 
+* Performance: Batch process entity deletion
+* Show cleanup progress indicator
 	</ChangeLog>
 	<!--<ChangeLog>
 	</ChangeLog>-->

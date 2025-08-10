@@ -21,12 +21,21 @@ namespace CitizenEntityCleaner
         // Reference to settings
         private Setting m_settings;
         
+        // Entity command buffer system for deferred operations
+        private ModificationBarrier1 m_commandBufferSystem;
+        
         protected override void OnCreate()
-        {
+        {   
+            m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new ComponentType[] { ComponentType.ReadOnly<Game.Citizens.HouseholdMember>() },
+                None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
+            });
+            m_commandBufferSystem = World.GetOrCreateSystemManaged<ModificationBarrier1>();
+            
+            RequireForUpdate(m_householdMemberQuery);
             base.OnCreate();
-            
-            m_householdMemberQuery = GetEntityQuery(ComponentType.ReadOnly<Game.Citizens.HouseholdMember>());
-            
+
             s_log.Info("CitizenCleanupSystem created");
         }
 
@@ -189,10 +198,15 @@ namespace CitizenEntityCleaner
         {
             using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
             
-            // Mark all corrupted citizens for deletion
-            EntityManager.AddComponent<Deleted>(corruptedCitizens.AsArray());
+            // Get command buffer for deferred operations
+            var ecb = m_commandBufferSystem.CreateCommandBuffer();
+            
+            foreach (var citizenEntity in corruptedCitizens)
+            {
+                ecb.AddComponent<Deleted>(citizenEntity);
+            }
 
-            s_log.Info($"Entity cleanup completed. Marked {corruptedCitizens.Length} citizens for deletion.");
+            s_log.Info($"Entity cleanup completed. Queued {corruptedCitizens.Length} citizens for deletion.");
         }
 
         protected override void OnDestroy()

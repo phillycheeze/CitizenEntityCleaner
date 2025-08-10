@@ -1,5 +1,6 @@
 using Unity.Entities;
 using Unity.Collections;
+using Unity.Mathematics;
 using Colossal.Logging;
 using Game.Common;
 
@@ -14,6 +15,12 @@ namespace CitizenEntityCleaner
         
         // Flag to trigger the cleanup operation
         private bool m_shouldRunCleanup = false;
+        
+        // Chunked cleanup state
+        private NativeList<Entity> m_entitiesToCleanup;
+        private int m_cleanupIndex = 0;
+        private bool m_isChunkedCleanupInProgress = false;
+        private const int CLEANUP_CHUNK_SIZE = 10000;
         
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
@@ -41,6 +48,13 @@ namespace CitizenEntityCleaner
 
         protected override void OnUpdate()
         {
+            // Handle chunked cleanup if in progress, otherwise fallback to boolean flag
+            if (m_isChunkedCleanupInProgress)
+            {
+                ProcessCleanupChunk();
+                return;
+            }
+            
             if (!m_shouldRunCleanup)
                 return;
 
@@ -48,7 +62,7 @@ namespace CitizenEntityCleaner
             
             s_log.Info("Starting citizen entity cleanup...");
             
-            RunEntityCleanup();
+            StartChunkedCleanup();
         }
 
         /// <summary>
@@ -192,25 +206,61 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Performs the actual citizen entity cleanup by marking corrupted citizens for deletion
+        /// Starts the chunked cleanup process
         /// </summary>
-        private void RunEntityCleanup()
+        private void StartChunkedCleanup()
         {
-            using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
+            m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
+            m_cleanupIndex = 0;
+            m_isChunkedCleanupInProgress = true;
             
-            // Get command buffer for deferred operations
-            var ecb = m_commandBufferSystem.CreateCommandBuffer();
-            
-            foreach (var citizenEntity in corruptedCitizens)
+            s_log.Info($"Starting chunked cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");
+        }
+        
+        /// <summary>
+        /// Processes one chunk of entities per frame
+        /// </summary>
+        private void ProcessCleanupChunk()
+        {
+            if (!m_entitiesToCleanup.IsCreated || m_cleanupIndex >= m_entitiesToCleanup.Length)
             {
-                ecb.AddComponent<Deleted>(citizenEntity);
+                FinishChunkedCleanup();
+                return;
             }
-
-            s_log.Info($"Entity cleanup completed. Queued {corruptedCitizens.Length} citizens for deletion.");
+            
+            int remainingEntities = m_entitiesToCleanup.Length - m_cleanupIndex;
+            int chunkSize = math.min(CLEANUP_CHUNK_SIZE, remainingEntities);
+            
+            var chunk = m_entitiesToCleanup.AsArray().GetSubArray(m_cleanupIndex, chunkSize);
+            EntityManager.AddComponent<Deleted>(chunk);
+            
+            m_cleanupIndex += chunkSize;
+            
+            s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens");
+        }
+        
+        /// <summary>
+        /// Finishes the chunked cleanup process
+        /// </summary>
+        private void FinishChunkedCleanup()
+        {
+            if (m_entitiesToCleanup.IsCreated)
+            {
+                s_log.Info($"Entity cleanup completed. Marked {m_entitiesToCleanup.Length} citizens for deletion.");
+                m_entitiesToCleanup.Dispose();
+            }
+            
+            m_isChunkedCleanupInProgress = false;
+            m_cleanupIndex = 0;
         }
 
         protected override void OnDestroy()
         {
+            if (m_entitiesToCleanup.IsCreated)
+            {
+                m_entitiesToCleanup.Dispose();
+            }
+            
             s_log.Info("CitizenCleanupSystem destroyed");
             base.OnDestroy();
         }

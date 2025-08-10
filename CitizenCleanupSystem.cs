@@ -26,7 +26,6 @@ namespace CitizenEntityCleaner
         {
             base.OnCreate();
             
-            // Initialize cached query
             m_householdMemberQuery = GetEntityQuery(ComponentType.ReadOnly<Game.Citizens.HouseholdMember>());
             
             s_log.Info("CitizenCleanupSystem created");
@@ -34,7 +33,6 @@ namespace CitizenEntityCleaner
 
         protected override void OnUpdate()
         {
-            // Only run the cleanup when explicitly triggered
             if (!m_shouldRunCleanup)
                 return;
 
@@ -42,7 +40,6 @@ namespace CitizenEntityCleaner
             
             s_log.Info("Starting citizen entity cleanup...");
             
-            // Your entity deletion query will go here
             RunEntityCleanup();
         }
 
@@ -123,10 +120,8 @@ namespace CitizenEntityCleaner
                         {
                             Entity citizenEntity = householdCitizen.m_Citizen;
                             
-                            // Add valid, non-deleted citizens to cleanup list
                             if (EntityManager.Exists(citizenEntity) && !EntityManager.HasComponent<Deleted>(citizenEntity))
                             {
-                                // Apply additional filtering based on settings
                                 if (ShouldIncludeCitizen(citizenEntity))
                                 {
                                     corruptedCitizens.Add(citizenEntity);
@@ -159,7 +154,7 @@ namespace CitizenEntityCleaner
         private bool ShouldIncludeCitizen(Entity citizenEntity)
         {
             var settings = m_settings;
-            if (settings == null) return true; // Include all if settings unavailable
+            if (settings == null) return true;
             
             // Check if citizen is a commuter and filter is disabled
             if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
@@ -167,21 +162,25 @@ namespace CitizenEntityCleaner
                 var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
                 if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
                 {
-                    return false; // Skip commuters when filter is disabled
+                    return false;
                 }
             }
             
             // Check if citizen is homeless and filter is disabled  
-            if (EntityManager.HasComponent<Game.Creatures.Human>(citizenEntity))
+            if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
             {
-                var human = EntityManager.GetComponentData<Game.Creatures.Human>(citizenEntity);
-                if ((human.m_Flags & (Game.Creatures.HumanFlags)0x40u) != 0 && !settings.IncludeHomeless)
-                {
-                    return false; // Skip homeless when filter is disabled
+                var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
+                var human = transport.m_CurrentTransport;
+                if (EntityManager.Exists(human)) {
+                    var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);
+                    if ((humanData.m_Flags & (Game.Creatures.HumanFlags)0x40u) != 0 && !settings.IncludeHomeless)
+                    {
+                        return false;
+                    }
                 }
             }
             
-            return true; // Include by default
+            return true;
         }
 
         /// <summary>
@@ -192,10 +191,7 @@ namespace CitizenEntityCleaner
             using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
             
             // Mark all corrupted citizens for deletion
-            foreach (var citizenEntity in corruptedCitizens)
-            {
-                EntityManager.AddComponent<Deleted>(citizenEntity);
-            }
+            EntityManager.AddComponent<Deleted>(corruptedCitizens.AsArray());
 
             s_log.Info($"Entity cleanup completed. Marked {corruptedCitizens.Length} citizens for deletion.");
         }

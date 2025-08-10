@@ -13,56 +13,104 @@
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 
 	<ItemGroup>
-		<Reference Include="Game">
-			<Private>false</Private>
+		<Reference Include="cohtml.Net">
+			<HintPath>$(ManagedPath)\cohtml.Net.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
-		<Reference Include="Colossal.Core">
-			<Private>false</Private>
+		<Reference Include="Colossal.AssetPipeline">
+			<HintPath>$(ManagedPath)\Colossal.AssetPipeline.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
-		<Reference Include="Colossal.Logging">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.IO.AssetDatabase">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.UI">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.UI.Binding">
-			<Private>false</Private>
+		<Reference Include="Colossal.IO">
+			<HintPath>$(ManagedPath)\Colossal.IO.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Colossal.Localization">
-			<Private>false</Private>
+			<HintPath>$(ManagedPath)\Colossal.Localization.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.Mathematics">
+			<HintPath>$(ManagedPath)\Colossal.Mathematics.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.Mono.Cecil">
+			<HintPath>$(ManagedPath)\Colossal.Mono.Cecil.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.PSI.Common">
+			<HintPath>$(ManagedPath)\Colossal.PSI.Common.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.UI">
+			<HintPath>$(ManagedPath)\Colossal.UI.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.UI.Binding">
+			<HintPath>$(ManagedPath)\Colossal.UI.Binding.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Game">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.Core">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.Logging">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Colossal.IO.AssetDatabase">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(ManagedPath)\Newtonsoft.Json.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="System.Windows.Forms">
+			<HintPath>$(ManagedPath)\System.Windows.Forms.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Unity.Burst.Unsafe">
+			<HintPath>$(ManagedPath)\Unity.Burst.Unsafe.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Unity.InputSystem">
-			<Private>false</Private>
+			<HintPath>$(ManagedPath)\Unity.InputSystem.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Unity.Burst">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Unity.Collections">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Unity.Entities">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="Unity.Mathematics">
-			<Private>false</Private>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine.IMGUIModule">
+			<HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Update="System">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Update="System.Core">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 		<Reference Update="System.Data">
-			<Private>false</Private>
+			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
 

@@ -1,11 +1,8 @@
 ﻿using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;
-using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
-using Unity.Entities;
-using UnityEngine;
 
 namespace CitizenEntityCleaner
 {

@@ -1,10 +1,7 @@
 ﻿using Colossal;
 using Colossal.IO.AssetDatabase;
-using Game.Input;
 using Game.Modding;
 using Game.Settings;
-using Game.UI;
-using Game.UI.Widgets;
 using System.Collections.Generic;
 
 namespace CitizenEntityCleaner

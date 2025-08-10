@@ -2,7 +2,6 @@ using Unity.Entities;
 using Unity.Collections;
 using Colossal.Logging;
 using Game.Common;
-using System.Linq;
 
 namespace CitizenEntityCleaner
 {

@@ -108,10 +108,33 @@ namespace CitizenEntityCleaner
                             Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
                         }
                         
+                        // First try a SIMPLE patch to see if any method gets called
+                        var simplePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("SimpleIteratePrefix");
+                        if (simplePrefix != null)
+                        {
+                            try
+                            {
+                                var simplePatchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(simplePrefix));
+                                Mod.log.Info($"SUCCESS: Applied SIMPLE test patch to {iteratorType.Name}.Iterate");
+                            }
+                            catch (Exception ex)
+                            {
+                                Mod.log.Error($"Failed to apply Simple patch: {ex.Message}");
+                            }
+                        }
+                        
                         // Apply the MAIN patch to Iterate method (this is what actually gets called)
                         var iteratePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("IteratePrefix");
                         if (iteratePrefix != null)
                         {
+                            Mod.log.Info($"DEBUG: Found IteratePrefix method: {iteratePrefix}");
+                            var prefixParams = iteratePrefix.GetParameters();
+                            Mod.log.Info($"DEBUG: IteratePrefix has {prefixParams.Length} parameters:");
+                            foreach (var param in prefixParams)
+                            {
+                                Mod.log.Info($"DEBUG: IteratePrefix parameter: {param.ParameterType.Name} {param.Name}");
+                            }
+                            
                             try
                             {
                                 var patchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(iteratePrefix));
@@ -123,11 +146,19 @@ namespace CitizenEntityCleaner
                                 if (patches != null)
                                 {
                                     Mod.log.Info($"DEBUG: Iterate method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
+                                    if (patches.Prefixes.Count > 0)
+                                    {
+                                        foreach (var prefix in patches.Prefixes)
+                                        {
+                                            Mod.log.Info($"DEBUG: Prefix patch: {prefix.PatchMethod}");
+                                        }
+                                    }
                                 }
                             }
                             catch (Exception ex)
                             {
                                 Mod.log.Error($"Failed to apply Iterate patch: {ex.Message}");
+                                Mod.log.Error($"Stack trace: {ex.StackTrace}");
                             }
                         }
                         else
@@ -229,6 +260,37 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
+        /// Simple test prefix to confirm method is being called
+        /// </summary>
+        public static bool SimpleIteratePrefix()
+        {
+            try
+            {
+                iterateCallCount++;
+                
+                // Always log the first call immediately
+                if (firstIterateCall)
+                {
+                    Mod.log.Info($"FIRST CALL: SimpleIteratePrefix called! This confirms the patch is working.");
+                    firstIterateCall = false;
+                }
+                
+                // Log periodically
+                if (iterateCallCount <= 10 || iterateCallCount % 50 == 0)
+                {
+                    Mod.log.Info($"SIMPLE: IteratePrefix called #{iterateCallCount}");
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"ERROR in SimpleIteratePrefix: {ex.Message}");
+                return true;
+            }
+        }
+
+        /// <summary>
         /// MAIN occlusion patch - Iterate method is what actually gets called for tree culling
         /// Signature must match: Void Iterate(Game.Common.QuadTreeBoundsXZ, Int32, Unity.Entities.Entity)
         /// </summary>
@@ -285,6 +347,7 @@ namespace CitizenEntityCleaner
         private static int methodCallCount = 0;
         private static int intersectCallCount = 0;
         private static int iterateCallCount = 0;
+        private static bool firstIterateCall = true;
 
         /// <summary>
         /// Test prefix to see which methods are actually being called

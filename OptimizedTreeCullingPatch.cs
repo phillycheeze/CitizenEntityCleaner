@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection.Emit;
+using System.Linq;
 
 namespace CitizenEntityCleaner
 {
@@ -47,7 +49,7 @@ namespace CitizenEntityCleaner
             {
                 harmonyInstance = new Harmony("CitizenEntityCleaner.BuildingOcclusion");
                 
-                // Find and patch only the TreeCullingIterator.Intersect method
+                // Use transpiler approach to patch TreeCullingJob Execute methods
                 var preCullingSystemType = typeof(PreCullingSystem);
                 var nestedTypes = preCullingSystemType.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public);
                 
@@ -57,138 +59,71 @@ namespace CitizenEntityCleaner
                     Mod.log.Info($"DEBUG: Found nested type: {nestedType.Name}");
                 }
                 
-                Type iteratorType = null;
+                // Find TreeCullingJob1 and TreeCullingJob2
+                Type job1Type = null;
+                Type job2Type = null;
                 foreach (var nestedType in nestedTypes)
                 {
-                    if (nestedType.Name.Contains("TreeCullingIterator"))
+                    if (nestedType.Name.Contains("TreeCullingJob1"))
                     {
-                        iteratorType = nestedType;
-                        Mod.log.Info($"DEBUG: Found TreeCullingIterator type: {iteratorType.FullName}");
-                        break;
+                        job1Type = nestedType;
+                        Mod.log.Info($"DEBUG: Found TreeCullingJob1 type: {job1Type.FullName}");
+                    }
+                    else if (nestedType.Name.Contains("TreeCullingJob2"))
+                    {
+                        job2Type = nestedType;
+                        Mod.log.Info($"DEBUG: Found TreeCullingJob2 type: {job2Type.FullName}");
                     }
                 }
                 
-                if (iteratorType != null)
+                // Apply transpiler patches to both job types
+                if (job1Type != null)
                 {
-                    var methods = iteratorType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    Mod.log.Info($"DEBUG: TreeCullingIterator has {methods.Length} methods:");
-                    foreach (var method in methods)
+                    var executeMethod = job1Type.GetMethod("Execute", new Type[] { typeof(int) });
+                    if (executeMethod != null)
                     {
-                        Mod.log.Info($"DEBUG: Method: {method.Name}");
-                    }
-                    
-                    var intersectMethod = iteratorType.GetMethod("Intersect");
-                    if (intersectMethod != null)
-                    {
-                        Mod.log.Info($"DEBUG: Found Intersect method with signature: {intersectMethod}");
-                        var parameters = intersectMethod.GetParameters();
-                        Mod.log.Info($"DEBUG: Intersect method has {parameters.Length} parameters:");
-                        foreach (var param in parameters)
+                        try
                         {
-                            Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
+                            var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob1Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
+                            harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
+                            Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob1.Execute");
                         }
-                        
-                        // Skip Intersect patching - it's not the method that gets called
-                        Mod.log.Info("DEBUG: Skipping Intersect method - focusing on Iterate instead");
+                        catch (Exception ex)
+                        {
+                            Mod.log.Error($"Failed to apply transpiler to TreeCullingJob1: {ex.Message}");
+                        }
                     }
                     else
                     {
-                        Mod.log.Error("Could not find Intersect method in TreeCullingIterator");
-                    }
-                    
-                    // Also try patching the Iterate method as a backup
-                    var iterateMethod = iteratorType.GetMethod("Iterate");
-                    if (iterateMethod != null)
-                    {
-                        Mod.log.Info($"DEBUG: Found Iterate method with signature: {iterateMethod}");
-                        var parameters = iterateMethod.GetParameters();
-                        Mod.log.Info($"DEBUG: Iterate method has {parameters.Length} parameters:");
-                        foreach (var param in parameters)
-                        {
-                            Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
-                        }
-                        
-                        // First try a SIMPLE patch to see if any method gets called
-                        var simplePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("SimpleIteratePrefix");
-                        if (simplePrefix != null)
-                        {
-                            try
-                            {
-                                var simplePatchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(simplePrefix));
-                                Mod.log.Info($"SUCCESS: Applied SIMPLE test patch to {iteratorType.Name}.Iterate");
-                            }
-                            catch (Exception ex)
-                            {
-                                Mod.log.Error($"Failed to apply Simple patch: {ex.Message}");
-                            }
-                        }
-                        
-                        // Apply the MAIN patch to Iterate method (this is what actually gets called)
-                        var iteratePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("IteratePrefix");
-                        if (iteratePrefix != null)
-                        {
-                            Mod.log.Info($"DEBUG: Found IteratePrefix method: {iteratePrefix}");
-                            var prefixParams = iteratePrefix.GetParameters();
-                            Mod.log.Info($"DEBUG: IteratePrefix has {prefixParams.Length} parameters:");
-                            foreach (var param in prefixParams)
-                            {
-                                Mod.log.Info($"DEBUG: IteratePrefix parameter: {param.ParameterType.Name} {param.Name}");
-                            }
-                            
-                            try
-                            {
-                                var patchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(iteratePrefix));
-                                Mod.log.Info($"SUCCESS: Applied MAIN occlusion patch to {iteratorType.Name}.Iterate");
-                                Mod.log.Info($"DEBUG: Iterate patch result: {patchResult}");
-                                
-                                // Verify the patch was applied
-                                var patches = Harmony.GetPatchInfo(iterateMethod);
-                                if (patches != null)
-                                {
-                                    Mod.log.Info($"DEBUG: Iterate method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
-                                    if (patches.Prefixes.Count > 0)
-                                    {
-                                        foreach (var prefix in patches.Prefixes)
-                                        {
-                                            Mod.log.Info($"DEBUG: Prefix patch: {prefix.PatchMethod}");
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Mod.log.Error($"Failed to apply Iterate patch: {ex.Message}");
-                                Mod.log.Error($"Stack trace: {ex.StackTrace}");
-                            }
-                        }
-                        else
-                        {
-                            Mod.log.Error("Could not find IteratePrefix method for patching");
-                        }
-                    }
-                    
-                    // Try patching ALL public methods to see which ones are called
-                    Mod.log.Info("DEBUG: Attempting to patch all public methods for testing...");
-                    foreach (var method in methods)
-                    {
-                        if (method.IsPublic && !method.IsSpecialName && method.DeclaringType == iteratorType)
-                        {
-                            try
-                            {
-                                var testPrefix = typeof(OptimizedTreeCullingPatch).GetMethod("TestPrefix");
-                                harmonyInstance.Patch(method, new HarmonyMethod(testPrefix));
-                                Mod.log.Info($"DEBUG: Applied test patch to {method.Name}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Mod.log.Info($"DEBUG: Could not patch {method.Name}: {ex.Message}");
-                            }
-                        }
+                        Mod.log.Error("Could not find Execute method in TreeCullingJob1");
                     }
                 }
-                else
+                
+                if (job2Type != null)
                 {
-                    Mod.log.Error("Could not find TreeCullingIterator for occlusion patching");
+                    var executeMethod = job2Type.GetMethod("Execute", new Type[] { typeof(int) });
+                    if (executeMethod != null)
+                    {
+                        try
+                        {
+                            var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob2Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
+                            harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
+                            Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob2.Execute");
+                        }
+                        catch (Exception ex)
+                        {
+                            Mod.log.Error($"Failed to apply transpiler to TreeCullingJob2: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Mod.log.Error("Could not find Execute method in TreeCullingJob2");
+                    }
+                }
+                
+                if (job1Type == null && job2Type == null)
+                {
+                    Mod.log.Error("Could not find TreeCullingJob1 or TreeCullingJob2 for transpiler patching");
                 }
             }
             catch (Exception ex)
@@ -256,6 +191,95 @@ namespace CitizenEntityCleaner
             catch (Exception ex)
             {
                 Mod.log.Error($"ERROR in TreeCullingIterator.Intersect postfix: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Transpiler for TreeCullingJob1.Execute() - intercepts iterator usage
+        /// </summary>
+        private static IEnumerable<CodeInstruction> TreeCullingJob1Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            
+            try
+            {
+                // Look for the line: m_StaticObjectSearchTree.Iterate<TreeCullingIterator, int>(ref treeCullingIterator2, 3, ...)
+                for (int i = 0; i < codes.Count - 2; i++)
+                {
+                    if (codes[i].opcode == OpCodes.Ldarg_0 && // Load 'this'
+                        codes[i + 1].opcode == OpCodes.Ldfld && // Load m_StaticObjectSearchTree field
+                        i + 3 < codes.Count &&
+                        codes[i + 3].operand?.ToString().Contains("Iterate") == true)
+                    {
+                        // Insert our custom call before the Iterate call
+                        var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
+                        codes.Insert(i + 3, customCall);
+                        
+                        Mod.log.Info("DEBUG: Transpiler found and patched iterator call in TreeCullingJob1");
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Error in TreeCullingJob1 transpiler: {ex.Message}");
+            }
+            
+            return codes;
+        }
+
+        /// <summary>
+        /// Transpiler for TreeCullingJob2.Execute() - intercepts iterator usage
+        /// </summary>
+        private static IEnumerable<CodeInstruction> TreeCullingJob2Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            
+            try
+            {
+                // Similar logic to Job1 but for Job2's single entity iteration
+                for (int i = 0; i < codes.Count - 2; i++)
+                {
+                    if (codes[i].opcode == OpCodes.Ldarg_0 && // Load 'this'
+                        codes[i + 1].opcode == OpCodes.Ldfld && // Load m_StaticObjectSearchTree field
+                        i + 3 < codes.Count &&
+                        codes[i + 3].operand?.ToString().Contains("Iterate") == true)
+                    {
+                        // Insert our custom call before the Iterate call
+                        var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
+                        codes.Insert(i + 3, customCall);
+                        
+                        Mod.log.Info("DEBUG: Transpiler found and patched iterator call in TreeCullingJob2");
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Error in TreeCullingJob2 transpiler: {ex.Message}");
+            }
+            
+            return codes;
+        }
+
+        /// <summary>
+        /// Custom method called by transpiler to intercept iterator usage
+        /// </summary>
+        public static void InterceptIteratorCall()
+        {
+            try
+            {
+                iterateCallCount++;
+                
+                // Log first few calls to confirm transpiler is working
+                if (iterateCallCount <= 5 || iterateCallCount % 100 == 0)
+                {
+                    Mod.log.Info($"SUCCESS: Transpiler intercepted iterator call #{iterateCallCount}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Error in InterceptIteratorCall: {ex.Message}");
             }
         }
 

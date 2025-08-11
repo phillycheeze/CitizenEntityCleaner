@@ -85,8 +85,15 @@ namespace CitizenEntityCleaner
                         try
                         {
                             var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob1Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
-                            harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
-                            Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob1.Execute");
+                            if (transpiler != null)
+                            {
+                                harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
+                                Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob1.Execute");
+                            }
+                            else
+                            {
+                                Mod.log.Error("Could not find TreeCullingJob1Transpiler method");
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -107,8 +114,15 @@ namespace CitizenEntityCleaner
                         try
                         {
                             var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob2Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
-                            harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
-                            Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob2.Execute");
+                            if (transpiler != null)
+                            {
+                                harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
+                                Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob2.Execute");
+                            }
+                            else
+                            {
+                                Mod.log.Error("Could not find TreeCullingJob2Transpiler method");
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -203,21 +217,41 @@ namespace CitizenEntityCleaner
             
             try
             {
-                // Look for the line: m_StaticObjectSearchTree.Iterate<TreeCullingIterator, int>(ref treeCullingIterator2, 3, ...)
-                for (int i = 0; i < codes.Count - 2; i++)
+                Mod.log.Info($"DEBUG: TreeCullingJob1 transpiler processing {codes.Count} IL instructions");
+                
+                // Log all IL instructions to see what we're working with
+                for (int i = 0; i < Math.Min(codes.Count, 50); i++) // Only log first 50 to avoid spam
                 {
-                    if (codes[i].opcode == OpCodes.Ldarg_0 && // Load 'this'
-                        codes[i + 1].opcode == OpCodes.Ldfld && // Load m_StaticObjectSearchTree field
-                        i + 3 < codes.Count &&
-                        codes[i + 3].operand?.ToString().Contains("Iterate") == true)
+                    var instruction = codes[i];
+                    string operandInfo = instruction.operand?.ToString() ?? "null";
+                    Mod.log.Info($"DEBUG: IL[{i}] {instruction.opcode} {operandInfo}");
+                }
+                
+                // Look for any method call that contains "Iterate"
+                bool foundIterate = false;
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
                     {
-                        // Insert our custom call before the Iterate call
-                        var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
-                        codes.Insert(i + 3, customCall);
-                        
-                        Mod.log.Info("DEBUG: Transpiler found and patched iterator call in TreeCullingJob1");
-                        break;
+                        string methodName = codes[i].operand?.ToString() ?? "";
+                        if (methodName.Contains("Iterate"))
+                        {
+                            Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
+                            
+                            // Insert our custom call before the Iterate call
+                            var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
+                            codes.Insert(i, customCall);
+                            
+                            Mod.log.Info("SUCCESS: Transpiler found and patched iterator call in TreeCullingJob1");
+                            foundIterate = true;
+                            break;
+                        }
                     }
+                }
+                
+                if (!foundIterate)
+                {
+                    Mod.log.Info("DEBUG: No Iterate calls found in TreeCullingJob1 IL code");
                 }
             }
             catch (Exception ex)
@@ -237,21 +271,33 @@ namespace CitizenEntityCleaner
             
             try
             {
-                // Similar logic to Job1 but for Job2's single entity iteration
-                for (int i = 0; i < codes.Count - 2; i++)
+                Mod.log.Info($"DEBUG: TreeCullingJob2 transpiler processing {codes.Count} IL instructions");
+                
+                // Look for any method call that contains "Iterate"
+                bool foundIterate = false;
+                for (int i = 0; i < codes.Count; i++)
                 {
-                    if (codes[i].opcode == OpCodes.Ldarg_0 && // Load 'this'
-                        codes[i + 1].opcode == OpCodes.Ldfld && // Load m_StaticObjectSearchTree field
-                        i + 3 < codes.Count &&
-                        codes[i + 3].operand?.ToString().Contains("Iterate") == true)
+                    if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
                     {
-                        // Insert our custom call before the Iterate call
-                        var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
-                        codes.Insert(i + 3, customCall);
-                        
-                        Mod.log.Info("DEBUG: Transpiler found and patched iterator call in TreeCullingJob2");
-                        break;
+                        string methodName = codes[i].operand?.ToString() ?? "";
+                        if (methodName.Contains("Iterate"))
+                        {
+                            Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
+                            
+                            // Insert our custom call before the Iterate call
+                            var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
+                            codes.Insert(i, customCall);
+                            
+                            Mod.log.Info("SUCCESS: Transpiler found and patched iterator call in TreeCullingJob2");
+                            foundIterate = true;
+                            break;
+                        }
                     }
+                }
+                
+                if (!foundIterate)
+                {
+                    Mod.log.Info("DEBUG: No Iterate calls found in TreeCullingJob2 IL code");
                 }
             }
             catch (Exception ex)

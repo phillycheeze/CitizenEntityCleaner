@@ -88,47 +88,8 @@ namespace CitizenEntityCleaner
                             Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
                         }
                         
-                        // Try Prefix first
-                        var prefix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPrefix");
-                        if (prefix != null)
-                        {
-                            try
-                            {
-                                var patchResult = harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
-                                Mod.log.Info($"SUCCESS: Applied Intersect PREFIX patch to {iteratorType.Name}.Intersect");
-                                Mod.log.Info($"DEBUG: Patch result: {patchResult}");
-                                
-                                // Verify the patch was applied
-                                var patches = Harmony.GetPatchInfo(intersectMethod);
-                                if (patches != null)
-                                {
-                                    Mod.log.Info($"DEBUG: Method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
-                                }
-                            }
-                            catch (Exception prefixEx)
-                            {
-                                Mod.log.Error($"Failed to apply Prefix patch: {prefixEx.Message}");
-                                
-                                // Try Postfix as fallback
-                                var postfix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPostfix");
-                                if (postfix != null)
-                                {
-                                    try
-                                    {
-                                        var patchResult = harmonyInstance.Patch(intersectMethod, null, new HarmonyMethod(postfix));
-                                        Mod.log.Info($"SUCCESS: Applied Intersect POSTFIX patch as fallback");
-                                    }
-                                    catch (Exception postfixEx)
-                                    {
-                                        Mod.log.Error($"Failed to apply Postfix patch: {postfixEx.Message}");
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Mod.log.Error("Could not find IntersectPrefix method for patching");
-                        }
+                        // Skip Intersect patching - it's not the method that gets called
+                        Mod.log.Info("DEBUG: Skipping Intersect method - focusing on Iterate instead");
                     }
                     else
                     {
@@ -147,11 +108,31 @@ namespace CitizenEntityCleaner
                             Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
                         }
                         
+                        // Apply the MAIN patch to Iterate method (this is what actually gets called)
                         var iteratePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("IteratePrefix");
                         if (iteratePrefix != null)
                         {
-                            var patchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(iteratePrefix));
-                            Mod.log.Info($"SUCCESS: Also applied patch to {iteratorType.Name}.Iterate");
+                            try
+                            {
+                                var patchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(iteratePrefix));
+                                Mod.log.Info($"SUCCESS: Applied MAIN occlusion patch to {iteratorType.Name}.Iterate");
+                                Mod.log.Info($"DEBUG: Iterate patch result: {patchResult}");
+                                
+                                // Verify the patch was applied
+                                var patches = Harmony.GetPatchInfo(iterateMethod);
+                                if (patches != null)
+                                {
+                                    Mod.log.Info($"DEBUG: Iterate method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Mod.log.Error($"Failed to apply Iterate patch: {ex.Message}");
+                            }
+                        }
+                        else
+                        {
+                            Mod.log.Error("Could not find IteratePrefix method for patching");
                         }
                     }
                     
@@ -248,7 +229,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Alternative patch target for testing - Iterate method
+        /// MAIN occlusion patch - Iterate method is what actually gets called for tree culling
         /// Signature must match: Void Iterate(Game.Common.QuadTreeBoundsXZ, Int32, Unity.Entities.Entity)
         /// </summary>
         public static bool IteratePrefix(QuadTreeBoundsXZ bounds, int subData, Unity.Entities.Entity entity)
@@ -258,9 +239,37 @@ namespace CitizenEntityCleaner
                 iterateCallCount++;
                 
                 // Log first few calls immediately, then periodically  
-                if (iterateCallCount <= 3 || iterateCallCount % 50 == 0)
+                if (iterateCallCount <= 3 || iterateCallCount % 100 == 0)
                 {
                     Mod.log.Info($"DEBUG: IteratePrefix called #{iterateCallCount} (subData: {subData}, entity: {entity})");
+                }
+                
+                // We need camera position for occlusion check, but we can't access __instance
+                // For now, let's get it from the World/ECS system
+                var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
+                if (world != null)
+                {
+                    // Try to get camera position from rendering system
+                    // This is a simplified approach - we'll improve it once we confirm it works
+                    var cameraPosition = GetCameraPositionFromWorld();
+                    var cameraDirection = GetCameraDirectionFromWorld();
+                    
+                    if (!cameraPosition.Equals(float3.zero))
+                    {
+                        // Calculate object position
+                        float3 objectPosition = CalculateVisibleObjectPosition(bounds.m_Bounds, cameraPosition, cameraDirection);
+                        
+                        // Check if object is occluded by buildings
+                        if (IsOccludedByBuildings(cameraPosition, cameraDirection, objectPosition, bounds.m_Bounds))
+                        {
+                            // Skip rendering this entity - it's occluded
+                            if (iterateCallCount % 100 == 0)
+                            {
+                                Mod.log.Info($"SUCCESS: Skipped rendering entity {entity} - occluded by building");
+                            }
+                            return false; // Skip original method
+                        }
+                    }
                 }
                 
                 return true; // Continue with original method
@@ -311,6 +320,49 @@ namespace CitizenEntityCleaner
         {
             var field = type.GetField(fieldName);
             return (T)field.GetValue(instance);
+        }
+
+        /// <summary>
+        /// Get camera position from game world - simplified version
+        /// </summary>
+        private static float3 GetCameraPositionFromWorld()
+        {
+            try
+            {
+                // Simple approach: use camera position if available
+                var camera = UnityEngine.Camera.main;
+                if (camera != null)
+                {
+                    var pos = camera.transform.position;
+                    return new float3(pos.x, pos.y, pos.z);
+                }
+                return float3.zero;
+            }
+            catch
+            {
+                return float3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Get camera direction from game world - simplified version
+        /// </summary>
+        private static float3 GetCameraDirectionFromWorld()
+        {
+            try
+            {
+                var camera = UnityEngine.Camera.main;
+                if (camera != null)
+                {
+                    var dir = camera.transform.forward;
+                    return new float3(dir.x, dir.y, dir.z);
+                }
+                return new float3(0, 0, 1); // Default forward
+            }
+            catch
+            {
+                return new float3(0, 0, 1);
+            }
         }
 
         /// <summary>

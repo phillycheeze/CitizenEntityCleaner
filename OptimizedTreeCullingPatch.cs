@@ -19,27 +19,16 @@ namespace CitizenEntityCleaner
             {
                 Debug.Log($"[OptimizedTreeCullingPatch] We are being called");
                 
-                // Create a new QuadTree to store the processed results
-                var filteredTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.TempJob);
+                // Simple test: get first element using minimal iterator
+                var firstFinder = new FirstElementFinder();
+                __result.Iterate(ref firstFinder, 0); // Start from node 0
                 
-                // Iterate through all items in the original tree
-                var iterator = __result.GetIterator();
-                while (iterator.MoveNext())
+                if (firstFinder.found)
                 {
-                    var originalItem = iterator.Current;
-                    var entity = originalItem.m_Value;
-                    var bounds = originalItem.m_Bounds;
-                    
-                    // Parse the item and process it
-                    var processedItem = ProcessQuadTreeItem(entity, bounds);
-                    
-                    // Add the processed item back to the new tree (unchanged for now)
-                    filteredTree.Add(processedItem.entity, processedItem.bounds);
+                    Debug.Log($"[OptimizedTreeCullingPatch] First entity: {firstFinder.entity}");
                 }
                 
-                // Dispose the original tree and return the new one
-                __result.Dispose();
-                return filteredTree;
+                // Return original tree unchanged for now
             }
             
             return __result;
@@ -174,6 +163,29 @@ namespace CitizenEntityCleaner
             // 
             // Reset cache when camera moves > 50m or game loads new area
             // Dramatically reduces per-frame shadow calculation overhead
+        }
+    }
+
+    /// <summary>
+    /// Minimal iterator to find the first entity for testing
+    /// </summary>
+    public struct FirstElementFinder : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+    {
+        public bool found;
+        public Entity entity;
+
+        public bool Intersect(QuadTreeBoundsXZ bounds)
+        {
+            return !found; // Stop after finding first element
+        }
+
+        public void Iterate(QuadTreeBoundsXZ bounds, Entity item)
+        {
+            if (!found)
+            {
+                entity = item;
+                found = true;
+            }
         }
     }
 }

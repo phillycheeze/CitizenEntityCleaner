@@ -1,845 +1,179 @@
 using HarmonyLib;
-using Unity.Mathematics;
-using Colossal.Mathematics;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Transforms;
-using Game.Rendering;
-using Game.Common;
-using Game.Buildings;
-using System.Runtime.CompilerServices;
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Linq;
+using Unity.Jobs;
+using Game.Objects;
+using Colossal.Collections;
+using Unity.Mathematics;
+using UnityEngine;
 
 namespace CitizenEntityCleaner
 {
-    /// <summary>
-    /// Simplified building occlusion patch for tree culling
-    /// Only handles occlusion culling without complex LOD optimizations
-    /// </summary>
+    [HarmonyPatch(typeof(SearchSystem), "GetStaticSearchTree")]
     public static class OptimizedTreeCullingPatch
     {
-        private static Harmony harmonyInstance;
-        private static Dictionary<int, BuildingOcclusionData> buildingCache = new Dictionary<int, BuildingOcclusionData>();
-        private static float lastCacheUpdate = 0f;
-        private static float3 lastCameraPos = float3.zero;
-
-        private struct BuildingOcclusionData
+        [HarmonyPostfix]
+        public static NativeQuadTree<Entity, QuadTreeBoundsXZ> GetStaticSearchTree_Postfix(NativeQuadTree<Entity, QuadTreeBoundsXZ> __result, ref JobHandle dependencies)
         {
-            public float3 position;
-            public float3 size;
-            public Bounds3 bounds3D; // Full 3D bounds for building
-            public float height;
-            public float distanceToCamera; // Distance from camera for sorting/filtering
-        }
-
-        private struct ShadowVolume
-        {
-            public Bounds3 shadowBounds; // The 3D shadow volume cast by the building
-            public float3 buildingPosition;
-            public float shadowLength; // How far the shadow extends
-        }
-
-        public static void ApplyPatches()
-        {
-            try
+            if (__result.IsCreated)
             {
-                harmonyInstance = new Harmony("CitizenEntityCleaner.BuildingOcclusion");
+                Debug.Log($"[OptimizedTreeCullingPatch] We are being called");
                 
-                // Use transpiler approach to patch TreeCullingJob Execute methods
-                var preCullingSystemType = typeof(PreCullingSystem);
-                var nestedTypes = preCullingSystemType.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public);
+                // Create a new QuadTree to store the processed results
+                var filteredTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.TempJob);
                 
-                Mod.log.Info($"DEBUG: Found {nestedTypes.Length} nested types in PreCullingSystem");
-                foreach (var nestedType in nestedTypes)
+                // Iterate through all items in the original tree
+                var iterator = __result.GetIterator();
+                while (iterator.MoveNext())
                 {
-                    Mod.log.Info($"DEBUG: Found nested type: {nestedType.Name}");
-                }
-                
-                // Find TreeCullingJob1 and TreeCullingJob2
-                Type job1Type = null;
-                Type job2Type = null;
-                foreach (var nestedType in nestedTypes)
-                {
-                    if (nestedType.Name.Contains("TreeCullingJob1"))
-                    {
-                        job1Type = nestedType;
-                        Mod.log.Info($"DEBUG: Found TreeCullingJob1 type: {job1Type.FullName}");
-                    }
-                    else if (nestedType.Name.Contains("TreeCullingJob2"))
-                    {
-                        job2Type = nestedType;
-                        Mod.log.Info($"DEBUG: Found TreeCullingJob2 type: {job2Type.FullName}");
-                    }
-                }
-                
-                // Apply transpiler patches to both job types
-                if (job1Type != null)
-                {
-                    var executeMethod = job1Type.GetMethod("Execute", new Type[] { typeof(int) });
-                    if (executeMethod != null)
-                    {
-                        try
-                        {
-                            var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob1Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
-                            if (transpiler != null)
-                            {
-                                harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
-                                Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob1.Execute");
-                            }
-                            else
-                            {
-                                Mod.log.Error("Could not find TreeCullingJob1Transpiler method");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Mod.log.Error($"Failed to apply transpiler to TreeCullingJob1: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Mod.log.Error("Could not find Execute method in TreeCullingJob1");
-                    }
-                }
-                
-                if (job2Type != null)
-                {
-                    var executeMethod = job2Type.GetMethod("Execute", new Type[] { typeof(int) });
-                    if (executeMethod != null)
-                    {
-                        try
-                        {
-                            var transpiler = typeof(OptimizedTreeCullingPatch).GetMethod("TreeCullingJob2Transpiler", BindingFlags.Static | BindingFlags.NonPublic);
-                            if (transpiler != null)
-                            {
-                                harmonyInstance.Patch(executeMethod, transpiler: new HarmonyMethod(transpiler));
-                                Mod.log.Info($"SUCCESS: Applied transpiler patch to TreeCullingJob2.Execute");
-                            }
-                            else
-                            {
-                                Mod.log.Error("Could not find TreeCullingJob2Transpiler method");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Mod.log.Error($"Failed to apply transpiler to TreeCullingJob2: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Mod.log.Error("Could not find Execute method in TreeCullingJob2");
-                    }
-                }
-                
-                if (job1Type == null && job2Type == null)
-                {
-                    Mod.log.Error("Could not find TreeCullingJob1 or TreeCullingJob2 for transpiler patching");
-                }
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Failed to apply building occlusion patch: {ex.Message}");
-                Mod.log.Error($"Stack trace: {ex.StackTrace}");
-            }
-        }
-
-        public static void RemovePatches()
-        {
-            try
-            {
-                harmonyInstance?.UnpatchAll("CitizenEntityCleaner.BuildingOcclusion");
-                Mod.log.Info("Removed building occlusion patches");
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Failed to remove building occlusion patches: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Simple prefix patch that adds building occlusion check before original intersect logic
-        /// Signature must match: Boolean Intersect(Game.Common.QuadTreeBoundsXZ, Int32 ByRef)
-        /// </summary>
-        public static bool IntersectPrefix(QuadTreeBoundsXZ bounds, ref int subData)
-        {
-            try
-            {
-                intersectCallCount++;
-                
-                // Log first few calls immediately, then periodically
-                if (intersectCallCount <= 3 || intersectCallCount % 50 == 0)
-                {
-                    Mod.log.Info($"DEBUG: IntersectPrefix called #{intersectCallCount} (subData: {subData})");
-                }
-
-                // For now, just test that the patch is working - we'll add occlusion logic later
-                return true; // Continue with original method
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"ERROR in TreeCullingIterator.Intersect patch: {ex.Message}");
-                Mod.log.Error($"Stack trace: {ex.StackTrace}");
-                return true; // Fall back to original method
-            }
-        }
-
-        /// <summary>
-        /// Postfix version of the patch - called after the original method
-        /// </summary>
-        public static void IntersectPostfix(QuadTreeBoundsXZ bounds, ref int subData, bool __result)
-        {
-            try
-            {
-                intersectCallCount++;
-                
-                // Log first few calls immediately, then periodically
-                if (intersectCallCount <= 3 || intersectCallCount % 50 == 0)
-                {
-                    Mod.log.Info($"DEBUG: IntersectPostfix called #{intersectCallCount} (subData: {subData}, result: {__result})");
-                }
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"ERROR in TreeCullingIterator.Intersect postfix: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Transpiler for TreeCullingJob1.Execute() - intercepts iterator usage
-        /// </summary>
-        private static IEnumerable<CodeInstruction> TreeCullingJob1Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var codes = new List<CodeInstruction>(instructions);
-            
-            try
-            {
-                Mod.log.Info($"DEBUG: TreeCullingJob1 transpiler processing {codes.Count} IL instructions");
-                
-                // Log all IL instructions to see what we're working with
-                for (int i = 0; i < Math.Min(codes.Count, 50); i++) // Only log first 50 to avoid spam
-                {
-                    var instruction = codes[i];
-                    string operandInfo = instruction.operand?.ToString() ?? "null";
-                    Mod.log.Info($"DEBUG: IL[{i}] {instruction.opcode} {operandInfo}");
-                }
-                
-                // Look for any method call that contains "Iterate"
-                bool foundIterate = false;
-                int patchCount = 0;
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
-                    {
-                        string methodName = codes[i].operand?.ToString() ?? "";
-                        if (methodName.Contains("Iterate"))
-                        {
-                            Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
-                            
-                            // Insert our custom call JUST before the Iterate call
-                            var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
-                            codes.Insert(i, customCall);
-                            
-                            // Also try inserting at the very beginning of the method as a test
-                            if (patchCount == 0)
-                            {
-                                var testCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("TestMethodEntry"));
-                                codes.Insert(0, testCall);
-                                Mod.log.Info("DEBUG: Also inserted test call at method beginning");
-                            }
-                            
-                            Mod.log.Info($"SUCCESS: Transpiler found and patched iterator call #{patchCount + 1} in TreeCullingJob1");
-                            foundIterate = true;
-                            patchCount++;
-                            
-                            // Don't break - patch all Iterate calls
-                            i++; // Skip the instruction we just inserted
-                        }
-                    }
-                }
-                
-                if (!foundIterate)
-                {
-                    Mod.log.Info("DEBUG: No Iterate calls found in TreeCullingJob1 IL code");
-                }
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error in TreeCullingJob1 transpiler: {ex.Message}");
-            }
-            
-            return codes;
-        }
-
-        /// <summary>
-        /// Transpiler for TreeCullingJob2.Execute() - intercepts iterator usage
-        /// </summary>
-        private static IEnumerable<CodeInstruction> TreeCullingJob2Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            var codes = new List<CodeInstruction>(instructions);
-            
-            try
-            {
-                Mod.log.Info($"DEBUG: TreeCullingJob2 transpiler processing {codes.Count} IL instructions");
-                
-                // Look for any method call that contains "Iterate"
-                bool foundIterate = false;
-                int patchCount = 0;
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
-                    {
-                        string methodName = codes[i].operand?.ToString() ?? "";
-                        if (methodName.Contains("Iterate"))
-                        {
-                            Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
-                            
-                            // Insert our custom call JUST before the Iterate call
-                            var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
-                            codes.Insert(i, customCall);
-                            
-                            // Also try inserting at the very beginning of the method as a test
-                            if (patchCount == 0)
-                            {
-                                var testCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("TestMethodEntry"));
-                                codes.Insert(0, testCall);
-                                Mod.log.Info("DEBUG: Also inserted test call at method beginning for Job2");
-                            }
-                            
-                            Mod.log.Info($"SUCCESS: Transpiler found and patched iterator call #{patchCount + 1} in TreeCullingJob2");
-                            foundIterate = true;
-                            patchCount++;
-                            
-                            // Don't break - patch all Iterate calls
-                            i++; // Skip the instruction we just inserted
-                        }
-                    }
-                }
-                
-                if (!foundIterate)
-                {
-                    Mod.log.Info("DEBUG: No Iterate calls found in TreeCullingJob2 IL code");
-                }
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error in TreeCullingJob2 transpiler: {ex.Message}");
-            }
-            
-            return codes;
-        }
-
-        /// <summary>
-        /// Test method to verify transpiler is working at method entry
-        /// </summary>
-        public static void TestMethodEntry()
-        {
-            try
-            {
-                methodCallCount++;
-                Mod.log.Info($"🔥 TEST: Job method entry #{methodCallCount} - proves transpiler execution!");
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error in TestMethodEntry: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Custom method called by transpiler to intercept iterator usage
-        /// This gets called BEFORE each tree culling iteration starts
-        /// </summary>
-        public static void InterceptIteratorCall()
-        {
-            try
-            {
-                iterateCallCount++;
-                
-                // Always log the first call immediately to confirm it's working
-                if (iterateCallCount == 1)
-                {
-                    Mod.log.Info($"🎉 FIRST SUCCESS: Transpiler intercepted iterator call! The patch is working!");
-                }
-                
-                // Log periodically to show ongoing activity
-                if (iterateCallCount <= 10 || iterateCallCount % 50 == 0)
-                {
-                    Mod.log.Info($"SUCCESS: Transpiler intercepted iterator call #{iterateCallCount}");
-                }
-                
-                // TODO: This is where we could add our building occlusion pre-processing
-                // For now, we're just confirming the interception works
-                // Later we can add logic to:
-                // 1. Get camera position
-                // 2. Update building cache 
-                // 3. Pre-mark trees as occluded before iteration starts
-                
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error in InterceptIteratorCall: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Simple test prefix to confirm method is being called
-        /// </summary>
-        public static bool SimpleIteratePrefix()
-        {
-            try
-            {
-                iterateCallCount++;
-                
-                // Always log the first call immediately
-                if (firstIterateCall)
-                {
-                    Mod.log.Info($"FIRST CALL: SimpleIteratePrefix called! This confirms the patch is working.");
-                    firstIterateCall = false;
-                }
-                
-                // Log periodically
-                if (iterateCallCount <= 10 || iterateCallCount % 50 == 0)
-                {
-                    Mod.log.Info($"SIMPLE: IteratePrefix called #{iterateCallCount}");
-                }
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"ERROR in SimpleIteratePrefix: {ex.Message}");
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// MAIN occlusion patch - Iterate method is what actually gets called for tree culling
-        /// Signature must match: Void Iterate(Game.Common.QuadTreeBoundsXZ, Int32, Unity.Entities.Entity)
-        /// </summary>
-        public static bool IteratePrefix(QuadTreeBoundsXZ bounds, int subData, Unity.Entities.Entity entity)
-        {
-            try
-            {
-                iterateCallCount++;
-                
-                // Log first few calls immediately, then periodically  
-                if (iterateCallCount <= 3 || iterateCallCount % 100 == 0)
-                {
-                    Mod.log.Info($"DEBUG: IteratePrefix called #{iterateCallCount} (subData: {subData}, entity: {entity})");
-                }
-                
-                // We need camera position for occlusion check, but we can't access __instance
-                // For now, let's get it from the World/ECS system
-                var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
-                if (world != null)
-                {
-                    // Try to get camera position from rendering system
-                    // This is a simplified approach - we'll improve it once we confirm it works
-                    var cameraPosition = GetCameraPositionFromWorld();
-                    var cameraDirection = GetCameraDirectionFromWorld();
+                    var originalItem = iterator.Current;
+                    var entity = originalItem.m_Value;
+                    var bounds = originalItem.m_Bounds;
                     
-                    if (!cameraPosition.Equals(float3.zero))
-                    {
-                        // Calculate object position
-                        float3 objectPosition = CalculateVisibleObjectPosition(bounds.m_Bounds, cameraPosition, cameraDirection);
-                        
-                        // Check if object is occluded by buildings
-                        if (IsOccludedByBuildings(cameraPosition, cameraDirection, objectPosition, bounds.m_Bounds))
-                        {
-                            // Skip rendering this entity - it's occluded
-                            if (iterateCallCount % 100 == 0)
-                            {
-                                Mod.log.Info($"SUCCESS: Skipped rendering entity {entity} - occluded by building");
-                            }
-                            return false; // Skip original method
-                        }
-                    }
+                    // Parse the item and process it
+                    var processedItem = ProcessQuadTreeItem(entity, bounds);
+                    
+                    // Add the processed item back to the new tree (unchanged for now)
+                    filteredTree.Add(processedItem.entity, processedItem.bounds);
                 }
                 
-                return true; // Continue with original method
+                // Dispose the original tree and return the new one
+                __result.Dispose();
+                return filteredTree;
             }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"ERROR in TreeCullingIterator.Iterate patch: {ex.Message}");
-                return true; // Fall back to original method
-            }
+            
+            return __result;
         }
-
-        // Static counters for method calls
-        private static int methodCallCount = 0;
-        private static int intersectCallCount = 0;
-        private static int iterateCallCount = 0;
-        private static bool firstIterateCall = true;
-
-        /// <summary>
-        /// Test prefix to see which methods are actually being called
-        /// </summary>
-        public static bool TestPrefix()
+        
+        private static (Entity entity, QuadTreeBoundsXZ bounds) ProcessQuadTreeItem(Entity entity, QuadTreeBoundsXZ bounds)
         {
-            try
-            {
-                methodCallCount++;
-                
-                // Log first few calls immediately, then periodically
-                if (methodCallCount <= 5 || methodCallCount % 100 == 0)
-                {
-                    var stackTrace = new System.Diagnostics.StackTrace();
-                    var callingMethod = stackTrace.GetFrame(1)?.GetMethod();
-                    if (callingMethod != null)
-                    {
-                        Mod.log.Info($"DEBUG: TreeCullingIterator method called #{methodCallCount}: {callingMethod.DeclaringType?.Name}.{callingMethod.Name}");
-                    }
-                }
-                
-                return true; // Continue with original method
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error in TestPrefix: {ex.Message}");
-                return true;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetFieldValue<T>(object instance, Type type, string fieldName)
-        {
-            var field = type.GetField(fieldName);
-            return (T)field.GetValue(instance);
+            // Parse the item - for now just log some info and return unchanged
+            Debug.Log($"[OptimizedTreeCullingPatch] Processing entity: {entity}, bounds: {bounds.m_Bounds.min} to {bounds.m_Bounds.max}");
+            
+            // Future filtering logic will go here
+            // For now, return the item unchanged
+            return (entity, bounds);
         }
 
         /// <summary>
-        /// Get camera position from game world - simplified version
+        /// Fast approximation to find 5-10 largest objects near camera for shadow casting
+        /// Optimized for speed over accuracy
         /// </summary>
-        private static float3 GetCameraPositionFromWorld()
+        /// <param name="quadTree">The static object search tree</param>
+        /// <param name="cameraPosition">Current camera world position</param>
+        /// <param name="maxDistance">Maximum distance to consider objects (200-500m)</param>
+        /// <returns>Very small list of the largest shadow caster candidates</returns>
+        private static NativeList<(Entity entity, QuadTreeBoundsXZ bounds)> FindShadowCasters(
+            NativeQuadTree<Entity, QuadTreeBoundsXZ> quadTree,
+            float3 cameraPosition,
+            float maxDistance = 300f)
         {
-            try
-            {
-                // Simple approach: use camera position if available
-                var camera = UnityEngine.Camera.main;
-                if (camera != null)
-                {
-                    var pos = camera.transform.position;
-                    return new float3(pos.x, pos.y, pos.z);
-                }
-                return float3.zero;
-            }
-            catch
-            {
-                return float3.zero;
-            }
+            // FAST APPROACH - ACCURACY NOT CRITICAL:
+            // 1. Create simple sphere search area around camera (radius = maxDistance)
+            // 2. Quick size filter: skip any object with bounds volume < minShadowCasterSize (buildings only, not trees/props)
+            // 3. Distance filter: only objects within 200-300m of camera
+            // 4. Calculate rough object volume: (max - min).x * (max - min).y * (max - min).z
+            // 5. Keep only top 5-10 largest objects by volume (use simple insertion sort)
+            // 6. IMPORTANT: Cache results for 3-5 frames to avoid recalculating every frame
+            // 7. Only recalculate when camera moves more than 50m or rotates more than 30 degrees
+            return default;
         }
 
         /// <summary>
-        /// Get camera direction from game world - simplified version
+        /// Ultra-fast shadow box calculation using simple 2D ground projection
+        /// Trades accuracy for massive performance gains
         /// </summary>
-        private static float3 GetCameraDirectionFromWorld()
+        /// <param name="casterBounds">The bounds of the object casting the shadow</param>
+        /// <param name="cameraPosition">Camera position acting as light source</param>
+        /// <param name="fixedShadowDistance">Fixed shadow length (100-200m)</param>
+        /// <returns>Simple rectangular shadow volume on ground plane</returns>
+        private static Bounds3 CalculateShadowBox(
+            QuadTreeBoundsXZ casterBounds,
+            float3 cameraPosition,
+            float fixedShadowDistance = 150f)
         {
-            try
-            {
-                var camera = UnityEngine.Camera.main;
-                if (camera != null)
-                {
-                    var dir = camera.transform.forward;
-                    return new float3(dir.x, dir.y, dir.z);
-                }
-                return new float3(0, 0, 1); // Default forward
-            }
-            catch
-            {
-                return new float3(0, 0, 1);
-            }
+            // ULTRA-SIMPLE APPROACH - NO COMPLEX RAY CASTING:
+            // 1. Get object center point: (bounds.min + bounds.max) / 2
+            // 2. Calculate shadow direction: normalize(objectCenter - cameraPosition)
+            // 3. Project shadow on XZ plane only (ignore Y-axis complexity)
+            // 4. Shadow end point = objectCenter + (shadowDirection * fixedShadowDistance)
+            // 5. Create rectangular shadow box from objectCenter to shadowEnd
+            // 6. Expand box by object size on X/Z axes for rough shadow width
+            // 7. Y-axis: shadow from ground (0) to object height only
+            // 8. NO complex geometry - just basic vector math and box creation
+            // 9. Result: Fast approximate ground shadow that's "good enough" for culling
+            return default;
         }
 
         /// <summary>
-        /// Calculate the position on the object that the camera is most likely looking at
+        /// Single-pass occlusion test - no separate "find occluded" step
+        /// Integrated directly into main culling loop for maximum performance
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float3 CalculateVisibleObjectPosition(Bounds3 objectBounds, float3 cameraPosition, float3 cameraDirection)
+        /// <param name="candidateEntity">Entity being tested for occlusion</param>
+        /// <param name="candidateBounds">Bounds of the candidate object</param>
+        /// <param name="shadowBoxes">Pre-calculated shadow volumes (5-10 boxes max)</param>
+        /// <param name="shadowCasterDistances">Distances from camera to each shadow caster</param>
+        /// <param name="cameraPosition">Camera position for depth testing</param>
+        /// <returns>True if object should be culled (is occluded)</returns>
+        private static bool IsObjectOccluded(
+            Entity candidateEntity,
+            QuadTreeBoundsXZ candidateBounds,
+            NativeList<Bounds3> shadowBoxes,
+            NativeList<float> shadowCasterDistances,
+            float3 cameraPosition)
         {
-            float3 objectCenter = new float3(
-                (objectBounds.min.x + objectBounds.max.x) * 0.5f,
-                (objectBounds.min.y + objectBounds.max.y) * 0.5f,
-                (objectBounds.min.z + objectBounds.max.z) * 0.5f
-            );
-
-            // If camera is looking down, use lower part of object
-            // If camera is looking up, use higher part of object
-            float heightOffset = cameraDirection.y * (objectBounds.max.y - objectBounds.min.y) * 0.3f;
-            
-            return new float3(
-                objectCenter.x,
-                math.clamp(objectCenter.y + heightOffset, objectBounds.min.y, objectBounds.max.y),
-                objectCenter.z
-            );
-        }
-
-        /// <summary>
-        /// Main occlusion check using shadow volume approach
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsOccludedByBuildings(float3 cameraPosition, float3 cameraDirection, float3 objectPosition, Bounds3 objectBounds)
-        {
-            try
-            {
-                // Debug: Log when occlusion check is called
-                if (UnityEngine.Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
-                {
-                    Mod.log.Info($"DEBUG: Occlusion check called for object at distance {math.distance(cameraPosition, objectPosition):F0}m");
-                }
-
-                // Only check occlusion for distant objects
-                float objectDistance = math.distance(cameraPosition, objectPosition);
-                if (objectDistance < 60f) 
-                {
-                    if (UnityEngine.Time.frameCount % 300 == 0)
-                    {
-                        Mod.log.Info($"DEBUG: Object too close ({objectDistance:F0}m < 60m), skipping occlusion");
-                    }
-                    return false;
-                }
-
-                // Update building cache periodically
-                if (math.distance(cameraPosition, lastCameraPos) > 20f || 
-                    UnityEngine.Time.time - lastCacheUpdate > 2f)
-                {
-                    UpdateBuildingCache(cameraPosition);
-                    lastCameraPos = cameraPosition;
-                    lastCacheUpdate = UnityEngine.Time.time;
-                    
-                    Mod.log.Info($"DEBUG: Updated building cache, found {buildingCache.Count} buildings");
-                }
-
-                // Step 1: Get nearby buildings (closer than the object we're checking)
-                var nearbyBuildings = GetNearbyBuildingsForShadows(cameraPosition, objectDistance);
-                
-                if (UnityEngine.Time.frameCount % 300 == 0)
-                {
-                    Mod.log.Info($"DEBUG: Found {nearbyBuildings.Count} nearby buildings for shadow casting (total cached: {buildingCache.Count})");
-                }
-                
-                // Step 2 & 3: Check if object is in any building's shadow volume
-                foreach (var building in nearbyBuildings)
-                {
-                    var shadowVolume = CalculateShadowVolume(cameraPosition, building, objectDistance);
-                    
-                    if (IsObjectInShadowVolume(objectPosition, objectBounds, shadowVolume))
-                    {
-                        // Log immediately when occlusion is found
-                        Mod.log.Info($"SUCCESS: Tree occluded by building at {building.distanceToCamera:F0}m (object at {objectDistance:F0}m)");
-                        return true;
-                    }
-                }
-
-                if (UnityEngine.Time.frameCount % 300 == 0 && nearbyBuildings.Count > 0)
-                {
-                    Mod.log.Info($"DEBUG: No occlusion found after checking {nearbyBuildings.Count} buildings");
-                }
-
-                return false;
-            }
-            catch (System.Exception ex)
-            {
-                Mod.log.Error($"ERROR in occlusion check: {ex.Message}");
-                return false; // Safe fallback
-            }
-        }
-
-        /// <summary>
-        /// Simplified building cache update using proper ECS patterns
-        /// </summary>
-        private static void UpdateBuildingCache(float3 cameraPosition)
-        {
-            try
-            {
-                buildingCache.Clear();
-
-                // Get the default world - this is the correct way to access it
-                var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
-                if (world == null) return;
-
-                var entityManager = world.EntityManager;
-                
-                // Create EntityQuery using EntityQueryDesc pattern like CitizenCleanupSystem
-                var queryDesc = new Unity.Entities.EntityQueryDesc
-                {
-                    All = new Unity.Entities.ComponentType[]
-                    {
-                        Unity.Entities.ComponentType.ReadOnly<Game.Buildings.Building>(),
-                        Unity.Entities.ComponentType.ReadOnly<Game.Objects.Transform>(),
-                        Unity.Entities.ComponentType.ReadOnly<CullingInfo>()
-                    },
-                    None = new Unity.Entities.ComponentType[]
-                    {
-                        Unity.Entities.ComponentType.ReadOnly<Game.Common.Deleted>() // Exclude deleted buildings
-                    }
-                };
-
-                using var query = entityManager.CreateEntityQuery(queryDesc);
-                
-                if (query.IsEmpty) return;
-
-                // Use proper allocation patterns like CitizenCleanupSystem
-                using var entities = query.ToEntityArray(Unity.Collections.Allocator.TempJob);
-                using var transforms = query.ToComponentDataArray<Game.Objects.Transform>(Unity.Collections.Allocator.TempJob);
-                using var cullingInfos = query.ToComponentDataArray<CullingInfo>(Unity.Collections.Allocator.TempJob);
-
-                int count = 0;
-                float maxRange = 200f;
-                float maxRangeSq = maxRange * maxRange;
-
-                for (int i = 0; i < entities.Length && count < 30; i++)
-                {
-                    var entity = entities[i];
-                    var transform = transforms[i];
-                    var cullingInfo = cullingInfos[i];
-                    
-                    float3 buildingPos = transform.m_Position;
-                    
-                    // Use squared distance for better performance
-                    if (math.distancesq(cameraPosition, buildingPos) > maxRangeSq) continue;
-
-                    var bounds = cullingInfo.m_Bounds;
-                    float3 size = bounds.max - bounds.min;
-                    
-                    // Only consider large buildings that can provide meaningful occlusion
-                    if (size.x < 15f || size.z < 15f || size.y < 8f) continue;
-
-                    // Verify entity still exists (following CitizenCleanupSystem pattern)
-                    if (!entityManager.Exists(entity) || entityManager.HasComponent<Game.Common.Deleted>(entity))
-                        continue;
-
-                    float distanceToCamera = math.distance(cameraPosition, buildingPos);
-                    
-                    buildingCache[entity.Index] = new BuildingOcclusionData
-                    {
-                        position = buildingPos,
-                        size = size,
-                        bounds3D = bounds,
-                        height = size.y,
-                        distanceToCamera = distanceToCamera
-                    };
-                    count++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Mod.log.Error($"Error updating building cache: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Step 1: Get buildings that are close enough to camera and closer than the object to cast shadows
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<BuildingOcclusionData> GetNearbyBuildingsForShadows(float3 cameraPosition, float objectDistance)
-        {
-            var nearbyBuildings = new List<BuildingOcclusionData>();
-            
-            foreach (var building in buildingCache.Values)
-            {
-                // Building must be closer than the object to cast a shadow on it
-                if (building.distanceToCamera >= objectDistance)
-                    continue;
-                    
-                // Only consider buildings within reasonable shadow-casting range
-                if (building.distanceToCamera > 150f)
-                    continue;
-                    
-                nearbyBuildings.Add(building);
-            }
-            
-            return nearbyBuildings;
-        }
-
-        /// <summary>
-        /// Step 2: Calculate the 3D shadow volume cast by a building from camera position
-        /// Think of camera as sun, building blocks light, creates shadow volume extending past building
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ShadowVolume CalculateShadowVolume(float3 cameraPosition, BuildingOcclusionData building, float maxShadowDistance)
-        {
-            // Calculate shadow projection direction (from camera through building)
-            float3 shadowDirection = math.normalize(building.position - cameraPosition);
-            
-            // How far should the shadow extend? Use remaining distance to object
-            float shadowLength = maxShadowDistance - building.distanceToCamera + 20f; // +20f for safety margin
-            
-            // Calculate shadow volume bounds by projecting building bounds away from camera
-            Bounds3 buildingBounds = building.bounds3D;
-            
-            // Expand building bounds slightly for better occlusion
-            float3 expansion = new float3(5f, 0f, 5f); // Expand XZ but not Y
-            buildingBounds.min -= expansion;
-            buildingBounds.max += expansion;
-            
-            // Project building corners to create shadow volume
-            float3 shadowEndPos = building.position + shadowDirection * shadowLength;
-            
-            // Create shadow bounds that encompass both building and shadow projection
-            Bounds3 shadowBounds = new Bounds3
-            {
-                min = math.min(buildingBounds.min, shadowEndPos - building.size * 0.5f),
-                max = math.max(buildingBounds.max, shadowEndPos + building.size * 0.5f)
-            };
-            
-            return new ShadowVolume
-            {
-                shadowBounds = shadowBounds,
-                buildingPosition = building.position,
-                shadowLength = shadowLength
-            };
-        }
-
-        /// <summary>
-        /// Step 3: Check if an object is inside the shadow volume
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsObjectInShadowVolume(float3 objectPosition, Bounds3 objectBounds, ShadowVolume shadowVolume)
-        {
-            // Simple bounds check - is object center or any corner inside shadow volume?
-            Bounds3 shadow = shadowVolume.shadowBounds;
-            
-            // Check object center
-            if (IsPointInBounds(objectPosition, shadow))
-                return true;
-                
-            // Check object corners for more accurate intersection
-            float3[] objectCorners = new float3[]
-            {
-                new float3(objectBounds.min.x, objectBounds.min.y, objectBounds.min.z),
-                new float3(objectBounds.max.x, objectBounds.min.y, objectBounds.min.z),
-                new float3(objectBounds.min.x, objectBounds.max.y, objectBounds.min.z),
-                new float3(objectBounds.max.x, objectBounds.max.y, objectBounds.min.z),
-                new float3(objectBounds.min.x, objectBounds.min.y, objectBounds.max.z),
-                new float3(objectBounds.max.x, objectBounds.min.y, objectBounds.max.z),
-                new float3(objectBounds.min.x, objectBounds.max.y, objectBounds.max.z),
-                new float3(objectBounds.max.x, objectBounds.max.y, objectBounds.max.z)
-            };
-            
-            // If any corner is in shadow, object is occluded
-            foreach (var corner in objectCorners)
-            {
-                if (IsPointInBounds(corner, shadow))
-                    return true;
-            }
-            
+            // SUPER-FAST OCCLUSION TEST:
+            // 1. Calculate candidate's distance from camera once
+            // 2. For each shadow box (only 5-10 iterations max):
+            //    a. Simple bounds.Intersects() check (very fast)
+            //    b. If intersects: depth test (candidateDistance > shadowCasterDistance + buffer)
+            //    c. If both true: CULL (return true immediately)
+            // 3. If no shadows intersect: DON'T CULL (return false)
+            // 4. No complex geometry, no expensive spatial queries
+            // 5. Total cost per object: ~10 simple math operations
             return false;
         }
 
         /// <summary>
-        /// Simple 3D point-in-bounds check
+        /// Optimized single-pass shadow-based culling with aggressive performance optimizations
+        /// Uses cached shadow data and inline occlusion testing
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsPointInBounds(float3 point, Bounds3 bounds)
+        /// <param name="quadTree">Original static object search tree</param>
+        /// <param name="cameraPosition">Current camera world position</param>
+        /// <returns>Filtered quad tree with occluded objects removed</returns>
+        private static NativeQuadTree<Entity, QuadTreeBoundsXZ> PerformShadowBasedCulling(
+            NativeQuadTree<Entity, QuadTreeBoundsXZ> quadTree,
+            float3 cameraPosition)
         {
-            return point.x >= bounds.min.x && point.x <= bounds.max.x &&
-                   point.y >= bounds.min.y && point.y <= bounds.max.y &&
-                   point.z >= bounds.min.z && point.z <= bounds.max.z;
+            // PERFORMANCE-OPTIMIZED APPROACH:
+            // 1. Check cache: if camera hasn't moved much, use cached shadow boxes
+            // 2. If cache miss: FindShadowCasters() -> get 5-10 largest nearby buildings
+            // 3. For each shadow caster: CalculateShadowBox() -> simple ground projection
+            // 4. Cache shadow boxes + caster distances for next 3-5 frames
+            // 5. Create new filtered QuadTree with same spatial parameters
+            // 6. SINGLE ITERATION through original QuadTree:
+            //    a. For each object: call IsObjectOccluded() inline
+            //    b. If NOT occluded: add to filtered tree
+            //    c. If occluded: skip (cull it)
+            // 7. Dispose original tree, return filtered tree
+            // 8. Expected result: 10-30% fewer objects for TreeCullingJobs to process
+            // 9. Performance cost: ~5-15% overhead, but saves much more in culling jobs
+            return default;
         }
 
-
+        /// <summary>
+        /// Simple cache for shadow data to avoid recalculating every frame
+        /// </summary>
+        private static class ShadowCache
+        {
+            // Cache shadow boxes for multiple frames when camera movement is minimal
+            // public static int lastFrameCalculated = -1;
+            // public static float3 lastCameraPosition;
+            // public static NativeList<Bounds3> cachedShadowBoxes;
+            // public static NativeList<float> cachedCasterDistances;
+            // 
+            // Reset cache when camera moves > 50m or game loads new area
+            // Dramatically reduces per-frame shadow calculation overhead
+        }
     }
 }

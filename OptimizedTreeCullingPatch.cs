@@ -77,7 +77,7 @@ namespace CitizenEntityCleaner
         private static NativeList<(Entity entity, QuadTreeBoundsXZ bounds)> FindShadowCasters(
             NativeQuadTree<Entity, QuadTreeBoundsXZ> quadTree,
             float3 cameraPosition,
-            float maxDistance = 300f)
+            float maxDistance = 50f)
         {
             // FAST APPROACH - ACCURACY NOT CRITICAL:
             // 1. Create ShadowCasterCollector struct (implements tree iterator)
@@ -101,7 +101,7 @@ namespace CitizenEntityCleaner
             QuadTreeBoundsXZ casterBounds,
             float3 cameraPosition,
             float3 cameraDirection,
-            float fixedShadowDistance = 500f)
+            float fixedShadowDistance = 20f)
         {
 
             // ULTRA-SIMPLE APPROACH - NO COMPLEX RAY CASTING:
@@ -121,6 +121,8 @@ namespace CitizenEntityCleaner
 
             var shadowEnd = objectCenter + (direction * fixedShadowDistance);
 
+            m_Log.Info($"Shadow debug: Object at {objectCenter}, shadow direction {direction}, shadow end {shadowEnd}, distanceFromCamera {math.distance(cameraPosition, objectCenter)}");
+
             var shadowMin = new float3(
                 math.min(objectCenter.x, shadowEnd.x) - objectSize.x * 0.5f,
                 casterBounds.m_Bounds.min.y,
@@ -129,7 +131,7 @@ namespace CitizenEntityCleaner
             var shadowMax = new float3(
                 math.max(objectCenter.x, shadowEnd.x) + objectSize.x * 0.5f,
                 casterBounds.m_Bounds.max.y,
-                math.max(objectCenter.z, shadowMin.z) - objectSize.z * 0.5f
+                math.max(objectCenter.z, shadowEnd.z) - objectSize.z * 0.5f
             );
             return new QuadTreeBoundsXZ(new Bounds3(shadowMin, shadowMax), BoundsMask.AllLayers, 0);
         }
@@ -209,7 +211,7 @@ namespace CitizenEntityCleaner
             // 8. Expected result: 10-30% fewer objects for TreeCullingJobs to process
             // 9. Performance cost: ~5-15% overhead, but saves much more in culling jobs
 
-            var shadowCasters = FindShadowCasters(quadTree, cameraPosition, 300f);
+            var shadowCasters = FindShadowCasters(quadTree, cameraPosition);
             if (shadowCasters.Length == 0)
             {
                 shadowCasters.Dispose();
@@ -225,7 +227,7 @@ namespace CitizenEntityCleaner
                 var shadowBox = CalculateShadowBox(caster.bounds, cameraPosition, cameraDirection, 300f);
                 var distance = math.distance(cameraPosition, (caster.bounds.m_Bounds.min + caster.bounds.m_Bounds.max) * 0.5f);
 
-                m_Log.Info($"Calculated a shadow box of ({shadowBox.m_Bounds.min}, {shadowBox.m_Bounds.max}) with a caster distance of {distance}, at camera position {cameraPosition} and camera direction at {cameraDirection}");
+                m_Log.Info($"Calculated a shadow box: bounds({shadowBox.m_Bounds.min}, {shadowBox.m_Bounds.max}); casterDistance({distance}); cameraPosition({cameraPosition}); cameraDirection({cameraDirection}); casterCenterPoint({(caster.bounds.m_Bounds.min + caster.bounds.m_Bounds.max) * 0.5f})");
 
                 shadowBoxes.Add(shadowBox);
                 casterDistances.Add(distance);
@@ -239,7 +241,7 @@ namespace CitizenEntityCleaner
                 casterDistances = casterDistances,
                 cameraPosition = cameraPosition,
                 filteredTree = filteredTree,
-                maxProcessingDistance = 300f
+                maxProcessingDistance = 1000f
             };
 
             quadTree.Iterate(ref  filteredCollector, 0);
@@ -278,6 +280,11 @@ namespace CitizenEntityCleaner
             {
                 var boundsCenter = (bounds.m_Bounds.min + bounds.m_Bounds.max) * 0.5f;
                 var distance = math.distance(cameraPosition, boundsCenter);
+
+                if(distance <= 50f)
+                {
+                    m_Log.Info($"Filter culling debug: entity found close at {boundsCenter}, distance {distance}.");
+                }
 
                 return distance <= maxProcessingDistance;
             }

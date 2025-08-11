@@ -178,15 +178,18 @@ namespace CitizenEntityCleaner
 
         /// <summary>
         /// Simple prefix patch that adds building occlusion check before original intersect logic
+        /// Signature must match: Boolean Intersect(Game.Common.QuadTreeBoundsXZ, Int32 ByRef)
         /// </summary>
-        public static bool IntersectPrefix(ref bool __result, ref object __instance, QuadTreeBoundsXZ bounds, ref int subData)
+        public static bool IntersectPrefix(ref bool __result, object __instance, QuadTreeBoundsXZ bounds, ref int subData)
         {
             try
             {
-                // Debug: Log that patch is being called
-                if (UnityEngine.Time.frameCount % 600 == 0) // Every 10 seconds at 60fps
+                intersectCallCount++;
+                
+                // Log first few calls immediately, then periodically
+                if (intersectCallCount <= 3 || intersectCallCount % 50 == 0)
                 {
-                    Mod.log.Info($"DEBUG: TreeCullingIterator.Intersect patch called (subData: {subData})");
+                    Mod.log.Info($"DEBUG: IntersectPrefix called #{intersectCallCount} (subData: {subData})");
                 }
 
                 var type = __instance.GetType();
@@ -221,15 +224,18 @@ namespace CitizenEntityCleaner
 
         /// <summary>
         /// Alternative patch target for testing - Iterate method
+        /// Signature must match: Void Iterate(Game.Common.QuadTreeBoundsXZ, Int32, Unity.Entities.Entity)
         /// </summary>
-        public static bool IteratePrefix(ref object __instance)
+        public static bool IteratePrefix(object __instance, QuadTreeBoundsXZ bounds, int subData, Unity.Entities.Entity entity)
         {
             try
             {
-                // Debug: Log that Iterate patch is being called
-                if (UnityEngine.Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+                iterateCallCount++;
+                
+                // Log first few calls immediately, then periodically  
+                if (iterateCallCount <= 3 || iterateCallCount % 50 == 0)
                 {
-                    Mod.log.Info($"DEBUG: TreeCullingIterator.Iterate patch called!");
+                    Mod.log.Info($"DEBUG: IteratePrefix called #{iterateCallCount} (subData: {subData}, entity: {entity})");
                 }
                 
                 return true; // Continue with original method
@@ -241,6 +247,11 @@ namespace CitizenEntityCleaner
             }
         }
 
+        // Static counters for method calls
+        private static int methodCallCount = 0;
+        private static int intersectCallCount = 0;
+        private static int iterateCallCount = 0;
+
         /// <summary>
         /// Test prefix to see which methods are actually being called
         /// </summary>
@@ -248,18 +259,24 @@ namespace CitizenEntityCleaner
         {
             try
             {
-                // Log which method is being called
-                var stackTrace = new System.Diagnostics.StackTrace();
-                var callingMethod = stackTrace.GetFrame(1)?.GetMethod();
-                if (callingMethod != null && UnityEngine.Time.frameCount % 300 == 0)
+                methodCallCount++;
+                
+                // Log first few calls immediately, then periodically
+                if (methodCallCount <= 5 || methodCallCount % 100 == 0)
                 {
-                    Mod.log.Info($"DEBUG: Method called: {callingMethod.DeclaringType?.Name}.{callingMethod.Name}");
+                    var stackTrace = new System.Diagnostics.StackTrace();
+                    var callingMethod = stackTrace.GetFrame(1)?.GetMethod();
+                    if (callingMethod != null)
+                    {
+                        Mod.log.Info($"DEBUG: TreeCullingIterator method called #{methodCallCount}: {callingMethod.DeclaringType?.Name}.{callingMethod.Name}");
+                    }
                 }
                 
                 return true; // Continue with original method
             }
-            catch
+            catch (Exception ex)
             {
+                Mod.log.Error($"Error in TestPrefix: {ex.Message}");
                 return true;
             }
         }

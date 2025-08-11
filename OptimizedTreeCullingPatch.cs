@@ -17,12 +17,20 @@ namespace CitizenEntityCleaner
     public static class OptimizedTreeCullingPatch
     {
         private static Harmony harmonyInstance;
+        private static Type cullingActionType;
+        private static Type actionFlagsType;
+        private static Type writerType;
+        private static object passedCullingFlag;
+        private static object crossFadeFlag;
 
         public static void ApplyPatches()
         {
             try
             {
                 harmonyInstance = new Harmony("CitizenEntityCleaner.OptimizedTreeCulling");
+                
+                // Initialize reflection types
+                InitializeReflectionTypes();
                 
                 // Find the TreeCullingIterator nested type
                 var preCullingSystemType = typeof(PreCullingSystem);
@@ -84,6 +92,33 @@ namespace CitizenEntityCleaner
             }
         }
 
+        private static void InitializeReflectionTypes()
+        {
+            var preCullingSystemType = typeof(PreCullingSystem);
+            var nestedTypes = preCullingSystemType.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public);
+            
+            foreach (var nestedType in nestedTypes)
+            {
+                if (nestedType.Name.Contains("CullingAction"))
+                {
+                    cullingActionType = nestedType;
+                }
+                else if (nestedType.Name.Contains("ActionFlags"))
+                {
+                    actionFlagsType = nestedType;
+                }
+            }
+            
+            // Get ActionFlags enum values
+            if (actionFlagsType != null)
+            {
+                passedCullingFlag = Enum.Parse(actionFlagsType, "PassedCulling");
+                crossFadeFlag = Enum.Parse(actionFlagsType, "CrossFade");
+            }
+            
+            Mod.log.Info($"Initialized reflection types - CullingAction: {cullingActionType?.Name}, ActionFlags: {actionFlagsType?.Name}");
+        }
+
         /// <summary>
         /// Optimized Intersect method that reduces redundant calculations
         /// </summary>
@@ -134,7 +169,7 @@ namespace CitizenEntityCleaner
                 var prevCameraDirection = GetFieldValue<float3>(__instance, type, "m_PrevCameraDirection");
                 var visibleMask = GetFieldValue<BoundsMask>(__instance, type, "m_VisibleMask");
                 var prevVisibleMask = GetFieldValue<BoundsMask>(__instance, type, "m_PrevVisibleMask");
-                var actionQueue = GetFieldValue<Writer<CullingAction>>(__instance, type, "m_ActionQueue");
+                var actionQueue = GetFieldValue<object>(__instance, type, "m_ActionQueue");
 
                 // Optimized iterate logic
                 OptimizedIterate(bounds, subData, entity, lodParameters, cameraPosition, cameraDirection, 
@@ -243,7 +278,7 @@ namespace CitizenEntityCleaner
         private static void OptimizedIterate(QuadTreeBoundsXZ bounds, int subData, Entity entity,
                                            float4 lodParameters, float3 cameraPosition, float3 cameraDirection,
                                            float3 prevCameraPosition, float4 prevLodParameters, float3 prevCameraDirection,
-                                           BoundsMask visibleMask, BoundsMask prevVisibleMask, Writer<CullingAction> actionQueue)
+                                           BoundsMask visibleMask, BoundsMask prevVisibleMask, object actionQueue)
         {
             // Pre-calculate visibility masks
             BoundsMask currentVisible = visibleMask & bounds.m_Mask;
@@ -275,12 +310,7 @@ namespace CitizenEntityCleaner
 
                         if (shouldEnqueue)
                         {
-                            actionQueue.Enqueue(new CullingAction
-                            {
-                                m_Entity = entity,
-                                m_Flags = ActionFlags.PassedCulling,
-                                m_UpdateFrame = -1
-                            });
+                            EnqueueCullingAction(actionQueue, entity, passedCullingFlag, -1);
                         }
                         return;
                     }
@@ -299,7 +329,7 @@ namespace CitizenEntityCleaner
 
                         // Optimized condition check
                         bool shouldEnqueue = currentVisible == (BoundsMask)0;
-                        ActionFlags flags = (ActionFlags)0;
+                        object flags = Enum.ToObject(actionFlagsType, 0);
                         
                         if (!shouldEnqueue && currentVisible != (BoundsMask)0)
                         {
@@ -309,18 +339,13 @@ namespace CitizenEntityCleaner
                             if (currentLod < bounds.m_MaxLod)
                             {
                                 shouldEnqueue = true;
-                                flags = ActionFlags.CrossFade;
+                                flags = crossFadeFlag;
                             }
                         }
 
                         if (shouldEnqueue)
                         {
-                            actionQueue.Enqueue(new CullingAction
-                            {
-                                m_Entity = entity,
-                                m_Flags = flags,
-                                m_UpdateFrame = -1
-                            });
+                            EnqueueCullingAction(actionQueue, entity, flags, -1);
                         }
                         return;
                     }
@@ -338,25 +363,50 @@ namespace CitizenEntityCleaner
                         
                         if (isCurrentlyVisible != wasPreviouslyVisible)
                         {
-                            ActionFlags flags = (ActionFlags)0;
+                            object flags = Enum.ToObject(actionFlagsType, 0);
                             if (isCurrentlyVisible)
                             {
-                                flags = ActionFlags.PassedCulling;
+                                flags = passedCullingFlag;
                             }
                             else if (currentVisible != (BoundsMask)0)
                             {
-                                flags = ActionFlags.CrossFade;
+                                flags = crossFadeFlag;
                             }
 
-                            actionQueue.Enqueue(new CullingAction
-                            {
-                                m_Entity = entity,
-                                m_Flags = flags,
-                                m_UpdateFrame = -1
-                            });
+                            EnqueueCullingAction(actionQueue, entity, flags, -1);
                         }
                         return;
                     }
+            }
+        }
+
+        /// <summary>
+        /// Helper method to create and enqueue a CullingAction using reflection
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EnqueueCullingAction(object actionQueue, Entity entity, object flags, sbyte updateFrame)
+        {
+            try
+            {
+                // Create a new CullingAction instance
+                var cullingAction = Activator.CreateInstance(cullingActionType);
+                
+                // Set the fields using reflection
+                var entityField = cullingActionType.GetField("m_Entity");
+                var flagsField = cullingActionType.GetField("m_Flags");
+                var updateFrameField = cullingActionType.GetField("m_UpdateFrame");
+                
+                entityField?.SetValue(cullingAction, entity);
+                flagsField?.SetValue(cullingAction, flags);
+                updateFrameField?.SetValue(cullingAction, updateFrame);
+                
+                // Call Enqueue method on the action queue
+                var enqueueMethod = actionQueue.GetType().GetMethod("Enqueue");
+                enqueueMethod?.Invoke(actionQueue, new[] { cullingAction });
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Failed to enqueue culling action: {ex.Message}");
             }
         }
     }

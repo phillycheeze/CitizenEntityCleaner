@@ -80,13 +80,75 @@ namespace CitizenEntityCleaner
                     var intersectMethod = iteratorType.GetMethod("Intersect");
                     if (intersectMethod != null)
                     {
+                        Mod.log.Info($"DEBUG: Found Intersect method with signature: {intersectMethod}");
+                        var parameters = intersectMethod.GetParameters();
+                        Mod.log.Info($"DEBUG: Intersect method has {parameters.Length} parameters:");
+                        foreach (var param in parameters)
+                        {
+                            Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
+                        }
+                        
                         var prefix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPrefix");
-                        harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
-                        Mod.log.Info($"SUCCESS: Applied building occlusion patch to {iteratorType.Name}.Intersect");
+                        if (prefix != null)
+                        {
+                            var patchResult = harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
+                            Mod.log.Info($"SUCCESS: Applied building occlusion patch to {iteratorType.Name}.Intersect");
+                            Mod.log.Info($"DEBUG: Patch result: {patchResult}");
+                            
+                            // Verify the patch was applied
+                            var patches = Harmony.GetPatchInfo(intersectMethod);
+                            if (patches != null)
+                            {
+                                Mod.log.Info($"DEBUG: Method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
+                            }
+                        }
+                        else
+                        {
+                            Mod.log.Error("Could not find IntersectPrefix method for patching");
+                        }
                     }
                     else
                     {
                         Mod.log.Error("Could not find Intersect method in TreeCullingIterator");
+                    }
+                    
+                    // Also try patching the Iterate method as a backup
+                    var iterateMethod = iteratorType.GetMethod("Iterate");
+                    if (iterateMethod != null)
+                    {
+                        Mod.log.Info($"DEBUG: Found Iterate method with signature: {iterateMethod}");
+                        var parameters = iterateMethod.GetParameters();
+                        Mod.log.Info($"DEBUG: Iterate method has {parameters.Length} parameters:");
+                        foreach (var param in parameters)
+                        {
+                            Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
+                        }
+                        
+                        var iteratePrefix = typeof(OptimizedTreeCullingPatch).GetMethod("IteratePrefix");
+                        if (iteratePrefix != null)
+                        {
+                            var patchResult = harmonyInstance.Patch(iterateMethod, new HarmonyMethod(iteratePrefix));
+                            Mod.log.Info($"SUCCESS: Also applied patch to {iteratorType.Name}.Iterate");
+                        }
+                    }
+                    
+                    // Try patching ALL public methods to see which ones are called
+                    Mod.log.Info("DEBUG: Attempting to patch all public methods for testing...");
+                    foreach (var method in methods)
+                    {
+                        if (method.IsPublic && !method.IsSpecialName && method.DeclaringType == iteratorType)
+                        {
+                            try
+                            {
+                                var testPrefix = typeof(OptimizedTreeCullingPatch).GetMethod("TestPrefix");
+                                harmonyInstance.Patch(method, new HarmonyMethod(testPrefix));
+                                Mod.log.Info($"DEBUG: Applied test patch to {method.Name}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Mod.log.Info($"DEBUG: Could not patch {method.Name}: {ex.Message}");
+                            }
+                        }
                     }
                 }
                 else
@@ -154,6 +216,51 @@ namespace CitizenEntityCleaner
                 Mod.log.Error($"ERROR in TreeCullingIterator.Intersect patch: {ex.Message}");
                 Mod.log.Error($"Stack trace: {ex.StackTrace}");
                 return true; // Fall back to original method
+            }
+        }
+
+        /// <summary>
+        /// Alternative patch target for testing - Iterate method
+        /// </summary>
+        public static bool IteratePrefix(ref object __instance)
+        {
+            try
+            {
+                // Debug: Log that Iterate patch is being called
+                if (UnityEngine.Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+                {
+                    Mod.log.Info($"DEBUG: TreeCullingIterator.Iterate patch called!");
+                }
+                
+                return true; // Continue with original method
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"ERROR in TreeCullingIterator.Iterate patch: {ex.Message}");
+                return true; // Fall back to original method
+            }
+        }
+
+        /// <summary>
+        /// Test prefix to see which methods are actually being called
+        /// </summary>
+        public static bool TestPrefix()
+        {
+            try
+            {
+                // Log which method is being called
+                var stackTrace = new System.Diagnostics.StackTrace();
+                var callingMethod = stackTrace.GetFrame(1)?.GetMethod();
+                if (callingMethod != null && UnityEngine.Time.frameCount % 300 == 0)
+                {
+                    Mod.log.Info($"DEBUG: Method called: {callingMethod.DeclaringType?.Name}.{callingMethod.Name}");
+                }
+                
+                return true; // Continue with original method
+            }
+            catch
+            {
+                return true;
             }
         }
 

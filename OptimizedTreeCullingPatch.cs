@@ -165,7 +165,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Simplified building cache update
+        /// Simplified building cache update using proper ECS patterns
         /// </summary>
         private static void UpdateBuildingCache(float3 cameraPosition)
         {
@@ -173,42 +173,62 @@ namespace CitizenEntityCleaner
             {
                 buildingCache.Clear();
 
+                // Get the default world - this is the correct way to access it
                 var world = Unity.Entities.World.DefaultGameObjectInjectionWorld;
                 if (world == null) return;
 
                 var entityManager = world.EntityManager;
                 
-                // Simple building query
-                var query = entityManager.CreateEntityQuery(
-                    Unity.Entities.ComponentType.ReadOnly<Game.Buildings.Building>(),
-                    Unity.Entities.ComponentType.ReadOnly<Unity.Transforms.LocalToWorld>(),
-                    Unity.Entities.ComponentType.ReadOnly<CullingInfo>()
-                );
+                // Create EntityQuery using EntityQueryDesc pattern like CitizenCleanupSystem
+                var queryDesc = new Unity.Entities.EntityQueryDesc
+                {
+                    All = new Unity.Entities.ComponentType[]
+                    {
+                        Unity.Entities.ComponentType.ReadOnly<Game.Buildings.Building>(),
+                        Unity.Entities.ComponentType.ReadOnly<Unity.Transforms.LocalToWorld>(),
+                        Unity.Entities.ComponentType.ReadOnly<CullingInfo>()
+                    },
+                    None = new Unity.Entities.ComponentType[]
+                    {
+                        Unity.Entities.ComponentType.ReadOnly<Game.Common.Deleted>() // Exclude deleted buildings
+                    }
+                };
 
+                using var query = entityManager.CreateEntityQuery(queryDesc);
+                
                 if (query.IsEmpty) return;
 
-                var entities = query.ToEntityArray(Unity.Collections.Allocator.TempJob);
-                var transforms = query.ToComponentDataArray<Unity.Transforms.LocalToWorld>(Unity.Collections.Allocator.TempJob);
-                var cullingInfos = query.ToComponentDataArray<CullingInfo>(Unity.Collections.Allocator.TempJob);
+                // Use proper allocation patterns like CitizenCleanupSystem
+                using var entities = query.ToEntityArray(Unity.Collections.Allocator.TempJob);
+                using var transforms = query.ToComponentDataArray<Unity.Transforms.LocalToWorld>(Unity.Collections.Allocator.TempJob);
+                using var cullingInfos = query.ToComponentDataArray<CullingInfo>(Unity.Collections.Allocator.TempJob);
 
                 int count = 0;
                 float maxRange = 200f;
+                float maxRangeSq = maxRange * maxRange;
 
                 for (int i = 0; i < entities.Length && count < 30; i++)
                 {
+                    var entity = entities[i];
                     var transform = transforms[i];
                     var cullingInfo = cullingInfos[i];
                     
                     float3 buildingPos = transform.Position;
-                    if (math.distance(cameraPosition, buildingPos) > maxRange) continue;
+                    
+                    // Use squared distance for better performance
+                    if (math.distancesq(cameraPosition, buildingPos) > maxRangeSq) continue;
 
                     var bounds = cullingInfo.m_Bounds;
                     float3 size = bounds.max - bounds.min;
                     
-                    // Only consider large buildings
+                    // Only consider large buildings that can provide meaningful occlusion
                     if (size.x < 15f || size.z < 15f || size.y < 8f) continue;
 
-                    buildingCache[entities[i].Index] = new BuildingOcclusionData
+                    // Verify entity still exists (following CitizenCleanupSystem pattern)
+                    if (!entityManager.Exists(entity) || entityManager.HasComponent<Game.Common.Deleted>(entity))
+                        continue;
+
+                    buildingCache[entity.Index] = new BuildingOcclusionData
                     {
                         position = buildingPos,
                         size = size,
@@ -217,10 +237,6 @@ namespace CitizenEntityCleaner
                     };
                     count++;
                 }
-
-                entities.Dispose();
-                transforms.Dispose();
-                cullingInfos.Dispose();
             }
             catch (Exception ex)
             {

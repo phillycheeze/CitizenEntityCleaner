@@ -13,8 +13,6 @@ namespace CitizenEntityCleaner
         
         // Reference to our cleanup system
         public static CitizenCleanupSystem CleanupSystem { get; private set; }
-        public static TreeCullingPreprocessor TreeSystem {  get; private set; }
-
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
@@ -28,8 +26,6 @@ namespace CitizenEntityCleaner
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
 
             OptimizedTreeCullingPatch.ApplyPatches();
-            updateSystem.UpdateAt<TreeCullingPreprocessor>(SystemUpdatePhase.Rendering);
-            TreeSystem = updateSystem.World.GetOrCreateSystemManaged<TreeCullingPreprocessor>();
 
             // Register our cleanup system to run before the game's deletion system (Modification2)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);

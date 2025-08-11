@@ -100,10 +100,6 @@
 			<HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="0Harmony">
-			<HintPath>$(ManagedPath)\0Harmony.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -121,6 +117,10 @@
 	<ItemGroup>
 		<None Include="$(ModPropsFile)" Link="Properties\Mod.props" />
 		<None Include="$(ModTargetsFile)" Link="Properties\Mod.targets" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Lib.Harmony" Version="2.2.2" />
 	</ItemGroup>
 
 </Project>

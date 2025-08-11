@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Unity.Mathematics;
+using Colossal.Mathematics;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Transforms;
@@ -50,24 +51,42 @@ namespace CitizenEntityCleaner
                 var preCullingSystemType = typeof(PreCullingSystem);
                 var nestedTypes = preCullingSystemType.GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public);
                 
+                Mod.log.Info($"DEBUG: Found {nestedTypes.Length} nested types in PreCullingSystem");
+                foreach (var nestedType in nestedTypes)
+                {
+                    Mod.log.Info($"DEBUG: Found nested type: {nestedType.Name}");
+                }
+                
                 Type iteratorType = null;
                 foreach (var nestedType in nestedTypes)
                 {
                     if (nestedType.Name.Contains("TreeCullingIterator"))
                     {
                         iteratorType = nestedType;
+                        Mod.log.Info($"DEBUG: Found TreeCullingIterator type: {iteratorType.FullName}");
                         break;
                     }
                 }
                 
                 if (iteratorType != null)
                 {
+                    var methods = iteratorType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    Mod.log.Info($"DEBUG: TreeCullingIterator has {methods.Length} methods:");
+                    foreach (var method in methods)
+                    {
+                        Mod.log.Info($"DEBUG: Method: {method.Name}");
+                    }
+                    
                     var intersectMethod = iteratorType.GetMethod("Intersect");
                     if (intersectMethod != null)
                     {
                         var prefix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPrefix");
                         harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
-                        Mod.log.Info("Applied building occlusion patch to TreeCullingIterator.Intersect");
+                        Mod.log.Info($"SUCCESS: Applied building occlusion patch to {iteratorType.Name}.Intersect");
+                    }
+                    else
+                    {
+                        Mod.log.Error("Could not find Intersect method in TreeCullingIterator");
                     }
                 }
                 else
@@ -78,6 +97,7 @@ namespace CitizenEntityCleaner
             catch (Exception ex)
             {
                 Mod.log.Error($"Failed to apply building occlusion patch: {ex.Message}");
+                Mod.log.Error($"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -101,9 +121,20 @@ namespace CitizenEntityCleaner
         {
             try
             {
+                // Debug: Log that patch is being called
+                if (UnityEngine.Time.frameCount % 600 == 0) // Every 10 seconds at 60fps
+                {
+                    Mod.log.Info($"DEBUG: TreeCullingIterator.Intersect patch called (subData: {subData})");
+                }
+
                 var type = __instance.GetType();
                 var cameraPosition = GetFieldValue<float3>(__instance, type, "m_CameraPosition");
                 var cameraDirection = GetFieldValue<float3>(__instance, type, "m_CameraDirection");
+                
+                if (UnityEngine.Time.frameCount % 600 == 0)
+                {
+                    Mod.log.Info($"DEBUG: Camera at {cameraPosition}, direction {cameraDirection}");
+                }
                 
                 // For trees, use a position that's more representative of what the camera sees
                 // If camera is tilted up, check higher parts of the tree
@@ -120,7 +151,8 @@ namespace CitizenEntityCleaner
             }
             catch (Exception ex)
             {
-                Mod.log.Error($"Error in building occlusion check: {ex.Message}");
+                Mod.log.Error($"ERROR in TreeCullingIterator.Intersect patch: {ex.Message}");
+                Mod.log.Error($"Stack trace: {ex.StackTrace}");
                 return true; // Fall back to original method
             }
         }
@@ -163,9 +195,22 @@ namespace CitizenEntityCleaner
         {
             try
             {
+                // Debug: Log when occlusion check is called
+                if (UnityEngine.Time.frameCount % 300 == 0) // Every 5 seconds at 60fps
+                {
+                    Mod.log.Info($"DEBUG: Occlusion check called for object at distance {math.distance(cameraPosition, objectPosition):F0}m");
+                }
+
                 // Only check occlusion for distant objects
                 float objectDistance = math.distance(cameraPosition, objectPosition);
-                if (objectDistance < 60f) return false;
+                if (objectDistance < 60f) 
+                {
+                    if (UnityEngine.Time.frameCount % 300 == 0)
+                    {
+                        Mod.log.Info($"DEBUG: Object too close ({objectDistance:F0}m < 60m), skipping occlusion");
+                    }
+                    return false;
+                }
 
                 // Update building cache periodically
                 if (math.distance(cameraPosition, lastCameraPos) > 20f || 
@@ -174,10 +219,17 @@ namespace CitizenEntityCleaner
                     UpdateBuildingCache(cameraPosition);
                     lastCameraPos = cameraPosition;
                     lastCacheUpdate = UnityEngine.Time.time;
+                    
+                    Mod.log.Info($"DEBUG: Updated building cache, found {buildingCache.Count} buildings");
                 }
 
                 // Step 1: Get nearby buildings (closer than the object we're checking)
                 var nearbyBuildings = GetNearbyBuildingsForShadows(cameraPosition, objectDistance);
+                
+                if (UnityEngine.Time.frameCount % 300 == 0)
+                {
+                    Mod.log.Info($"DEBUG: Found {nearbyBuildings.Count} nearby buildings for shadow casting (total cached: {buildingCache.Count})");
+                }
                 
                 // Step 2 & 3: Check if object is in any building's shadow volume
                 foreach (var building in nearbyBuildings)
@@ -186,19 +238,22 @@ namespace CitizenEntityCleaner
                     
                     if (IsObjectInShadowVolume(objectPosition, objectBounds, shadowVolume))
                     {
-                        // Log occasionally to verify occlusion is working
-                        if (UnityEngine.Time.frameCount % 120 == 0) // Every 2 seconds at 60fps
-                        {
-                            Mod.log.Info($"Occlusion: Tree in shadow of building at {building.distanceToCamera:F0}m (object at {objectDistance:F0}m)");
-                        }
+                        // Log immediately when occlusion is found
+                        Mod.log.Info($"SUCCESS: Tree occluded by building at {building.distanceToCamera:F0}m (object at {objectDistance:F0}m)");
                         return true;
                     }
                 }
 
+                if (UnityEngine.Time.frameCount % 300 == 0 && nearbyBuildings.Count > 0)
+                {
+                    Mod.log.Info($"DEBUG: No occlusion found after checking {nearbyBuildings.Count} buildings");
+                }
+
                 return false;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Mod.log.Error($"ERROR in occlusion check: {ex.Message}");
                 return false; // Safe fallback
             }
         }
@@ -224,7 +279,7 @@ namespace CitizenEntityCleaner
                     All = new Unity.Entities.ComponentType[]
                     {
                         Unity.Entities.ComponentType.ReadOnly<Game.Buildings.Building>(),
-                        Unity.Entities.ComponentType.ReadOnly<Unity.Transforms.LocalToWorld>(),
+                        Unity.Entities.ComponentType.ReadOnly<Game.Objects.Transform>(),
                         Unity.Entities.ComponentType.ReadOnly<CullingInfo>()
                     },
                     None = new Unity.Entities.ComponentType[]
@@ -239,7 +294,7 @@ namespace CitizenEntityCleaner
 
                 // Use proper allocation patterns like CitizenCleanupSystem
                 using var entities = query.ToEntityArray(Unity.Collections.Allocator.TempJob);
-                using var transforms = query.ToComponentDataArray<Unity.Transforms.LocalToWorld>(Unity.Collections.Allocator.TempJob);
+                using var transforms = query.ToComponentDataArray<Game.Objects.Transform>(Unity.Collections.Allocator.TempJob);
                 using var cullingInfos = query.ToComponentDataArray<CullingInfo>(Unity.Collections.Allocator.TempJob);
 
                 int count = 0;
@@ -252,7 +307,7 @@ namespace CitizenEntityCleaner
                     var transform = transforms[i];
                     var cullingInfo = cullingInfos[i];
                     
-                    float3 buildingPos = transform.Position;
+                    float3 buildingPos = transform.m_Position;
                     
                     // Use squared distance for better performance
                     if (math.distancesq(cameraPosition, buildingPos) > maxRangeSq) continue;
@@ -398,4 +453,5 @@ namespace CitizenEntityCleaner
 
 
     }
+}
 }

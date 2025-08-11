@@ -28,8 +28,16 @@ namespace CitizenEntityCleaner
         {
             public float3 position;
             public float3 size;
-            public float2 boundsMin;
-            public float2 boundsMax;
+            public Bounds3 bounds3D; // Full 3D bounds for building
+            public float height;
+            public float distanceToCamera; // Distance from camera for sorting/filtering
+        }
+
+        private struct ShadowVolume
+        {
+            public Bounds3 shadowBounds; // The 3D shadow volume cast by the building
+            public float3 buildingPosition;
+            public float shadowLength; // How far the shadow extends
         }
 
         public static void ApplyPatches()
@@ -95,16 +103,14 @@ namespace CitizenEntityCleaner
             {
                 var type = __instance.GetType();
                 var cameraPosition = GetFieldValue<float3>(__instance, type, "m_CameraPosition");
+                var cameraDirection = GetFieldValue<float3>(__instance, type, "m_CameraDirection");
                 
-                // Calculate object center
-                float3 objectCenter = new float3(
-                    (bounds.m_Bounds.min.x + bounds.m_Bounds.max.x) * 0.5f,
-                    (bounds.m_Bounds.min.y + bounds.m_Bounds.max.y) * 0.5f,
-                    (bounds.m_Bounds.min.z + bounds.m_Bounds.max.z) * 0.5f
-                );
+                // For trees, use a position that's more representative of what the camera sees
+                // If camera is tilted up, check higher parts of the tree
+                float3 objectPosition = CalculateVisibleObjectPosition(bounds.m_Bounds, cameraPosition, cameraDirection);
                 
-                // Check if object is occluded by buildings
-                if (IsOccludedByBuildings(cameraPosition, objectCenter))
+                // Check if object is occluded by buildings with proper 3D logic
+                if (IsOccludedByBuildings(cameraPosition, cameraDirection, objectPosition, bounds.m_Bounds))
                 {
                     __result = false;
                     return false; // Skip original method - object is occluded
@@ -127,16 +133,39 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Main occlusion check - simplified version
+        /// Calculate the position on the object that the camera is most likely looking at
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsOccludedByBuildings(float3 cameraPosition, float3 objectCenter)
+        private static float3 CalculateVisibleObjectPosition(Bounds3 objectBounds, float3 cameraPosition, float3 cameraDirection)
+        {
+            float3 objectCenter = new float3(
+                (objectBounds.min.x + objectBounds.max.x) * 0.5f,
+                (objectBounds.min.y + objectBounds.max.y) * 0.5f,
+                (objectBounds.min.z + objectBounds.max.z) * 0.5f
+            );
+
+            // If camera is looking down, use lower part of object
+            // If camera is looking up, use higher part of object
+            float heightOffset = cameraDirection.y * (objectBounds.max.y - objectBounds.min.y) * 0.3f;
+            
+            return new float3(
+                objectCenter.x,
+                math.clamp(objectCenter.y + heightOffset, objectBounds.min.y, objectBounds.max.y),
+                objectCenter.z
+            );
+        }
+
+        /// <summary>
+        /// Main occlusion check using shadow volume approach
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsOccludedByBuildings(float3 cameraPosition, float3 cameraDirection, float3 objectPosition, Bounds3 objectBounds)
         {
             try
             {
                 // Only check occlusion for distant objects
-                float distance = math.distance(cameraPosition, objectCenter);
-                if (distance < 80f) return false;
+                float objectDistance = math.distance(cameraPosition, objectPosition);
+                if (objectDistance < 60f) return false;
 
                 // Update building cache periodically
                 if (math.distance(cameraPosition, lastCameraPos) > 20f || 
@@ -147,11 +176,21 @@ namespace CitizenEntityCleaner
                     lastCacheUpdate = UnityEngine.Time.time;
                 }
 
-                // Simple occlusion test against cached buildings
-                foreach (var building in buildingCache.Values)
+                // Step 1: Get nearby buildings (closer than the object we're checking)
+                var nearbyBuildings = GetNearbyBuildingsForShadows(cameraPosition, objectDistance);
+                
+                // Step 2 & 3: Check if object is in any building's shadow volume
+                foreach (var building in nearbyBuildings)
                 {
-                    if (IsObjectOccluded(cameraPosition, objectCenter, building))
+                    var shadowVolume = CalculateShadowVolume(cameraPosition, building, objectDistance);
+                    
+                    if (IsObjectInShadowVolume(objectPosition, objectBounds, shadowVolume))
                     {
+                        // Log occasionally to verify occlusion is working
+                        if (UnityEngine.Time.frameCount % 120 == 0) // Every 2 seconds at 60fps
+                        {
+                            Mod.log.Info($"Occlusion: Tree in shadow of building at {building.distanceToCamera:F0}m (object at {objectDistance:F0}m)");
+                        }
                         return true;
                     }
                 }
@@ -228,12 +267,15 @@ namespace CitizenEntityCleaner
                     if (!entityManager.Exists(entity) || entityManager.HasComponent<Game.Common.Deleted>(entity))
                         continue;
 
+                    float distanceToCamera = math.distance(cameraPosition, buildingPos);
+                    
                     buildingCache[entity.Index] = new BuildingOcclusionData
                     {
                         position = buildingPos,
                         size = size,
-                        boundsMin = new float2(bounds.min.x, bounds.min.z),
-                        boundsMax = new float2(bounds.max.x, bounds.max.z)
+                        bounds3D = bounds,
+                        height = size.y,
+                        distanceToCamera = distanceToCamera
                     };
                     count++;
                 }
@@ -245,67 +287,115 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Simple 2D occlusion test
+        /// Step 1: Get buildings that are close enough to camera and closer than the object to cast shadows
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsObjectOccluded(float3 cameraPos, float3 objectPos, BuildingOcclusionData building)
+        private static List<BuildingOcclusionData> GetNearbyBuildingsForShadows(float3 cameraPosition, float objectDistance)
         {
-            // Check if building is between camera and object
-            float3 cameraToBuilding = building.position - cameraPos;
-            float3 cameraToObject = objectPos - cameraPos;
+            var nearbyBuildings = new List<BuildingOcclusionData>();
             
-            if (math.dot(cameraToBuilding, cameraToObject) < 0 || 
-                math.length(cameraToBuilding) > math.length(cameraToObject))
-                return false;
-
-            // Simple 2D line intersection with building bounds
-            float2 camPos2D = cameraPos.xz;
-            float2 objPos2D = objectPos.xz;
+            foreach (var building in buildingCache.Values)
+            {
+                // Building must be closer than the object to cast a shadow on it
+                if (building.distanceToCamera >= objectDistance)
+                    continue;
+                    
+                // Only consider buildings within reasonable shadow-casting range
+                if (building.distanceToCamera > 150f)
+                    continue;
+                    
+                nearbyBuildings.Add(building);
+            }
             
-            return LineIntersectsRect(camPos2D, objPos2D, building.boundsMin, building.boundsMax);
+            return nearbyBuildings;
         }
 
         /// <summary>
-        /// Basic line-rectangle intersection test
+        /// Step 2: Calculate the 3D shadow volume cast by a building from camera position
+        /// Think of camera as sun, building blocks light, creates shadow volume extending past building
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool LineIntersectsRect(float2 lineStart, float2 lineEnd, float2 rectMin, float2 rectMax)
+        private static ShadowVolume CalculateShadowVolume(float3 cameraPosition, BuildingOcclusionData building, float maxShadowDistance)
         {
-            // Expand rect slightly for tolerance
-            rectMin -= 3f;
-            rectMax += 3f;
+            // Calculate shadow projection direction (from camera through building)
+            float3 shadowDirection = math.normalize(building.position - cameraPosition);
+            
+            // How far should the shadow extend? Use remaining distance to object
+            float shadowLength = maxShadowDistance - building.distanceToCamera + 20f; // +20f for safety margin
+            
+            // Calculate shadow volume bounds by projecting building bounds away from camera
+            Bounds3 buildingBounds = building.bounds3D;
+            
+            // Expand building bounds slightly for better occlusion
+            float3 expansion = new float3(5f, 0f, 5f); // Expand XZ but not Y
+            buildingBounds.min -= expansion;
+            buildingBounds.max += expansion;
+            
+            // Project building corners to create shadow volume
+            float3 shadowEndPos = building.position + shadowDirection * shadowLength;
+            
+            // Create shadow bounds that encompass both building and shadow projection
+            Bounds3 shadowBounds = new Bounds3
+            {
+                min = math.min(buildingBounds.min, shadowEndPos - building.size * 0.5f),
+                max = math.max(buildingBounds.max, shadowEndPos + building.size * 0.5f)
+            };
+            
+            return new ShadowVolume
+            {
+                shadowBounds = shadowBounds,
+                buildingPosition = building.position,
+                shadowLength = shadowLength
+            };
+        }
 
-            // Check if line endpoints are inside rect
-            if (IsPointInRect(lineStart, rectMin, rectMax) || IsPointInRect(lineEnd, rectMin, rectMax))
+        /// <summary>
+        /// Step 3: Check if an object is inside the shadow volume
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsObjectInShadowVolume(float3 objectPosition, Bounds3 objectBounds, ShadowVolume shadowVolume)
+        {
+            // Simple bounds check - is object center or any corner inside shadow volume?
+            Bounds3 shadow = shadowVolume.shadowBounds;
+            
+            // Check object center
+            if (IsPointInBounds(objectPosition, shadow))
                 return true;
-
-            // Check line intersection with rect edges
-            return LineIntersectsLine(lineStart, lineEnd, new float2(rectMin.x, rectMin.y), new float2(rectMax.x, rectMin.y)) ||
-                   LineIntersectsLine(lineStart, lineEnd, new float2(rectMax.x, rectMin.y), new float2(rectMax.x, rectMax.y)) ||
-                   LineIntersectsLine(lineStart, lineEnd, new float2(rectMax.x, rectMax.y), new float2(rectMin.x, rectMax.y)) ||
-                   LineIntersectsLine(lineStart, lineEnd, new float2(rectMin.x, rectMax.y), new float2(rectMin.x, rectMin.y));
+                
+            // Check object corners for more accurate intersection
+            float3[] objectCorners = new float3[]
+            {
+                new float3(objectBounds.min.x, objectBounds.min.y, objectBounds.min.z),
+                new float3(objectBounds.max.x, objectBounds.min.y, objectBounds.min.z),
+                new float3(objectBounds.min.x, objectBounds.max.y, objectBounds.min.z),
+                new float3(objectBounds.max.x, objectBounds.max.y, objectBounds.min.z),
+                new float3(objectBounds.min.x, objectBounds.min.y, objectBounds.max.z),
+                new float3(objectBounds.max.x, objectBounds.min.y, objectBounds.max.z),
+                new float3(objectBounds.min.x, objectBounds.max.y, objectBounds.max.z),
+                new float3(objectBounds.max.x, objectBounds.max.y, objectBounds.max.z)
+            };
+            
+            // If any corner is in shadow, object is occluded
+            foreach (var corner in objectCorners)
+            {
+                if (IsPointInBounds(corner, shadow))
+                    return true;
+            }
+            
+            return false;
         }
 
+        /// <summary>
+        /// Simple 3D point-in-bounds check
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsPointInRect(float2 point, float2 rectMin, float2 rectMax)
+        private static bool IsPointInBounds(float3 point, Bounds3 bounds)
         {
-            return point.x >= rectMin.x && point.x <= rectMax.x && 
-                   point.y >= rectMin.y && point.y <= rectMax.y;
+            return point.x >= bounds.min.x && point.x <= bounds.max.x &&
+                   point.y >= bounds.min.y && point.y <= bounds.max.y &&
+                   point.z >= bounds.min.z && point.z <= bounds.max.z;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool LineIntersectsLine(float2 p1, float2 p2, float2 p3, float2 p4)
-        {
-            float2 s1 = p2 - p1;
-            float2 s2 = p4 - p3;
 
-            float cross = s1.x * s2.y - s1.y * s2.x;
-            if (math.abs(cross) < 1e-6f) return false;
-
-            float t = ((p3.x - p1.x) * s2.y - (p3.y - p1.y) * s2.x) / cross;
-            float u = ((p3.x - p1.x) * s1.y - (p3.y - p1.y) * s1.x) / cross;
-
-            return t >= 0 && t <= 1 && u >= 0 && u <= 1;
-        }
     }
 }

@@ -27,7 +27,7 @@ namespace CitizenEntityCleaner
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
 
-            //OptimizedTreeCullingPatch.ApplyPatches();
+            OptimizedTreeCullingPatch.ApplyPatches();
             updateSystem.UpdateAt<TreeCullingPreprocessor>(SystemUpdatePhase.Rendering);
             TreeSystem = updateSystem.World.GetOrCreateSystemManaged<TreeCullingPreprocessor>();
 
@@ -47,7 +47,7 @@ namespace CitizenEntityCleaner
         {
             log.Info(nameof(OnDispose));
 
-            //OptimizedTreeCullingPatch.RemovePatches();
+            OptimizedTreeCullingPatch.RemovePatches();
 
             if (m_Setting != null)
             {

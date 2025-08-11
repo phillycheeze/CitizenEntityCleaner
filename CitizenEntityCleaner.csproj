@@ -100,6 +100,10 @@
 			<HintPath>$(ManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>$(ManagedPath)\0Harmony.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>

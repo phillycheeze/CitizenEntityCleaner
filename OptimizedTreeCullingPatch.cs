@@ -229,6 +229,7 @@ namespace CitizenEntityCleaner
                 
                 // Look for any method call that contains "Iterate"
                 bool foundIterate = false;
+                int patchCount = 0;
                 for (int i = 0; i < codes.Count; i++)
                 {
                     if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
@@ -238,13 +239,24 @@ namespace CitizenEntityCleaner
                         {
                             Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
                             
-                            // Insert our custom call before the Iterate call
+                            // Insert our custom call JUST before the Iterate call
                             var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
                             codes.Insert(i, customCall);
                             
-                            Mod.log.Info("SUCCESS: Transpiler found and patched iterator call in TreeCullingJob1");
+                            // Also try inserting at the very beginning of the method as a test
+                            if (patchCount == 0)
+                            {
+                                var testCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("TestMethodEntry"));
+                                codes.Insert(0, testCall);
+                                Mod.log.Info("DEBUG: Also inserted test call at method beginning");
+                            }
+                            
+                            Mod.log.Info($"SUCCESS: Transpiler found and patched iterator call #{patchCount + 1} in TreeCullingJob1");
                             foundIterate = true;
-                            break;
+                            patchCount++;
+                            
+                            // Don't break - patch all Iterate calls
+                            i++; // Skip the instruction we just inserted
                         }
                     }
                 }
@@ -275,6 +287,7 @@ namespace CitizenEntityCleaner
                 
                 // Look for any method call that contains "Iterate"
                 bool foundIterate = false;
+                int patchCount = 0;
                 for (int i = 0; i < codes.Count; i++)
                 {
                     if (codes[i].opcode == OpCodes.Callvirt || codes[i].opcode == OpCodes.Call)
@@ -284,13 +297,24 @@ namespace CitizenEntityCleaner
                         {
                             Mod.log.Info($"DEBUG: Found Iterate call at IL[{i}]: {methodName}");
                             
-                            // Insert our custom call before the Iterate call
+                            // Insert our custom call JUST before the Iterate call
                             var customCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("InterceptIteratorCall"));
                             codes.Insert(i, customCall);
                             
-                            Mod.log.Info("SUCCESS: Transpiler found and patched iterator call in TreeCullingJob2");
+                            // Also try inserting at the very beginning of the method as a test
+                            if (patchCount == 0)
+                            {
+                                var testCall = new CodeInstruction(OpCodes.Call, typeof(OptimizedTreeCullingPatch).GetMethod("TestMethodEntry"));
+                                codes.Insert(0, testCall);
+                                Mod.log.Info("DEBUG: Also inserted test call at method beginning for Job2");
+                            }
+                            
+                            Mod.log.Info($"SUCCESS: Transpiler found and patched iterator call #{patchCount + 1} in TreeCullingJob2");
                             foundIterate = true;
-                            break;
+                            patchCount++;
+                            
+                            // Don't break - patch all Iterate calls
+                            i++; // Skip the instruction we just inserted
                         }
                     }
                 }
@@ -309,7 +333,24 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
+        /// Test method to verify transpiler is working at method entry
+        /// </summary>
+        public static void TestMethodEntry()
+        {
+            try
+            {
+                methodCallCount++;
+                Mod.log.Info($"🔥 TEST: Job method entry #{methodCallCount} - proves transpiler execution!");
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Error in TestMethodEntry: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Custom method called by transpiler to intercept iterator usage
+        /// This gets called BEFORE each tree culling iteration starts
         /// </summary>
         public static void InterceptIteratorCall()
         {
@@ -317,11 +358,25 @@ namespace CitizenEntityCleaner
             {
                 iterateCallCount++;
                 
-                // Log first few calls to confirm transpiler is working
-                if (iterateCallCount <= 5 || iterateCallCount % 100 == 0)
+                // Always log the first call immediately to confirm it's working
+                if (iterateCallCount == 1)
+                {
+                    Mod.log.Info($"🎉 FIRST SUCCESS: Transpiler intercepted iterator call! The patch is working!");
+                }
+                
+                // Log periodically to show ongoing activity
+                if (iterateCallCount <= 10 || iterateCallCount % 50 == 0)
                 {
                     Mod.log.Info($"SUCCESS: Transpiler intercepted iterator call #{iterateCallCount}");
                 }
+                
+                // TODO: This is where we could add our building occlusion pre-processing
+                // For now, we're just confirming the interception works
+                // Later we can add logic to:
+                // 1. Get camera position
+                // 2. Update building cache 
+                // 3. Pre-mark trees as occluded before iteration starts
+                
             }
             catch (Exception ex)
             {

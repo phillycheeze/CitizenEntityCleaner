@@ -88,18 +88,41 @@ namespace CitizenEntityCleaner
                             Mod.log.Info($"DEBUG: Parameter: {param.ParameterType.Name} {param.Name}");
                         }
                         
+                        // Try Prefix first
                         var prefix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPrefix");
                         if (prefix != null)
                         {
-                            var patchResult = harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
-                            Mod.log.Info($"SUCCESS: Applied building occlusion patch to {iteratorType.Name}.Intersect");
-                            Mod.log.Info($"DEBUG: Patch result: {patchResult}");
-                            
-                            // Verify the patch was applied
-                            var patches = Harmony.GetPatchInfo(intersectMethod);
-                            if (patches != null)
+                            try
                             {
-                                Mod.log.Info($"DEBUG: Method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
+                                var patchResult = harmonyInstance.Patch(intersectMethod, new HarmonyMethod(prefix));
+                                Mod.log.Info($"SUCCESS: Applied Intersect PREFIX patch to {iteratorType.Name}.Intersect");
+                                Mod.log.Info($"DEBUG: Patch result: {patchResult}");
+                                
+                                // Verify the patch was applied
+                                var patches = Harmony.GetPatchInfo(intersectMethod);
+                                if (patches != null)
+                                {
+                                    Mod.log.Info($"DEBUG: Method has {patches.Prefixes.Count} prefixes, {patches.Postfixes.Count} postfixes");
+                                }
+                            }
+                            catch (Exception prefixEx)
+                            {
+                                Mod.log.Error($"Failed to apply Prefix patch: {prefixEx.Message}");
+                                
+                                // Try Postfix as fallback
+                                var postfix = typeof(OptimizedTreeCullingPatch).GetMethod("IntersectPostfix");
+                                if (postfix != null)
+                                {
+                                    try
+                                    {
+                                        var patchResult = harmonyInstance.Patch(intersectMethod, null, new HarmonyMethod(postfix));
+                                        Mod.log.Info($"SUCCESS: Applied Intersect POSTFIX patch as fallback");
+                                    }
+                                    catch (Exception postfixEx)
+                                    {
+                                        Mod.log.Error($"Failed to apply Postfix patch: {postfixEx.Message}");
+                                    }
+                                }
                             }
                         }
                         else
@@ -180,7 +203,7 @@ namespace CitizenEntityCleaner
         /// Simple prefix patch that adds building occlusion check before original intersect logic
         /// Signature must match: Boolean Intersect(Game.Common.QuadTreeBoundsXZ, Int32 ByRef)
         /// </summary>
-        public static bool IntersectPrefix(ref bool __result, object __instance, QuadTreeBoundsXZ bounds, ref int subData)
+        public static bool IntersectPrefix(QuadTreeBoundsXZ bounds, ref int subData)
         {
             try
             {
@@ -192,26 +215,7 @@ namespace CitizenEntityCleaner
                     Mod.log.Info($"DEBUG: IntersectPrefix called #{intersectCallCount} (subData: {subData})");
                 }
 
-                var type = __instance.GetType();
-                var cameraPosition = GetFieldValue<float3>(__instance, type, "m_CameraPosition");
-                var cameraDirection = GetFieldValue<float3>(__instance, type, "m_CameraDirection");
-                
-                if (UnityEngine.Time.frameCount % 600 == 0)
-                {
-                    Mod.log.Info($"DEBUG: Camera at {cameraPosition}, direction {cameraDirection}");
-                }
-                
-                // For trees, use a position that's more representative of what the camera sees
-                // If camera is tilted up, check higher parts of the tree
-                float3 objectPosition = CalculateVisibleObjectPosition(bounds.m_Bounds, cameraPosition, cameraDirection);
-                
-                // Check if object is occluded by buildings with proper 3D logic
-                if (IsOccludedByBuildings(cameraPosition, cameraDirection, objectPosition, bounds.m_Bounds))
-                {
-                    __result = false;
-                    return false; // Skip original method - object is occluded
-                }
-                
+                // For now, just test that the patch is working - we'll add occlusion logic later
                 return true; // Continue with original method
             }
             catch (Exception ex)
@@ -223,10 +227,31 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
+        /// Postfix version of the patch - called after the original method
+        /// </summary>
+        public static void IntersectPostfix(QuadTreeBoundsXZ bounds, ref int subData, bool __result)
+        {
+            try
+            {
+                intersectCallCount++;
+                
+                // Log first few calls immediately, then periodically
+                if (intersectCallCount <= 3 || intersectCallCount % 50 == 0)
+                {
+                    Mod.log.Info($"DEBUG: IntersectPostfix called #{intersectCallCount} (subData: {subData}, result: {__result})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"ERROR in TreeCullingIterator.Intersect postfix: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Alternative patch target for testing - Iterate method
         /// Signature must match: Void Iterate(Game.Common.QuadTreeBoundsXZ, Int32, Unity.Entities.Entity)
         /// </summary>
-        public static bool IteratePrefix(object __instance, QuadTreeBoundsXZ bounds, int subData, Unity.Entities.Entity entity)
+        public static bool IteratePrefix(QuadTreeBoundsXZ bounds, int subData, Unity.Entities.Entity entity)
         {
             try
             {
@@ -577,5 +602,4 @@ namespace CitizenEntityCleaner
 
 
     }
-}
 }

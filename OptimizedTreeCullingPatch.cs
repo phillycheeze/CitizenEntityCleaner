@@ -6,47 +6,48 @@ using Game.Objects;
 using Colossal.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using Game.Common;
+using Colossal.Mathematics;
+using Colossal.Logging;
+using Game.Rendering;
+using Colossal.Entities;
 
 namespace CitizenEntityCleaner
 {
     [HarmonyPatch(typeof(SearchSystem), "GetStaticSearchTree")]
     public static class OptimizedTreeCullingPatch
     {
+        private static ILog m_Log = Mod.log;
+        private static CameraUpdateSystem m_CameraUpdateSystem;
+        private static int frameCounter = 0;
         [HarmonyPostfix]
         public static NativeQuadTree<Entity, QuadTreeBoundsXZ> GetStaticSearchTree_Postfix(NativeQuadTree<Entity, QuadTreeBoundsXZ> __result, ref JobHandle dependencies)
         {
             if (__result.IsCreated)
-            {
-                Debug.Log($"[OptimizedTreeCullingPatch] We are being called");
-                
-                // Simple test: get first element using minimal iterator
-                var firstFinder = new FirstElementFinder();
-                __result.Iterate(ref firstFinder, 0); // Start from node 0
-                
-                if (firstFinder.found)
+            { 
+                frameCounter++;
+                m_CameraUpdateSystem = World.DefaultGameObjectInjectionWorld?.GetExistingSystemManaged<CameraUpdateSystem>();
+                if (frameCounter % 60 == 0)
                 {
-                    Debug.Log($"[OptimizedTreeCullingPatch] First entity: {firstFinder.entity}");
+                    m_Log.Info("Culling: running frame loop iteration");
+                    try
+                    {
+                        var filteredTree = PerformShadowBasedCulling(__result, m_CameraUpdateSystem.position, m_CameraUpdateSystem.direction);
+                        return filteredTree;
+                    }
+                    catch (System.Exception ex)
+                    {
+                        m_Log.Info($"OptimizedTreeCulling Error: {ex.Message}");
+                        return __result;
+                    }
                 }
-                
-                // Return original tree unchanged for now
             }
             
             return __result;
         }
-        
-        private static (Entity entity, QuadTreeBoundsXZ bounds) ProcessQuadTreeItem(Entity entity, QuadTreeBoundsXZ bounds)
-        {
-            // Parse the item - for now just log some info and return unchanged
-            Debug.Log($"[OptimizedTreeCullingPatch] Processing entity: {entity}, bounds: {bounds.m_Bounds.min} to {bounds.m_Bounds.max}");
-            
-            // Future filtering logic will go here
-            // For now, return the item unchanged
-            return (entity, bounds);
-        }
 
         /// <summary>
-        /// Fast approximation to find 5-10 largest objects near camera for shadow casting
-        /// Optimized for speed over accuracy
+        /// Efficiently finds nearby, large objects using heirarchal spatial iteration
         /// </summary>
         /// <param name="quadTree">The static object search tree</param>
         /// <param name="cameraPosition">Current camera world position</param>
@@ -58,14 +59,12 @@ namespace CitizenEntityCleaner
             float maxDistance = 300f)
         {
             // FAST APPROACH - ACCURACY NOT CRITICAL:
-            // 1. Create simple sphere search area around camera (radius = maxDistance)
-            // 2. Quick size filter: skip any object with bounds volume < minShadowCasterSize (buildings only, not trees/props)
-            // 3. Distance filter: only objects within 200-300m of camera
-            // 4. Calculate rough object volume: (max - min).x * (max - min).y * (max - min).z
-            // 5. Keep only top 5-10 largest objects by volume (use simple insertion sort)
-            // 6. IMPORTANT: Cache results for 3-5 frames to avoid recalculating every frame
-            // 7. Only recalculate when camera moves more than 50m or rotates more than 30 degrees
-            return default;
+            // 1. Create ShadowCasterCollector struct (implements tree iterator)
+            // 2. Create camera-centered search bounds (cameraPos + max distance)
+            // 3. Use filtering in Intersect() method: return Intersects(cameraBounds)
+            var collector = new ShadowCasterCollector(cameraPosition, 300f, 10);
+            quadTree.Iterate(ref collector, 0);
+            return collector.m_Bounds;
         }
 
         /// <summary>
@@ -76,11 +75,13 @@ namespace CitizenEntityCleaner
         /// <param name="cameraPosition">Camera position acting as light source</param>
         /// <param name="fixedShadowDistance">Fixed shadow length (100-200m)</param>
         /// <returns>Simple rectangular shadow volume on ground plane</returns>
-        private static Bounds3 CalculateShadowBox(
+        private static QuadTreeBoundsXZ CalculateShadowBox(
             QuadTreeBoundsXZ casterBounds,
             float3 cameraPosition,
-            float fixedShadowDistance = 150f)
+            float3 cameraDirection,
+            float fixedShadowDistance = 20f)
         {
+
             // ULTRA-SIMPLE APPROACH - NO COMPLEX RAY CASTING:
             // 1. Get object center point: (bounds.min + bounds.max) / 2
             // 2. Calculate shadow direction: normalize(objectCenter - cameraPosition)
@@ -91,7 +92,24 @@ namespace CitizenEntityCleaner
             // 7. Y-axis: shadow from ground (0) to object height only
             // 8. NO complex geometry - just basic vector math and box creation
             // 9. Result: Fast approximate ground shadow that's "good enough" for culling
-            return default;
+            float3 direction = math.normalize(cameraDirection);
+
+            var objectCenter = (casterBounds.m_Bounds.min + casterBounds.m_Bounds.max) * 0.5f;
+            var objectSize = (casterBounds.m_Bounds.max - casterBounds.m_Bounds.min);
+
+            var shadowEnd = objectCenter + (direction * fixedShadowDistance);
+
+            var shadowMin = new float3(
+                math.min(objectCenter.x, shadowEnd.x) - objectSize.x * 0.5f,
+                casterBounds.m_Bounds.min.y,
+                math.min(objectCenter.z, shadowEnd.z) - objectSize.z * 0.5f
+            );
+            var shadowMax = new float3(
+                math.max(objectCenter.x, shadowEnd.x) + objectSize.x * 0.5f,
+                casterBounds.m_Bounds.max.y,
+                math.max(objectCenter.z, shadowMin.z) - objectSize.z * 0.5f
+            );
+            return new QuadTreeBoundsXZ(new Bounds3(shadowMin, shadowMax), BoundsMask.AllLayers, 0);
         }
 
         /// <summary>
@@ -107,7 +125,7 @@ namespace CitizenEntityCleaner
         private static bool IsObjectOccluded(
             Entity candidateEntity,
             QuadTreeBoundsXZ candidateBounds,
-            NativeList<Bounds3> shadowBoxes,
+            NativeList<QuadTreeBoundsXZ> shadowBoxes,
             NativeList<float> shadowCasterDistances,
             float3 cameraPosition)
         {
@@ -120,6 +138,24 @@ namespace CitizenEntityCleaner
             // 3. If no shadows intersect: DON'T CULL (return false)
             // 4. No complex geometry, no expensive spatial queries
             // 5. Total cost per object: ~10 simple math operations
+            const float depthBuffer = 10f;
+
+            if (shadowBoxes.Length == 0) return false;
+
+            var candidateCenter = (candidateBounds.m_Bounds.min + candidateBounds.m_Bounds.max) * 0.5f;
+            var candidateDistance = math.distance(cameraPosition, candidateCenter);
+
+            for (int i = 0; i < shadowBoxes.Length; i++)
+            {
+                var shadowBox = shadowBoxes[i];
+                var casterDistance = shadowCasterDistances[i];
+
+                if (candidateDistance <= casterDistance + depthBuffer) continue;
+
+                m_Log.Info($"Culling: isobjectoccluded, candidate distance: {candidateDistance} ; caster distance: {casterDistance}");
+
+                if (candidateBounds.Intersect(shadowBox)) return true;
+            }
             return false;
         }
 
@@ -132,7 +168,8 @@ namespace CitizenEntityCleaner
         /// <returns>Filtered quad tree with occluded objects removed</returns>
         private static NativeQuadTree<Entity, QuadTreeBoundsXZ> PerformShadowBasedCulling(
             NativeQuadTree<Entity, QuadTreeBoundsXZ> quadTree,
-            float3 cameraPosition)
+            float3 cameraPosition,
+            float3 cameraDirection)
         {
             // PERFORMANCE-OPTIMIZED APPROACH:
             // 1. Check cache: if camera hasn't moved much, use cached shadow boxes
@@ -147,7 +184,39 @@ namespace CitizenEntityCleaner
             // 7. Dispose original tree, return filtered tree
             // 8. Expected result: 10-30% fewer objects for TreeCullingJobs to process
             // 9. Performance cost: ~5-15% overhead, but saves much more in culling jobs
-            return default;
+
+            var shadowCasters = FindShadowCasters(quadTree, cameraPosition, 300f);
+            if (shadowCasters.Length == 0) return quadTree;
+
+            var shadowBoxes = new NativeList<QuadTreeBoundsXZ>(shadowCasters.Length, Allocator.Temp);
+            var casterDistances = new NativeList<float>(shadowCasters.Length, Allocator.Temp);
+
+            for (int i = 0; i < shadowCasters.Length; i++)
+            {
+                var caster = shadowCasters[i];
+                var shadowBox = CalculateShadowBox(caster.bounds, cameraPosition, cameraDirection, 300f);
+                var distance = math.distance(cameraPosition, (caster.bounds.m_Bounds.min + caster.bounds.m_Bounds.max) * 0.5f);
+
+                shadowBoxes.Add(shadowBox);
+                casterDistances.Add(distance);
+            }
+
+            var filteredTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.TempJob);
+            var filteredCollector = new FilteringCollector
+            {
+                shadowBoxes = shadowBoxes,
+                casterDistances = casterDistances,
+                cameraPosition = cameraPosition,
+                filteredTree = filteredTree
+            };
+
+            quadTree.Iterate(ref  filteredCollector, 0);
+
+            shadowCasters.Dispose();
+            shadowBoxes.Dispose();
+            casterDistances.Dispose();
+            quadTree.Dispose();
+            return filteredTree;
         }
 
         /// <summary>
@@ -164,28 +233,78 @@ namespace CitizenEntityCleaner
             // Reset cache when camera moves > 50m or game loads new area
             // Dramatically reduces per-frame shadow calculation overhead
         }
+
+        public struct FilteringCollector : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+        {
+            public NativeList<QuadTreeBoundsXZ> shadowBoxes;
+            public NativeList<float> casterDistances;
+            public float3 cameraPosition;
+            public NativeQuadTree<Entity, QuadTreeBoundsXZ> filteredTree;
+
+            public bool Intersect(QuadTreeBoundsXZ bounds)
+            {
+                return true;
+            }
+
+            public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)
+            {
+                bool isOccluded = IsObjectOccluded(entity, bounds, shadowBoxes, casterDistances, cameraPosition);
+                if (isOccluded)
+                {
+                    filteredTree.Add(entity, bounds);
+                }
+                else
+                {
+                    m_Log.Info($"Culling: removing an entity from the tree because it is in a shadow: {entity}");
+                }
+            }
+        }
     }
 
     /// <summary>
     /// Minimal iterator to find the first entity for testing
     /// </summary>
-    public struct FirstElementFinder : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+    public struct ShadowCasterCollector : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
     {
-        public bool found;
-        public Entity entity;
+        public float3 cameraPosition;
+        public float maxDistance;
+        public int maxCount;
+
+        private int count;
+        public NativeList<(Entity, QuadTreeBoundsXZ)> m_Bounds;
+
+        public ShadowCasterCollector(float3 cameraPos, float searchRadius, int maxShadowCasters)
+        {
+            cameraPosition = cameraPos;
+            maxDistance = searchRadius;
+            maxCount = maxShadowCasters;
+            count = 0;
+            m_Bounds = new NativeList<(Entity, QuadTreeBoundsXZ)>(maxShadowCasters, Allocator.Temp);
+        }
 
         public bool Intersect(QuadTreeBoundsXZ bounds)
         {
-            return !found; // Stop after finding first element
+            if (count >= maxCount)
+            {
+                return false;
+            }
+
+            // Leverage QuadTreeBounds more efficient Intersect methods
+            var searchBounds = new QuadTreeBoundsXZ(
+                new Bounds3((cameraPosition - maxDistance), (cameraPosition + maxDistance)),
+                BoundsMask.AllLayers,
+                0
+            );
+
+            return bounds.Intersect(searchBounds);
         }
 
         public void Iterate(QuadTreeBoundsXZ bounds, Entity item)
         {
-            if (!found)
-            {
-                entity = item;
-                found = true;
-            }
+            if (count >= maxCount) return;
+
+            m_Bounds.Add((item, bounds));
+            count++;
         }
     }
 }

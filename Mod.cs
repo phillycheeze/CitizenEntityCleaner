@@ -3,6 +3,7 @@ using Colossal.Logging;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
+using HarmonyLib;
 
 namespace CitizenEntityCleaner
 {
@@ -10,6 +11,7 @@ namespace CitizenEntityCleaner
     {
         public static ILog log = LogManager.GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
         private Setting m_Setting;
+        private Harmony m_Harmony;
         
         // Reference to our cleanup system
         public static CitizenCleanupSystem CleanupSystem { get; private set; }
@@ -25,7 +27,8 @@ namespace CitizenEntityCleaner
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
 
-            OptimizedTreeCullingPatch.ApplyPatches();
+            m_Harmony = new Harmony($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}");
+            m_Harmony.PatchAll();
 
             // Register our cleanup system to run before the game's deletion system (Modification2)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
@@ -43,7 +46,8 @@ namespace CitizenEntityCleaner
         {
             log.Info(nameof(OnDispose));
 
-            OptimizedTreeCullingPatch.RemovePatches();
+            m_Harmony.UnpatchAll();
+            m_Harmony = null;
 
             if (m_Setting != null)
             {

@@ -25,6 +25,10 @@
 			<HintPath>$(ManagedPath)\Colossal.IO.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
+		<Reference Include="Colossal.Collections">
+			<HintPath>$(ManagedPath)\Colossal.Collections.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="Colossal.Localization">
 			<HintPath>$(ManagedPath)\Colossal.Localization.dll</HintPath>
 			<Private>False</Private>

@@ -116,8 +116,8 @@ namespace CitizenEntityCleaner
                 return quadTree;
             }
 
-            var shadowBoxes = new NativeList<QuadTreeBoundsXZ>(shadowCasters.Length, Allocator.TempJob);
-            var casterDistances = new NativeList<float>(shadowCasters.Length, Allocator.TempJob);
+            var shadowBoxes = new NativeList<QuadTreeBoundsXZ>(shadowCasters.Length, Allocator.Temp);
+            var casterDistances = new NativeList<float>(shadowCasters.Length, Allocator.Temp);
 
             for (int i = 0; i < shadowCasters.Length; i++)
             {
@@ -129,7 +129,7 @@ namespace CitizenEntityCleaner
                 casterDistances.Add(distance);
             }
 
-            var filteredTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.TempJob);
+            var filteredTree = new NativeQuadTree<Entity, QuadTreeBoundsXZ>(1f, Allocator.Temp);
 
             var filteredCollector = new FilteringCollector(shadowBoxes,casterDistances,cameraPosition,filteredTree,1000f);
 
@@ -214,7 +214,7 @@ namespace CitizenEntityCleaner
                 maxDistance = searchRadius;
                 maxCount = maxShadowCasters;
                 count = 0;
-                m_Bounds = new NativeList<(Entity, QuadTreeBoundsXZ)>(maxShadowCasters, Allocator.TempJob);
+                m_Bounds = new NativeList<(Entity, QuadTreeBoundsXZ)>(maxShadowCasters, Allocator.Temp);
                 searchBounds = new QuadTreeBoundsXZ(new Bounds3(cameraPosition - maxDistance, cameraPosition + maxDistance), BoundsMask.AllLayers, 0);
             }
 

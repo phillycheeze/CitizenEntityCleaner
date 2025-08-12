@@ -3,20 +3,18 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Game.Rendering;
-using Game.Objects;
 using Unity.Jobs;
 using Colossal.Collections;
-using Game.Common;
 
 namespace CitizenEntityCleaner
 {
     // Runs before SearchSystem to tag and cull occluded entities
     [UpdateBefore(typeof(SearchSystem))]
-    public partial class OcclusionCullingSystem : SystemBase
+    public class OcclusionCullingSystem : SystemBase
     {
         private CameraUpdateSystem m_CameraSystem;
-        private SearchSystem m_SearchSystem;
-        private BeginSimulationEntityCommandBufferSystem m_EcbSystem;
+        // Removed cached SearchSystem; will fetch on-demand
+        // No longer using command buffers for tagging
         private float3 m_LastCameraPos;
         private float3 m_LastCameraDir;
 
@@ -24,8 +22,7 @@ namespace CitizenEntityCleaner
         {
             base.OnCreate();
             m_CameraSystem = World.GetExistingSystemManaged<CameraUpdateSystem>();
-            m_SearchSystem = World.GetExistingSystemManaged<SearchSystem>();
-            m_EcbSystem    = World.GetOrCreateSystemManaged<BeginSimulationEntityCommandBufferSystem>();
+            // No longer caching SearchSystem
             m_LastCameraPos = float3.zero;
             m_LastCameraDir = float3.zero;
         }
@@ -47,7 +44,8 @@ namespace CitizenEntityCleaner
                 return;
 
             // Get the existing static search tree and wait for its build
-            var tree = m_SearchSystem.GetStaticSearchTree(readOnly: true, out var treeDeps);
+            var searchSystem = World.GetExistingSystemManaged<SearchSystem>();
+            var tree = searchSystem.GetStaticSearchTree(readOnly: true, out var treeDeps);
             Dependency = treeDeps;
 
             // Schedule the occlusion filtering job
@@ -55,35 +53,23 @@ namespace CitizenEntityCleaner
             {
                 tree = tree,
                 cullingInfoLookup = GetComponentLookup<CullingInfo>(false),
-                occludedTagLookup = GetComponentLookup<OccludedTag>(true),
-                ecb = m_EcbSystem.CreateCommandBuffer().AsParallelWriter(),
                 cameraPosition = camPos,
                 cameraDirection = camDir
             };
-            var jobHandle = occlusionJob.Schedule(Dependency);
-            m_EcbSystem.AddJobHandleForProducer(jobHandle);
-            Dependency = jobHandle;
+            Dependency = occlusionJob.Schedule(Dependency);
 
             // Cache camera state until next significant move
             m_LastCameraPos = camPos;
             m_LastCameraDir = camDir;
         }
 
-        // Collector to grab entities from quad tree
-        private struct EntityCollector : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
-        {
-            public NativeList<Entity> list;
-            public bool Intersect(QuadTreeBoundsXZ bounds) => true;
-            public void Iterate(QuadTreeBoundsXZ bounds, Entity entity) => list.Add(entity);
-        }
+        // EntityCollector removed: no longer used
         // Burst job that filters occlusion and tags entities
         [BurstCompile]
         private struct OcclusionJob : IJob
         {
-            [ReadOnly] public NativeQuadTree<Entity, QuadTreeBoundsXZ> tree;
-            public ComponentLookup<CullingInfo> cullingInfoLookup;
-            [ReadOnly] public ComponentLookup<OccludedTag> occludedTagLookup;
-            public EntityCommandBuffer.ParallelWriter ecb;
+            [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+            public NativeQuadTree<Entity, QuadTreeBoundsXZ> tree;
             public float3 cameraPosition;
             public float3 cameraDirection;
 
@@ -99,7 +85,7 @@ namespace CitizenEntityCleaner
                 filtered.Dispose();
 
                 // Process original tree: tag occluded and update CullingInfo
-                var processor = new Processor { survivors = survivors, cullingInfoLookup = cullingInfoLookup, ecb = ecb };
+                var processor = new Processor { survivors = survivors, cullingInfoLookup = cullingInfoLookup };
                 tree.Iterate(ref processor, 0);
                 survivors.Dispose();
             }
@@ -114,32 +100,15 @@ namespace CitizenEntityCleaner
             private struct Processor : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
             {
                 [NativeDisableParallelForRestriction] public NativeParallelHashSet<Entity> survivors;
-                public ComponentLookup<CullingInfo> cullingInfoLookup;
-                [ReadOnly] public ComponentLookup<OccludedTag> occludedTagLookup;
-                public EntityCommandBuffer.ParallelWriter ecb;
+                [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) => true;
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)
                 {
                     bool passed = survivors.Contains(entity);
                     ref var info = ref cullingInfoLookup.GetRefRW(entity).ValueRW;
+                    // Simply update the passed culling flag
                     info.m_PassedCulling = (byte)(passed ? 1 : 0);
-                    bool hasTag = occludedTagLookup.HasComponent(entity);
-                    if (!passed)
-                    {
-                        if (hasTag)
-                        {
-                            ecb.SetComponentEnabled<OccludedTag>(0, entity, true);
-                        }
-                        else
-                        {
-                            ecb.AddComponent<OccludedTag>(0, entity);
-                        }
-                    }
-                    else if (hasTag)
-                    {
-                        ecb.SetComponentEnabled<OccludedTag>(0, entity, false);
-                    }
                 }
             }
         }

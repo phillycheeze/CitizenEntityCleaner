@@ -5,6 +5,7 @@ using Game.Objects;
 using Game.Tools;
 using Game.Common;
 
+#if false
 namespace CitizenEntityCleaner.Patches
 {
     [HarmonyPatch(typeof(SearchSystem))]
@@ -40,3 +41,4 @@ namespace CitizenEntityCleaner.Patches
         }
     }
 }
+#endif

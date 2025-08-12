@@ -12,6 +12,7 @@ using Colossal.Logging;
 namespace CitizenEntityCleaner
 {
     [UpdateAfter(typeof(SearchSystem))]
+    [UpdateAfter(typeof(Game.Rendering.PreCullingSystem))]
     public partial class OcclusionCullingSystem : SystemBase
     {
         private static ILog s_log = Mod.log;
@@ -32,113 +33,100 @@ namespace CitizenEntityCleaner
             // Bail if the camera system isn't ready
             if (!m_CameraSystem.TryGetLODParameters(out var lodParams))
             {
-                s_log.Info("Camera system not ready");
                 return;
             }
 
             float3 camPos = lodParams.cameraPosition;
             float3 camDir = m_CameraSystem.activeViewer.forward;
 
-            s_log.Info($"...Received camera system: {camPos} and {camDir}");
-
             // Movement/rotation thresholds
             float moveDist = math.distance(camPos, m_LastCameraPos);
-            float rotAngle = math.degrees(math.acos(math.clamp(math.dot(camDir, m_LastCameraDir), -1f, 1f)));
-            bool camMoved = moveDist > 2f || rotAngle > 1f;
+            float dot = math.clamp(math.dot(math.normalize(new float3(camDir.x, 0f, camDir.z)), math.normalize(new float3(m_LastCameraDir.x, 0f, m_LastCameraDir.z))), -1f, 1f);
+            float rotAngle = math.degrees(math.acos(dot));
+            bool camMoved = moveDist > 2f || rotAngle > 1f || m_LastCameraDir.Equals(float3.zero);
             if (!camMoved)
             {
-                s_log.Info($"Cam hasn't moved,skipping....");
                 return;
             }
 
             // Get the existing static search tree and wait for its build
             var searchSystem = World.GetExistingSystemManaged<SearchSystem>();
             var tree = searchSystem.GetStaticSearchTree(readOnly: true, out var treeDeps);
-            s_log.Info($"Static tree: created:{tree.IsCreated}");
+
             // Chain dependency on the SearchSystem's build job
             Dependency = JobHandle.CombineDependencies(Dependency, treeDeps);
-            // Get the CullingInfo lookup (no need to manually update dependencies)
+
+            // Get the CullingInfo lookup
             var lookup = GetComponentLookup<CullingInfo>(false);
-            s_log.Info("Starting to build occlusion job");
-            
-            // Create node buffers like PreCullingSystem does
-            var nodeBuffer = new NativeArray<int>(1536, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var subDataBuffer = new NativeArray<int>(1536, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            
+
             // Schedule the occlusion filtering job after the tree is built
             var occlusionJob = new OcclusionJob
             {
                 tree = tree,
-                nodeBuffer = nodeBuffer,
-                subDataBuffer = subDataBuffer,
                 cullingInfoLookup = lookup,
                 cameraPosition = camPos,
-                cameraDirection = camDir
+                cameraDirection = camDir,
+                maxDistance = 150f
             };
-            var occlHandle = occlusionJob.Schedule(nodeBuffer.Length, 1, Dependency);
+            var occlHandle = occlusionJob.Schedule(Dependency);
+
             // Register our read with the SearchSystem so future builds wait for us
             searchSystem.AddStaticSearchTreeReader(occlHandle);
             Dependency = occlHandle;
-            s_log.Info("Occlusion job scheduled");
 
             // Cache camera state until next significant move
             m_LastCameraPos = camPos;
             m_LastCameraDir = camDir;
         }
 
-        // Use the same pattern as PreCullingSystem - parallel job with node buffers
+        // Iterate the tree once in a single job to avoid data races with PreCulling
         [BurstCompile]
-        private struct OcclusionJob : IJobParallelFor
+        private struct OcclusionJob : IJob
         {
             [ReadOnly] public NativeQuadTree<Entity, QuadTreeBoundsXZ> tree;
-            [ReadOnly] public NativeArray<int> nodeBuffer;
-            [ReadOnly] public NativeArray<int> subDataBuffer;
             [ReadOnly] public float3 cameraPosition;
             [ReadOnly] public float3 cameraDirection;
+            [ReadOnly] public float maxDistance;
             [NativeDisableParallelForRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
 
-            public void Execute(int index)
+            public void Execute()
             {
-                // Use the same iterator pattern as PreCullingSystem
                 var iterator = new OcclusionIterator
                 {
                     cullingInfoLookup = cullingInfoLookup,
                     cameraPosition = cameraPosition,
-                    cameraDirection = cameraDirection
+                    cameraDirection = cameraDirection,
+                    maxDistance = maxDistance
                 };
-                
-                // Iterate safely using node buffers like PreCullingSystem
-                tree.Iterate(ref iterator, subDataBuffer[index], nodeBuffer[index]);
+
+                tree.Iterate(ref iterator, 0);
             }
 
-            // Simple iterator that performs occlusion testing directly like PreCullingSystem
             private struct OcclusionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
             {
                 [NativeDisableParallelForRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
                 [ReadOnly] public float3 cameraPosition;
                 [ReadOnly] public float3 cameraDirection;
+                [ReadOnly] public float maxDistance;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds)
                 {
-                    // Basic distance culling like PreCullingSystem does
                     var center = (bounds.m_Bounds.min + bounds.m_Bounds.max) * 0.5f;
                     var distance = math.distance(center, cameraPosition);
-                    return distance <= 200f; // Only process nearby entities
+                    return distance <= maxDistance;
                 }
 
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)
                 {
-                    // Safety check
                     if (!cullingInfoLookup.HasComponent(entity))
                         return;
 
-                    // Simple distance and direction-based culling
                     var center = (bounds.m_Bounds.min + bounds.m_Bounds.max) * 0.5f;
                     var toEntity = center - cameraPosition;
                     var distance = math.length(toEntity);
-                    
-                    bool shouldPass = distance < 150f; // Simple distance test
-                    
+
+                    bool shouldPass = distance < maxDistance;
+
                     ref var info = ref cullingInfoLookup.GetRefRW(entity).ValueRW;
                     info.m_PassedCulling = (byte)(shouldPass ? 1 : 0);
                 }

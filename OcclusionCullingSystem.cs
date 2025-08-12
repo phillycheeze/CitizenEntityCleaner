@@ -91,29 +91,61 @@ namespace CitizenEntityCleaner
 
             public void Execute()
             {
-                var iterator = new OcclusionIterator
-                {
-                    cullingInfoLookup = cullingInfoLookup,
-                    cameraPosition = cameraPosition,
-                    cameraDirection = cameraDirection,
-                    maxDistance = maxDistance
-                };
+                // Use existing, validated filtering logic to get non-occluded entities
+                var filteredTree = OcclusionUtilities.PerformShadowBasedCulling(tree, cameraPosition, cameraDirection);
 
-                tree.Iterate(ref iterator, 0);
+                // Collect visible entities (those retained in filteredTree)
+                var visibleSet = new NativeParallelHashSet<Entity>(1024, Allocator.TempJob);
+                var collectIterator = new CollectVisibleIterator { visible = visibleSet };
+                filteredTree.Iterate(ref collectIterator, 0);
+
+                // Apply occlusion within the same processing window used by filtering
+                var applyIterator = new ApplyOcclusionIterator
+                {
+                    cameraPosition = cameraPosition,
+                    maxDistance = 1000f,
+                    visible = visibleSet,
+                    cullingInfoLookup = cullingInfoLookup
+                };
+                tree.Iterate(ref applyIterator, 0);
+
+                visibleSet.Dispose();
             }
 
-            private struct OcclusionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+            private struct CollectVisibleIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
             {
-                [NativeDisableParallelForRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
-                [ReadOnly] public float3 cameraPosition;
-                [ReadOnly] public float3 cameraDirection;
-                [ReadOnly] public float maxDistance;
+                public NativeParallelHashSet<Entity> visible;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds)
                 {
-                    var center = (bounds.m_Bounds.min + bounds.m_Bounds.max) * 0.5f;
-                    var distance = math.distance(center, cameraPosition);
-                    return distance <= maxDistance;
+                    return true;
+                }
+
+                public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)
+                {
+                    visible.Add(entity);
+                }
+            }
+
+            private struct ApplyOcclusionIterator : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+            {
+                [ReadOnly] public float3 cameraPosition;
+                [ReadOnly] public float maxDistance;
+                [ReadOnly] public NativeParallelHashSet<Entity> visible;
+                [NativeDisableParallelForRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+
+                private QuadTreeBoundsXZ CreateSearchBounds()
+                {
+                    var min = cameraPosition - maxDistance;
+                    var max = cameraPosition + maxDistance;
+                    return new QuadTreeBoundsXZ(new Bounds3(min, max), BoundsMask.AllLayers, 0);
+                }
+
+                public bool Intersect(QuadTreeBoundsXZ bounds)
+                {
+                    // Match the filtering window; skip far entities
+                    var search = CreateSearchBounds();
+                    return bounds.Intersect(search);
                 }
 
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)
@@ -121,14 +153,9 @@ namespace CitizenEntityCleaner
                     if (!cullingInfoLookup.HasComponent(entity))
                         return;
 
-                    var center = (bounds.m_Bounds.min + bounds.m_Bounds.max) * 0.5f;
-                    var toEntity = center - cameraPosition;
-                    var distance = math.length(toEntity);
-
-                    bool shouldPass = distance < maxDistance;
-
+                    bool isVisible = visible.Contains(entity);
                     ref var info = ref cullingInfoLookup.GetRefRW(entity).ValueRW;
-                    info.m_PassedCulling = (byte)(shouldPass ? 1 : 0);
+                    info.m_PassedCulling = (byte)(isVisible ? 1 : 0);
                 }
             }
         }

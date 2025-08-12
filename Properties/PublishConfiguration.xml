@@ -1,5 +1,5 @@
 ﻿<Publish>
-	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
+	<!--Id must be set in order to update existing mod. it is not required for publishing mod for the first time-->
 	<ModId Value="117161" />
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="Citizen Entity Cleaner" />
@@ -40,10 +40,13 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 ## Usage
 
 1. **Backup your save file first!**
-2. Open mod settings in-game
-3. Click "Refresh Counts" to see current statistics
-4. Click "Cleanup Corrupted Citizens" to clean up entities
-5. Monitor your city for any unexpected behavior
+2. Open mod Options in-game.
+3. Click [Refresh Counts] to see current statistics.
+4. Select checkbox options as desired.
+5. Click [Cleanup Citizens] to clean up entities.
+6. Click [Refresh Counts] to get update.
+7. Monitor your city for any unexpected behavior and revert to original Saved city if needed.
+Note: this mod does not automatically run in the background. It does nothing until the Cleanup button is selected.
 
 
 ## What is causing the issue?
@@ -51,17 +54,13 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introducted that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
 
 ## Thanks to
-yenyang
-Konsi
-krzychu124
-Honu
+yenyang, Konsi, krzychu124, Honu
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/Screenshots/before1.jpg" />
-	<Screenshot Value="Properties/Screenshots/before2.jpg" />
-	<Screenshot Value="Properties/Screenshots/after1.jpg" />
+	<Screenshot Value="Properties/Screenshots/before.jpg" />
+	<Screenshot Value="Properties/Screenshots/after.jpg" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->

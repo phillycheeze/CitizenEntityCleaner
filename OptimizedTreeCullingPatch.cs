@@ -157,7 +157,7 @@ namespace CitizenEntityCleaner
             // Dramatically reduces per-frame shadow calculation overhead
         }
 
-        public unsafe struct FilteringCollector : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
+        public struct FilteringCollector : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
         {
             public NativeList<QuadTreeBoundsXZ> shadowBoxes;
             public NativeList<float> casterDistances;
@@ -188,11 +188,9 @@ namespace CitizenEntityCleaner
                 if(entityCount >= 1000) return;
 
                 bool isOccluded = IsObjectOccluded(entity, bounds, shadowBoxes, casterDistances, cameraPosition);
-                if (isOccluded)
+                if (!isOccluded)
                 {
-                    QuadTreeBoundsXZ* boundsPtr = &bounds;
-                    boundsPtr->m_Mask = (BoundsMask)0;
-                    entityCount++;
+                    filteredTree.Add(entity, bounds);
                 }
             }
         }

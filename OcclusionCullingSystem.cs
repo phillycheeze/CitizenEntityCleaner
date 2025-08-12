@@ -5,16 +5,17 @@ using Unity.Mathematics;
 using Game.Rendering;
 using Unity.Jobs;
 using Colossal.Collections;
+using Game.Common;
+using Game.Objects;
+using Colossal.Logging;
 
 namespace CitizenEntityCleaner
 {
-    // Runs before SearchSystem to tag and cull occluded entities
-    [UpdateBefore(typeof(SearchSystem))]
-    public class OcclusionCullingSystem : SystemBase
+    [UpdateAfter(typeof(SearchSystem))]
+    public partial class OcclusionCullingSystem : SystemBase
     {
+        private static ILog s_log = Mod.log;
         private CameraUpdateSystem m_CameraSystem;
-        // Removed cached SearchSystem; will fetch on-demand
-        // No longer using command buffers for tagging
         private float3 m_LastCameraPos;
         private float3 m_LastCameraDir;
 
@@ -22,7 +23,6 @@ namespace CitizenEntityCleaner
         {
             base.OnCreate();
             m_CameraSystem = World.GetExistingSystemManaged<CameraUpdateSystem>();
-            // No longer caching SearchSystem
             m_LastCameraPos = float3.zero;
             m_LastCameraDir = float3.zero;
         }
@@ -31,22 +31,34 @@ namespace CitizenEntityCleaner
         {
             // Bail if the camera system isn't ready
             if (!m_CameraSystem.TryGetLODParameters(out var lodParams))
+            {
+                s_log.Info("Camera system not ready");
                 return;
+            }
 
             float3 camPos = lodParams.cameraPosition;
             float3 camDir = m_CameraSystem.activeViewer.forward;
+
+            s_log.Info($"...Received camera system: {camPos} and {camDir}");
 
             // Movement/rotation thresholds
             float moveDist = math.distance(camPos, m_LastCameraPos);
             float rotAngle = math.degrees(math.acos(math.clamp(math.dot(camDir, m_LastCameraDir), -1f, 1f)));
             bool camMoved = moveDist > 2f || rotAngle > 1f;
             if (!camMoved)
+            {
+                s_log.Info($"Cam hasn't moved,skipping....");
                 return;
+            }
 
             // Get the existing static search tree and wait for its build
             var searchSystem = World.GetExistingSystemManaged<SearchSystem>();
             var tree = searchSystem.GetStaticSearchTree(readOnly: true, out var treeDeps);
-            Dependency = treeDeps;
+            s_log.Info($"Static tree: created:{tree.IsCreated}");
+
+            treeDeps.Complete();//Synchronous blocking for testing
+
+            s_log.Info("Starting to build occlusion job");
 
             // Schedule the occlusion filtering job
             var occlusionJob = new OcclusionJob
@@ -58,6 +70,8 @@ namespace CitizenEntityCleaner
             };
             Dependency = occlusionJob.Schedule(Dependency);
 
+            s_log.Info("Occlusion job scheduled");
+
             // Cache camera state until next significant move
             m_LastCameraPos = camPos;
             m_LastCameraDir = camDir;
@@ -65,10 +79,10 @@ namespace CitizenEntityCleaner
 
         // EntityCollector removed: no longer used
         // Burst job that filters occlusion and tags entities
-        [BurstCompile]
+        //[BurstCompile]
         private struct OcclusionJob : IJob
         {
-            [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+            public ComponentLookup<CullingInfo> cullingInfoLookup;
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> tree;
             public float3 cameraPosition;
             public float3 cameraDirection;
@@ -100,7 +114,7 @@ namespace CitizenEntityCleaner
             private struct Processor : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
             {
                 [NativeDisableParallelForRestriction] public NativeParallelHashSet<Entity> survivors;
-                [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+                public ComponentLookup<CullingInfo> cullingInfoLookup;
 
                 public bool Intersect(QuadTreeBoundsXZ bounds) => true;
                 public void Iterate(QuadTreeBoundsXZ bounds, Entity entity)

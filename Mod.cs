@@ -35,8 +35,7 @@ namespace CitizenEntityCleaner
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
             
-            // Register our custom occlusion culling system to run before SearchSystem rebuilds the tree
-            updateSystem.UpdateAt<OcclusionCullingSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateAt<OcclusionCullingSystem>(SystemUpdatePhase.PreCulling);
             var occlusionSystem = updateSystem.World.GetOrCreateSystemManaged<OcclusionCullingSystem>();
             
             // Set up callbacks for cleanup progress and completion

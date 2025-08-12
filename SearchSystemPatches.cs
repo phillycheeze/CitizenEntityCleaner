@@ -1,9 +1,9 @@
 using System.Reflection;
 using HarmonyLib;
 using Unity.Entities;
-using Unity.Collections;
 using Game.Objects;
-using CitizenEntityCleaner;
+using Game.Tools;
+using Game.Common;
 
 namespace CitizenEntityCleaner.Patches
 {
@@ -20,13 +20,13 @@ namespace CitizenEntityCleaner.Patches
             var occludedType = ComponentType.ReadOnly<OccludedTag>();
             var tempType     = ComponentType.ReadOnly<Temp>();
             // Rebuild the "updated statics" query
-            var updatedDesc = new EntityQueryDesc
+            var updatedDesc = (new EntityQueryDesc
             {
                 All  = new[] { ComponentType.ReadOnly<Object>(), ComponentType.ReadOnly<Static>() },
                 Any  = new[] { ComponentType.ReadOnly<Updated>(), ComponentType.ReadOnly<Deleted>() },
                 None = new[] { tempType, occludedType }
-            };
-            var newUpdated = __instance.GetEntityQuery(updatedDesc);
+            });
+            var newUpdated = __instance.EntityManager.CreateEntityQuery(updatedDesc);
             updatedQueryField.SetValue(__instance, newUpdated);
 
             // Rebuild the "all statics" query
@@ -35,7 +35,7 @@ namespace CitizenEntityCleaner.Patches
                 All  = new[] { ComponentType.ReadOnly<Object>(), ComponentType.ReadOnly<Static>() },
                 None = new[] { tempType, occludedType }
             };
-            var newAll = __instance.GetEntityQuery(allDesc);
+            var newAll = __instance.EntityManager.CreateEntityQuery(allDesc);
             allQueryField.SetValue(__instance, newAll);
         }
     }

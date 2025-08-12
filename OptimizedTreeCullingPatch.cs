@@ -1,21 +1,15 @@
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using Game.Objects;
 using Colossal.Collections;
 using Unity.Mathematics;
-using UnityEngine;
 using Game.Common;
 using Colossal.Mathematics;
 using Colossal.Logging;
-using Game.Rendering;
-using Colossal.Entities;
 
 namespace CitizenEntityCleaner
 {
     public static class OcclusionUtilities
     {
-        private static ILog m_Log = Mod.log;
         // Utility functions for performing shadow-based culling
 
         /// <summary>
@@ -32,7 +26,6 @@ namespace CitizenEntityCleaner
         {
             var collector = new ShadowCasterCollector(cameraPosition, maxDistance, 8);
             quadTree.Iterate(ref collector, 0);
-            m_Log.Info($"Number of shadow casters found: {collector.m_Bounds.Length}");
             return collector.m_Bounds;
         }
 
@@ -172,7 +165,7 @@ namespace CitizenEntityCleaner
             public NativeQuadTree<Entity, QuadTreeBoundsXZ> filteredTree;
             public float maxProcessingDistance;
             public int entityCount;
-            private readonly QuadTreeBoundsXZ* searchBounds;
+            private readonly QuadTreeBoundsXZ searchBounds;
 
             public FilteringCollector(NativeList<QuadTreeBoundsXZ> shadowBoxes, NativeList<float> casterDistances, float3 cameraPosition, NativeQuadTree<Entity, QuadTreeBoundsXZ> filteredTree, float maxProcessingDistance)
             {

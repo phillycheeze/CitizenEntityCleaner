@@ -4,7 +4,9 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Game.Rendering;
 using Game.Objects;
-using CitizenEntityCleaner;
+using Unity.Jobs;
+using Colossal.Collections;
+using Game.Common;
 
 namespace CitizenEntityCleaner
 {
@@ -79,7 +81,7 @@ namespace CitizenEntityCleaner
         private struct OcclusionJob : IJob
         {
             [ReadOnly] public NativeQuadTree<Entity, QuadTreeBoundsXZ> tree;
-            [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+            public ComponentLookup<CullingInfo> cullingInfoLookup;
             [ReadOnly] public ComponentLookup<OccludedTag> occludedTagLookup;
             public EntityCommandBuffer.ParallelWriter ecb;
             public float3 cameraPosition;
@@ -112,7 +114,7 @@ namespace CitizenEntityCleaner
             private struct Processor : INativeQuadTreeIterator<Entity, QuadTreeBoundsXZ>
             {
                 [NativeDisableParallelForRestriction] public NativeParallelHashSet<Entity> survivors;
-                [NativeDisableContainerSafetyRestriction] public ComponentLookup<CullingInfo> cullingInfoLookup;
+                public ComponentLookup<CullingInfo> cullingInfoLookup;
                 [ReadOnly] public ComponentLookup<OccludedTag> occludedTagLookup;
                 public EntityCommandBuffer.ParallelWriter ecb;
 

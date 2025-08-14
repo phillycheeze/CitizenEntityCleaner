@@ -28,14 +28,15 @@ This entity bloat causes several issues:
 - **General performance degradation** across querying systems
 
 ⚠️ **This mod will also:**
-- Delete all homeless citizens
+- Delete all homeless citizens (if checkbox is selected in Options)
 - Delete "Pending" citizens that may be buffered for relocation
 - May cause momentary drops in population demand
 - May have other long-term consequences not fully understood
 
 ## What This Mod Does
 
-Deletes any Citizen entites that don't have a PropertyRenter component attached to it. The vanilla game will clean up the households, vehicles, student/patient references, and anything else afterwards. It is a very simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
+Deletes any Citizen entities that don't have a PropertyRenter component attached to it. The vanilla game will clean up the households, vehicles, student/patient references, and anything else afterwards.
+It is a very simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
 ## Usage
 

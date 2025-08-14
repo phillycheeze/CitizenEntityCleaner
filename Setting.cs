@@ -212,6 +212,10 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filters" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Main" },
 
+                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
+
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, also counts and cleans up citizens that the game officially flags as Homeless." },
 

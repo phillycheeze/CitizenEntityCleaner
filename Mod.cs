@@ -8,6 +8,16 @@ namespace CitizenEntityCleaner
 {
     public class Mod : IMod
     {
+        public static string Author = "Phillycheese";
+        public static string Name = Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyTitleAttribute>()
+            .Title;
+        public static string Version = Assembly
+            .GetExecutingAssembly()
+            .GetName()
+            .Version.ToString(3);
+            
         public static ILog log = LogManager.GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
         private Setting m_Setting;
         

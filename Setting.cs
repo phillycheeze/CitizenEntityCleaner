@@ -1,5 +1,6 @@
 ﻿using Colossal;
 using Colossal.IO.AssetDatabase;
+using Colossal.Localization;
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;

@@ -52,13 +52,14 @@ It is a very simple mod that doesn't conflict with other mods or overwrite vanil
 Note: this mod does not automatically run in the background. It does nothing unless the Cleanup button is selected.
 
 
-
 ## What is causing the issue?
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introducted that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
 
 ## Thanks to
 yenyang, Konsi, krzychu124, Honu
+
+Feedback / Bug Report: https://discord.com/channels/1024242828114673724/1402078697120469064
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
@@ -82,9 +83,10 @@ yenyang, Konsi, krzychu124, Honu
 * Performance: Batch process entity deletion
 * Show cleanup progress indicator
 	</ChangeLog>
+	 
 	<!--<ChangeLog>
 	</ChangeLog>-->
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />
-	<ExternalLink Type="discord" Url="https://discord.gg/qYVEt5y9DV" />
+	<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1402078697120469064" />
 </Publish>

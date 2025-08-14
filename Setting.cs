@@ -7,6 +7,7 @@ using System.Collections.Generic;
 namespace CitizenEntityCleaner
 {
     [FileLocation("Citizen_Entity_Cleaner")]
+    [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup)]
     public class Setting : ModSetting

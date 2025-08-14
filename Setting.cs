@@ -1,4 +1,5 @@
 ﻿using Colossal;
+using Colossal.Localization;
 using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.Settings;

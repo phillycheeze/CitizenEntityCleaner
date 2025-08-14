@@ -1,16 +1,19 @@
-﻿using Colossal;
-using Colossal.Localization;
+using Colossal;
 using Colossal.IO.AssetDatabase;
+using Colossal.Localization;     // <-- needed for IDictionarySource & LocalizationManager
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
 
 namespace CitizenEntityCleaner
 {
+    // ==== attributes ====
+    
     [FileLocation("Citizen_Entity_Cleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup)]
+    
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
@@ -22,51 +25,62 @@ namespace CitizenEntityCleaner
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
 
-        
-
-        public Setting(IMod mod) : base(mod)
-        {
-
-        }
-
         private bool _includeHomeless = false;
         private bool _includeCommuters = false;
 
+        private string _totalCitizens = "Click Refresh to load";
+        private string _corruptedCitizens = "Click Refresh to load";
+
+        internal bool _isCleanupInProgress = false;
+        
+        // -------------------------------
+        // Localization: keep a reference to locale source so it can be re-registered to force a re-read
+        // -------------------------------
+        private LocaleEN _localeSource;
+
+        public Setting(IMod mod) : base(mod)
+        {
+            // Initialize and register the locale source Once when settings created
+            _localeSource = new LocaleEN(this);
+            RegisterLocaleSource();
+        }
+
+        // ==== Properties ====
         [SettingsUISection(kSection, kFiltersGroup)]
-        public bool IncludeHomeless 
-        { 
-            get => _includeHomeless; 
-            set 
-            { 
-                _includeHomeless = value; 
+        public bool IncludeHomeless
+        {
+            get => _includeHomeless;
+            set
+            {
+                _includeHomeless = value;
                 RefreshEntityCounts();
-            } 
+            }
         }
 
         [SettingsUISection(kSection, kFiltersGroup)]
-        public bool IncludeCommuters 
-        { 
-            get => _includeCommuters; 
-            set 
-            { 
-                _includeCommuters = value; 
+        public bool IncludeCommuters
+        {
+            get => _includeCommuters;
+            set
+            {
+                _includeCommuters = value;
                 RefreshEntityCounts();
-            } 
+            }
         }
 
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(kSection, kButtonGroup)]
-        public bool CleanupEntitiesButton 
-        { 
-            set 
-            { 
+        public bool CleanupEntitiesButton
+        {
+            set
+            {
                 if (_isCleanupInProgress)
                 {
                     Mod.log.Info("Cleanup already in progress, ignoring button click");
                     return;
                 }
-                
+
                 Mod.log.Info("Cleanup entities button clicked");
                 if (Mod.CleanupSystem != null)
                 {
@@ -77,41 +91,35 @@ namespace CitizenEntityCleaner
                 {
                     Mod.log.Warn("CleanupSystem is not available");
                 }
-            } 
+            }
         }
 
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
-        public bool RefreshCountsButton 
-        { 
-            set 
-            { 
+        public bool RefreshCountsButton
+        {
+            set
+            {
                 if (_isCleanupInProgress)
                 {
                     Mod.log.Info("Cleanup in progress, ignoring refresh button click");
                     return;
                 }
-                
+
                 Mod.log.Info("Refresh counts button clicked");
                 RefreshEntityCounts();
-            } 
+            }
         }
 
-        private string _totalCitizens = "Click Refresh to load";
-        private string _corruptedCitizens = "Click Refresh to load";
-        
-        internal bool _isCleanupInProgress = false;
-        
         [SettingsUISection(kSection, kButtonGroup)]
-        public string TotalCitizensDisplay { get => _totalCitizens; }
-        
-        [SettingsUISection(kSection, kButtonGroup)]
-        public string CorruptedCitizensDisplay { get => _corruptedCitizens; }
+        public string TotalCitizensDisplay => _totalCitizens;
 
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string CorruptedCitizensDisplay => _corruptedCitizens;
 
         [SettingsUISection(AboutTab, InfoGroup)]
-         public string NameText => Mod.Name;
-         
+        public string NameText => Mod.Name;
+
         [SettingsUISection(AboutTab, InfoGroup)]
         public string VersionText =>
 #if DEBUG
@@ -122,7 +130,6 @@ namespace CitizenEntityCleaner
 
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => Mod.Author;
-
 
         public override void SetDefaults()
         {
@@ -136,8 +143,7 @@ namespace CitizenEntityCleaner
             {
                 if (Mod.CleanupSystem != null)
                 {
-                    var stats = Mod.CleanupSystem.GetCitizenStatistics();
-                    
+                    var stats = Mod.CleanupSystem.GetCitizenStatistics(); // thread filter flags here if supported
                     _totalCitizens = $"{stats.totalCitizens:N0}";
                     _corruptedCitizens = $"{stats.corruptedCitizens:N0}";
                 }
@@ -154,7 +160,7 @@ namespace CitizenEntityCleaner
                 _corruptedCitizens = "Error";
             }
         }
-        
+
         /// <summary>
         /// Starts progress tracking for cleanup operation
         /// </summary>
@@ -162,9 +168,9 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = true;
             _corruptedCitizens = "Cleaning... 0%";
-            RefreshButtonLabels();
+            RefreshButtonLabels(); // will force locale re-read
         }
-        
+
         /// <summary>
         /// Updates cleanup progress display
         /// </summary>
@@ -175,7 +181,7 @@ namespace CitizenEntityCleaner
                 _corruptedCitizens = $"Cleaning... {progress:P0}";
             }
         }
-        
+
         /// <summary>
         /// Finishes progress tracking and refreshes final counts
         /// </summary>
@@ -183,15 +189,37 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = false;
             RefreshEntityCounts();
-            RefreshButtonLabels();
+            RefreshButtonLabels(); // will force locale re-read
         }
-        
+
+        // ===== Localization helpers =====
+
+        private void RegisterLocaleSource()
+        {
+            LocalizationManager.Instance?.RegisterSource(_localeSource);
+        }
+
+        private void UnregisterLocaleSource()
+        {
+            LocalizationManager.Instance?.UnregisterSource(_localeSource);
+        }
+
+        private void RereadLocaleSource()
+        {
+            // Unregister + Register to force the settings UI to re-read strings from LocaleEN
+            LocalizationManager.Instance?.UnregisterSource(_localeSource);
+            LocalizationManager.Instance?.RegisterSource(_localeSource);
+        }
+
         /// <summary>
         /// Refreshes button labels based on current state
         /// </summary>
         private void RefreshButtonLabels()
         {
-            // Force refresh of localization to update button labels
+            // Force localization to re-read LocaleEN (so labels based on _isCleanupInProgress update)
+            RereadLocaleSource();
+
+            // Persist/apply state and nudges the settings UI
             ApplyAndSave();
         }
     }
@@ -203,19 +231,24 @@ namespace CitizenEntityCleaner
         {
             m_Setting = setting;
         }
-        public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
+
+        public IEnumerable<KeyValuePair<string, string>> ReadEntries(
+            IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
         {
             return new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), "CitizenEntityCleaner" },
 
+                // Tabs
+                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
+                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
+
+                // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filters" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Main" },
-
-                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
-
+                // Options
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, also counts and cleans up citizens that the game officially flags as Homeless." },
 
@@ -234,15 +267,9 @@ namespace CitizenEntityCleaner
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Corrupted Citizens (including filters above)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizens in households without PropertyRenter components that will be cleaned up and deleted." },
-                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
-
-                //{ m_Setting.GetBindingMapLocaleID(), "Mod settings sample" },
             };
         }
 
-        public void Unload()
-        {
-
-        }
+        public void Unload() { }
     }
 }

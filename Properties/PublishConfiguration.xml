@@ -28,10 +28,12 @@ This entity bloat causes several issues:
 - **General performance degradation** across querying systems
 
 ⚠️ **This mod will also:**
-- Delete all homeless citizens (if checkbox is selected in Options)
+- Optional: delete all homeless citizens (only if Options checkbox selected)
+- Optional: delete commuters (Options checkbox)
 - Delete "Pending" citizens that may be buffered for relocation
 - May cause momentary drops in population demand
 - May have other long-term consequences not fully understood
+- Safe to remove anytime
 
 ## What This Mod Does
 
@@ -46,7 +48,9 @@ It is a very simple mod that doesn't conflict with other mods or overwrite vanil
 4. Select checkbox options as desired.
 5. Click [Cleanup Citizens] to clean up entities.
 6. Monitor your city for any unexpected behavior and revert to original Saved city if needed.
+
 Note: this mod does not automatically run in the background. It does nothing unless the Cleanup button is selected.
+
 
 
 ## What is causing the issue?

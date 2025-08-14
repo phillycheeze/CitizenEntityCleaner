@@ -8,14 +8,20 @@ namespace CitizenEntityCleaner
 {
     [FileLocation("Citizen_Entity_Cleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup)]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup)]
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
 
+        public const string MainTab = "Main";
+        public const string AboutTab = "About";
+        public const string InfoGroup = "Info";
+
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
+
+        
 
         public Setting(IMod mod) : base(mod)
         {
@@ -100,7 +106,22 @@ namespace CitizenEntityCleaner
         
         [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay { get => _corruptedCitizens; }
-        
+
+
+        [SettingsUISection(AboutTab, InfoGroup)]
+         public string NameText => Mod.Name;
+         
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public string VersionText =>
+#if DEBUG
+            $"{Mod.Version} - DEV";
+#else
+            Mod.Version;
+#endif
+
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public string AuthorText => Mod.Author;
+
 
         public override void SetDefaults()
         {

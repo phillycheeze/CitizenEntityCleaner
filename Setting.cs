@@ -164,13 +164,16 @@ namespace CitizenEntityCleaner
             }
         }
 
-        // About tab -> Usage section (visible header)
-        [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageText => string.Empty; // value unused; description carries the text
-        
+       
         // About tab -> Usage section (bold header line for step 1)
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageImportant => string.Empty;
+
+         // About tab -> Usage section (visible header, body text for other steps)
+        [SettingsUISection(AboutTab, UsageGroup)]
+        public string UsageText => string.Empty; // value unused; description carries the text steps
+        
+
 
         public override void SetDefaults()
         {
@@ -322,7 +325,7 @@ namespace CitizenEntityCleaner
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\n" +
                   "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed." +
-                  "Note: this mod does not automatically run. It does nothing unless the Cleanup button is used."
+                  "Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
                 },
 
                 

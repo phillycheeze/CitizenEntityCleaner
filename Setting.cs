@@ -312,7 +312,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "Usage" },
 
                 // Step 1 as bold (labels render bold)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "Backup your save file first!" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "1. Backup your save file first!" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), "" },
 
                 // Usage steps as body text
@@ -321,7 +321,7 @@ namespace CitizenEntityCleaner
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\n" +
-                  "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed."
+                  "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed." +
                   "Note: this mod does not automatically run. It does nothing unless the Cleanup button is used."
                 },
 

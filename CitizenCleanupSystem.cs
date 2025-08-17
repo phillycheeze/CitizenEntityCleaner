@@ -47,6 +47,7 @@ namespace CitizenEntityCleaner
             s_log.Info("CitizenCleanupSystem created");
         }
 
+        // non-blocking OnUpdate() starts run and lets next frame finish it.
         protected override void OnUpdate()
         {
          // If nothing to do, bail out quickly

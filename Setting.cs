@@ -281,7 +281,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AuthorText)), "Author" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }  
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }, 
 
                 // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "Open GitHub" },

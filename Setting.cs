@@ -43,7 +43,9 @@ namespace CitizenEntityCleaner
             get => _includeHomeless;
             set
             {
+                if (_includeHomeless == value) return;  // <-- remember if user checks box.
                 _includeHomeless = value;
+                ApplyAndSave();          // <-- persist the new value checked.
                 RefreshEntityCounts();
             }
         }
@@ -54,7 +56,9 @@ namespace CitizenEntityCleaner
             get => _includeCommuters;
             set
             {
+                if (_includeCommuters == value) return;
                 _includeCommuters = value;
+                ApplyAndSave();          // <-- persist the new value.
                 RefreshEntityCounts();
             }
         }
@@ -161,6 +165,11 @@ namespace CitizenEntityCleaner
 
         public override void SetDefaults()
         {
+            // Explicit defaults for checkboxes for clarity
+            _includeHomeless  = false;
+            _includeCommuters = false;
+
+            // Display strings
             _totalCitizens = "Click Refresh to load";
             _corruptedCitizens = "Click Refresh to load";
             _cleanupStatus = "Idle";

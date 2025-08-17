@@ -249,6 +249,14 @@ namespace CitizenEntityCleaner
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Corrupted Citizens (including filters above)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizens in households without PropertyRenter components that will be cleaned up and deleted." },
+
+                // About tab fields
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "The display name of this mod." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AuthorText)), "Author" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }  
             };
         }
 

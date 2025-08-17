@@ -333,7 +333,7 @@ namespace CitizenEntityCleaner
 
 
                 // About tab --> Usage section
-                { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "Usage" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
                 // Step 1 as bold (labels render bold)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "1. BACKUP your save file first!" },

@@ -324,8 +324,8 @@ namespace CitizenEntityCleaner
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\n" +
-
-                  "Monitor your city for unexpected behavior and revert to original Saved city if needed." +
+                "\n" +
+                  "Monitor for unexpected behavior and revert to original saved city if needed." +
                   "Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
                 }
                 

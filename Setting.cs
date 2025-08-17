@@ -19,7 +19,7 @@ namespace CitizenEntityCleaner
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
-        public const string UsageGroup = "Usage";
+        public const string UsageGroup = "Usage";    //section in About tab
 
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
@@ -292,7 +292,7 @@ namespace CitizenEntityCleaner
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "The display name of this mod." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "Display name of this mod." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AuthorText)), "Author" },
@@ -303,7 +303,20 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Opens the GitHub repository in your browser." },
                 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Open Discord" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },         
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },
+
+                // About tab --> Usage section
+                { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "Usage" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), "Usage" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)),
+                  "1. Backup your Save file first!\n" +
+                  "2. Click [Refresh Counts] to see current statistics.\n" +
+                  "3. Select checkbox options as desired.\n" +
+                  "4. Click [Cleanup Citizens] to clean up entities.\n" +
+                  "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed." 
+                  },
+
+                
             };
         }
 

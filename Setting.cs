@@ -164,6 +164,16 @@ namespace CitizenEntityCleaner
             }
         }
 
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public bool OpenParadoxModsButton
+        {
+            set
+            {
+                try { Application.OpenURL("https://mods.paradoxplaza.com/mods/117161/Windows"); }
+                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
+            }
+        }
        
         // About tab -> Usage section (bold header line for step 1)
         [SettingsUISection(AboutTab, UsageGroup)]
@@ -310,6 +320,10 @@ namespace CitizenEntityCleaner
                 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Open Discord" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Open Paradox Mods" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Opens Paradox Mods page in your browser." },
+
 
                 // About tab --> Usage section
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "Usage" },

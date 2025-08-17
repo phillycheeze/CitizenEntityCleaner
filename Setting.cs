@@ -78,8 +78,7 @@ namespace CitizenEntityCleaner
                 if (Mod.CleanupSystem != null)
                 {
                     StartCleanupProgress();
-                    // Thread filter flags here if your system supports them:
-                    // Mod.CleanupSystem.TriggerCleanup(includeHomeless: _includeHomeless, includeCommuters: _includeCommuters);
+           
                     Mod.CleanupSystem.TriggerCleanup();
                 }
                 else
@@ -151,8 +150,6 @@ namespace CitizenEntityCleaner
             {
                 if (Mod.CleanupSystem != null)
                 {
-                    // Thread filter flags here if supported:
-                    // var stats = Mod.CleanupSystem.GetCitizenStatistics(_includeHomeless, _includeCommuters);
                     var stats = Mod.CleanupSystem.GetCitizenStatistics();
 
                     _totalCitizens = $"{stats.totalCitizens:N0}";
@@ -200,7 +197,7 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = false;
             _cleanupStatus = "Complete";
-            RefreshEntityCounts(); // also calls ApplyAndSave()
+            RefreshEntityCounts();    // also calls ApplyAndSave()
         }
     }
 

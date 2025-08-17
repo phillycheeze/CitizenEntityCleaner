@@ -1,10 +1,11 @@
 using Colossal;
 using Colossal.IO.AssetDatabase;
-using Colossal.Localization; // needed for IDictionarySource
+using Colossal.Localization;    // needed for IDictionarySource
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
-using UnityEngine;  // for About tab Application.OpenURL
+using UnityEngine;            // for About tab Application.OpenURL
+using Game.UI.Widgets;        // for SettingsUIButtonGroup
 
 namespace CitizenEntityCleaner
 {
@@ -125,7 +126,7 @@ namespace CitizenEntityCleaner
 
 
         // -------------------------
-        // About tab info
+        // About Tab info
         // -------------------------
         [SettingsUISection(AboutTab, InfoGroup)]
         public string NameText => Mod.Name;
@@ -141,7 +142,10 @@ namespace CitizenEntityCleaner
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => Mod.Author;
 
+        // -------------------------
         // About Tab links
+        // -------------------------
+        [SettingsUIButtonGroup("SocialLinks")]    // put Github & Discord links on same line
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton
@@ -152,7 +156,8 @@ namespace CitizenEntityCleaner
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
             }
         }
-        
+
+        [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenDiscordButton
@@ -164,6 +169,7 @@ namespace CitizenEntityCleaner
             }
         }
 
+        // Paradox Mods on its own row (no group)
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenParadoxModsButton
@@ -174,6 +180,7 @@ namespace CitizenEntityCleaner
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
             }
         }
+
        
         // About tab -> Usage section (bold header line for step 1)
         [SettingsUISection(AboutTab, UsageGroup)]

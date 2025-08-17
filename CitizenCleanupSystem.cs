@@ -42,7 +42,7 @@ namespace CitizenEntityCleaner
                 None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
             });
             
-            RequireForUpdate(m_householdMemberQuery);
+            RequireForUpdate(m_householdMemberQuery);    //OnUpdate won't run if there are zero HouseholdMemmbers
             base.OnCreate();
 
             s_log.Info("CitizenCleanupSystem created");

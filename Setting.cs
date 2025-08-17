@@ -118,6 +118,7 @@ namespace CitizenEntityCleaner
         [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay => _corruptedCitizens;
 
+
         // -------------------------
         // About tab info
         // -------------------------
@@ -134,6 +135,29 @@ namespace CitizenEntityCleaner
 
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => Mod.Author;
+
+        // About tab links
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public bool OpenGithubButton
+        {
+            set
+            {
+                try { Application.OpenURL("https://github.com/phillycheeze/CitizenEntityCleaner"); }
+                catch (System.Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
+            }
+        }
+        
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public bool OpenDiscordButton
+        {
+            set
+            {
+                try { Application.OpenURL("https://discord.com/channels/1024242828114673724/1402078697120469064"); }
+                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
+            }
+        }
 
         public override void SetDefaults()
         {

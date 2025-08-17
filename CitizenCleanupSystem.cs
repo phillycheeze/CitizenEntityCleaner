@@ -29,9 +29,11 @@ namespace CitizenEntityCleaner
         private Setting m_settings;
         
         // Callback for when cleanup is in progress and completed
-        public System.Action OnCleanupCompleted;
-        public System.Action<float> OnCleanupProgress;
-        
+        // event instead of public delegate prevents external code accidental overwrite delegate list
+        public event System.Action<float> OnCleanupProgress;
+        public event System.Action OnCleanupCompleted;
+
+       
         protected override void OnCreate()
         {   
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc

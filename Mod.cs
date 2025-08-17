@@ -1,4 +1,4 @@
-using System.Reflection;     // for Assemby, AssembyTitleAttribute
+using System.Reflection;    // for Assembly, AssemblyTitleAttribute
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;
@@ -58,8 +58,8 @@ namespace CitizenEntityCleaner
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
 
-            // On load, wire events with stored delegates.
-            _onProgress  = m_Setting.UpdateCleanupProgress;    // method group (lambda)
+            // on load, event handlers stored in _onProgress / _onCompleted so -= works.
+            _onProgress  = m_Setting.UpdateCleanupProgress;    // method group
             _onCompleted = m_Setting.FinishCleanupProgress;
 
             // Set up callbacks for Cleanup progress and completion.

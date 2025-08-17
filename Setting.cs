@@ -167,7 +167,10 @@ namespace CitizenEntityCleaner
         // About tab -> Usage section (visible header)
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageText => string.Empty; // value unused; description carries the text
-
+        
+        // About tab -> Usage section (bold header line for step 1)
+        [SettingsUISection(AboutTab, UsageGroup)]
+        public string UsageImportant => string.Empty;
 
         public override void SetDefaults()
         {
@@ -307,14 +310,20 @@ namespace CitizenEntityCleaner
 
                 // About tab --> Usage section
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "Usage" },
+
+                // Step 1 as bold (labels render bold)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "Backup your save file first!" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), "" },
+
+                // Usage steps as body text
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), "Usage" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)),
-                  "1. Backup your Save file first!\n" +
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\n" +
-                  "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed." 
-                  },
+                  "5. Monitor your city for any unexpected behavior and revert to original Saved city if needed."
+                  "Note: this mod does not automatically run. It does nothing unless the Cleanup button is used."
+                },
 
                 
             };

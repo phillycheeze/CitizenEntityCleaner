@@ -141,7 +141,7 @@ namespace CitizenEntityCleaner
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => Mod.Author;
 
-        // About tab links
+        // About Tab links
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton
@@ -315,13 +315,13 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }, 
 
                 // About tab links
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "Open GitHub" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Opens the GitHub repository in your browser." },
                 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Open Discord" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Open Paradox Mods" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Opens Paradox Mods page in your browser." },
 
 

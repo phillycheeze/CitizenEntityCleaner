@@ -53,7 +53,7 @@ namespace CitizenEntityCleaner
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
 
             // System registration
-            // Register our cleanup system to run before the game's deletion system (Modification1)
+            // Register our cleanup system to run before the game's deletion system (Modification2)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);

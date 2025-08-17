@@ -4,6 +4,7 @@ using Colossal.Localization; // needed for IDictionarySource
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
+using UnityEngine;  // for About tab Application.OpenURL
 
 namespace CitizenEntityCleaner
 {
@@ -257,6 +258,13 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AuthorText)), "Author" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }  
+
+                // About tab links
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "Open GitHub" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Opens the GitHub repository in your browser." },
+                
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Open Discord" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },         
             };
         }
 

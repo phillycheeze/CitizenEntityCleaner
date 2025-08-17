@@ -42,7 +42,6 @@ namespace CitizenEntityCleaner
                 None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
             });
             
-            RequireForUpdate(m_householdMemberQuery);    //OnUpdate won't run if there are zero HouseholdMemmbers
             base.OnCreate();
 
             s_log.Info("CitizenCleanupSystem created");
@@ -50,20 +49,20 @@ namespace CitizenEntityCleaner
 
         protected override void OnUpdate()
         {
+         // If nothing to do, bail out quickly
+         if (!m_isChunkedCleanupInProgress && !m_shouldRunCleanup)
+            return;
+            
             // Handle chunked cleanup if in progress, otherwise fallback to boolean flag
             if (m_isChunkedCleanupInProgress)
             {
                 ProcessCleanupChunk();
                 return;
             }
-            
-            if (!m_shouldRunCleanup)
-                return;
 
+            // Start a new cleanup run
             m_shouldRunCleanup = false;
-            
             s_log.Info("Starting citizen entity cleanup...");
-            
             StartChunkedCleanup();
         }
 

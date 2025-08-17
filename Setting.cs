@@ -10,8 +10,8 @@ namespace CitizenEntityCleaner
 {
     [FileLocation("Citizen_Entity_Cleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup)]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose on About tab.
     public class Setting : ModSetting
     {
         public const string kSection = "Main";
@@ -19,6 +19,7 @@ namespace CitizenEntityCleaner
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
+        public const string UsageGroup = "Usage";
 
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
@@ -162,6 +163,11 @@ namespace CitizenEntityCleaner
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
             }
         }
+
+        // About tab -> Usage section (visible header)
+        [SettingsUISection(AboutTab, UsageGroup)]
+        public string UsageText => string.Empty; // value unused; description carries the text
+
 
         public override void SetDefaults()
         {

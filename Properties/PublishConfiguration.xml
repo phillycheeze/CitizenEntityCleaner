@@ -64,7 +64,7 @@ Feedback / Bug Report: https://discord.com/channels/1024242828114673724/14020786
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/Thumbnail.png" />
+	<Screenshot Value="Properties/Screenshots/CEC-thumbnail05.png" />
 	<Screenshot Value="Properties/Screenshots/before.jpg" />
 	<Screenshot Value="Properties/Screenshots/after.jpg" />
 	<!--Tag, can be set multiple times-->

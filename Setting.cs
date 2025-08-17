@@ -45,8 +45,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeHomeless == value) return;  // <-- remember if user checks box.
                 _includeHomeless = value;
-                ApplyAndSave();          // <-- persist the new value checked.
-                RefreshEntityCounts();
+                ApplyAndSave();          // <-- persist the checkbox value.
+                RefreshEntityCounts();   // optional live update
             }
         }
 
@@ -58,8 +58,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeCommuters == value) return;
                 _includeCommuters = value;
-                ApplyAndSave();          // <-- persist the new value.
-                RefreshEntityCounts();
+                ApplyAndSave();            // <-- persist the checkbox value.
+                RefreshEntityCounts();    // optional live update
             }
         }
 

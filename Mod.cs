@@ -13,7 +13,7 @@ namespace CitizenEntityCleaner
         public static string Author = "phillycheese";
         public static string Name = Assembly
             .GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "CitizenEntityCleaner";
+            .GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";
         public static string Version = Assembly
             .GetExecutingAssembly()
             .GetName()

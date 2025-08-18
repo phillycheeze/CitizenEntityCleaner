@@ -296,6 +296,7 @@ namespace CitizenEntityCleaner
             {
                 s_log.Info($"Entity cleanup completed. Marked {m_entitiesToCleanup.Length} citizens for deletion.");
                 m_entitiesToCleanup.Dispose();
+                m_entitiesToCleanup = default;
             }
             
             m_isChunkedCleanupInProgress = false;

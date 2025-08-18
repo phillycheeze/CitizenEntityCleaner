@@ -299,12 +299,18 @@ namespace CitizenEntityCleaner
             }
             
             m_isChunkedCleanupInProgress = false;
+
+            // Optional: only send a final 100% if we didn't already notify it
+            if (m_lastProgressNotified < 0.999f)
+            OnCleanupProgress?.Invoke(1f);
+
+            // Reset state for next run
             m_cleanupIndex = 0;
-            m_lastProgressNotified = -1f;   // <-- reset, ready for next run
-            m_lastLoggedBucket     = -1;    // (optional) reset log bucket
-            
+            m_lastProgressNotified = -1f;    // UI throttle reset
+            m_lastLoggedBucket     = -1;    // optional: log throttle reset
+
             // Notify settings that cleanup is complete
-            OnCleanupCompleted?.Invoke();
+            OnCleanupCompleted?.Invoke();   
         }
 
         protected override void OnDestroy()

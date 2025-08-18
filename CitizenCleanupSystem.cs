@@ -15,7 +15,7 @@ namespace CitizenEntityCleaner
         
         // ---- constants ----
         private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
-        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // magic number becomes explicit enum
+        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // explicit enum (was a magic number)
         private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
         
         // ---- fields ----

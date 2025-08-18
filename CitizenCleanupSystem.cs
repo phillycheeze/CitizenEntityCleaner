@@ -197,14 +197,14 @@ namespace CitizenEntityCleaner
                 }
             }
             
-            // Check if citizen is homeless and filter is disabled  
+            // Check if citizen is homeless and filter is disabled 
             
             if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
             {
                 var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
                 var human = transport.m_CurrentTransport;
 
-                // add guard to avoid exceptions by checking if Game.Creatures.Human exists.
+                // add guard to avoid exceptions. check if Game.Creatures.Human exists.
                 if (EntityManager.Exists(human) && EntityManager.HasComponent<Game.Creatures.Human>(human))
                 {
                     var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);

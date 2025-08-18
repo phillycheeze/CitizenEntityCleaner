@@ -6,6 +6,10 @@
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 		<TargetFramework>net472</TargetFramework>
+
+		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
+		<Product>Citizen Entity Cleaner</Product>
+		<Authors>phillycheese</Authors>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->

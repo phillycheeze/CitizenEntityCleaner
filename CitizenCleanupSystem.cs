@@ -229,6 +229,8 @@ namespace CitizenEntityCleaner
                 s_log.Info("Cleanup requested, but there is nothing to clean.");
                 if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
                 m_isChunkedCleanupInProgress = false;
+  
+                OnCleanupProgress?.Invoke(1f);    // optional: send final progress of 100%
                 OnCleanupNoWork?.Invoke();
                 return;
             }

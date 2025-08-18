@@ -32,14 +32,28 @@ namespace CitizenEntityCleaner
 
 
         // --- fields ---
+        private static bool s_bannerLogged;    // static guard to avoid duplicates
+        private System.Action _onNoWork;   // <-- for new event if nothing to clean.
         // Keep the same delegate instance and use for both += and -= so -= works (ensures unsubscribe works).
         private System.Action<float> _onProgress;
         private System.Action _onCompleted;
-        private System.Action _onNoWork;   // <-- for new event if nothing to clean.
+
+        
         
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
+           #if DEBUG
+            const string BuildTag = " - DEV";
+            #else
+            const string BuildTag = "";
+            #endif
+
+            if (!s_bannerLogged)    // static guard to avoid duplicates on hot reload
+            {
+            log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
+            s_bannerLogged = true;
+            }
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 log.Info($"Current mod asset at {asset.path}");

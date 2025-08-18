@@ -220,6 +220,7 @@ namespace CitizenEntityCleaner
         private void StartChunkedCleanup()
         {
             m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
+            m_lastProgressNotified = -1f;   // <-- reset throttle start of each run
             m_cleanupIndex = 0;
             m_isChunkedCleanupInProgress = true;
             

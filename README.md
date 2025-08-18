@@ -51,7 +51,7 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 4. Select checkbox options as desired.
 5. Click [Cleanup Citizens] to clean up entities.
 
-Monitor your city for any unexpected behavior and revert to original Saved city if needed.  
+Monitor your city for any unexpected behavior and revert to original saved city if needed.  
 Note: this mod does not automatically run in the background. It does nothing unless the Cleanup button is selected.
 
 ## What is causing the issue?

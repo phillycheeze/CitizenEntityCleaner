@@ -302,7 +302,9 @@ namespace CitizenEntityCleaner
 
             // Optional: only send a final 100% if we didn't already notify it
             if (m_lastProgressNotified < 0.999f)
+            {
             OnCleanupProgress?.Invoke(1f);
+            }
 
             // Reset state for next run
             m_cleanupIndex = 0;

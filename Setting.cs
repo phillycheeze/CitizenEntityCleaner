@@ -287,7 +287,7 @@ namespace CitizenEntityCleaner
         {
             return new Dictionary<string, string>
             {
-                { m_Setting.GetSettingsLocaleID(), "CitizenEntityCleaner" },
+                { m_Setting.GetSettingsLocaleID(), "Citizen Entity Cleaner" },
 
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },

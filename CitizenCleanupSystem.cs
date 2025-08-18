@@ -182,38 +182,34 @@ namespace CitizenEntityCleaner
         /// <summary>
         /// Determines whether a citizen should be included in cleanup based on filter settings
         /// </summary>
-        private bool ShouldIncludeCitizen(Entity citizenEntity)
-        {
+       private bool ShouldIncludeCitizen(Entity citizenEntity)
+       {
             var settings = m_settings;
             if (settings == null) return true;
-            
-            // Check if citizen is a commuter and filter is disabled
+        
+            // Check commuter (exclude if commuter and IncludeCommuters is false)
             if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
             {
                 var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
                 if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
-                {
                     return false;
-                }
             }
-            
-            // Check if citizen is homeless and filter is disabled 
-            
+        
+            // Check homeless (exclude if homeless and IncludeHomeless is false)
             if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
             {
                 var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
                 var human = transport.m_CurrentTransport;
-
-                // add guard to avoid exceptions. check if Game.Creatures.Human exists.
+        
+                // Guard: ensure Human exists and has the component before reading it
                 if (EntityManager.Exists(human) && EntityManager.HasComponent<Game.Creatures.Human>(human))
                 {
                     var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);
                     if ((humanData.m_Flags & HomelessFlag) != 0 && !settings.IncludeHomeless)
-                    return false;
-                }
+                        return false;
                 }
             }
-            
+        
             return true;
         }
 

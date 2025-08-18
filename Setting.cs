@@ -262,7 +262,7 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Complete";
             RefreshEntityCounts();    // updates values & calls ApplyAndSave()
         }
-    }
+        
         /// <summary>
         /// Finishes progress when there was nothing to clean.
         /// </summary>
@@ -272,6 +272,7 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Nothing to clean";
             RefreshEntityCounts();    // updates values and calls ApplyAndSave()
         }
+    }
 
     
     // -------------------------

@@ -296,12 +296,12 @@ namespace CitizenEntityCleaner
             {
                 s_log.Info($"Entity cleanup completed. Marked {m_entitiesToCleanup.Length} citizens for deletion.");
                 m_entitiesToCleanup.Dispose();
-                m_entitiesToCleanup = default;
+                m_entitiesToCleanup = default;    // clear handle after dispose
             }
             
             m_isChunkedCleanupInProgress = false;
 
-            // Optional: only send a final 100% if we didn't already notify it
+            // Final UI snap to 100% only if we didn't already report it
             if (m_lastProgressNotified < 0.999f)
             {
             OnCleanupProgress?.Invoke(1f);
@@ -310,7 +310,7 @@ namespace CitizenEntityCleaner
             // Reset state for next run
             m_cleanupIndex = 0;
             m_lastProgressNotified = -1f;    // UI throttle reset
-            m_lastLoggedBucket     = -1;    // optional: log throttle reset
+            m_lastLoggedBucket     = -1;    // log throttle reset
 
             // Notify settings that cleanup is complete
             OnCleanupCompleted?.Invoke();   

@@ -37,7 +37,7 @@ namespace CitizenEntityCleaner
         // event instead of public delegate prevents external code accidental overwrite delegate list
         public event System.Action<float> OnCleanupProgress;
         public event System.Action OnCleanupCompleted;
-        
+        public event System.Action OnCleanupNoWork;
        
         protected override void OnCreate()
         {   
@@ -222,8 +222,18 @@ namespace CitizenEntityCleaner
             m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
             m_lastProgressNotified = -1f;   // <-- reset throttle start of each run
             m_cleanupIndex = 0;
-            m_isChunkedCleanupInProgress = true;
+
+            if (m_entitiesToCleanup.Length == 0)
+            {
+                // No work: end immediately
+                s_log.Info("Cleanup requested, but there is nothing to clean.");
+                if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
+                m_isChunkedCleanupInProgress = false;
+                OnCleanupNoWork?.Invoke();
+                return;
+            }
             
+            m_isChunkedCleanupInProgress = true;
             s_log.Info($"Starting chunked cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");
         }
         

@@ -260,9 +260,18 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = false;
             _cleanupStatus = "Complete";
-            RefreshEntityCounts();    // also calls ApplyAndSave()
+            RefreshEntityCounts();    // updates values & calls ApplyAndSave()
         }
     }
+
+        public void FinishCleanupNoWork()
+        {
+            _isCleanupInProgress = false;
+            _cleanupStatus = "Nothing to clean";
+            RefreshEntityCounts();    // updates values and calls ApplyAndSave()
+        }
+
+    
 
     // -------------------------
     // Locale (ALL labels are static now)

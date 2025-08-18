@@ -4,15 +4,23 @@
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="Citizen Entity Cleaner" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Cleans up abandoned Citizen entities in the game engine" />
+	<ShortDescription Value="Cleans up abandoned Citizen entities in the game engine." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Some saves might have many abandoned Citizen entities leaving behind households, vehicles, and other entities while also decreasing performance. This mod provides a hack to manually clean those up." /-->
 	<LongDescription>
 # Citizen Entity Cleaner
 
+# Citizen Entity Cleaner
+
 ## ⚠️ **WARNING** ⚠️
 
-**<span style="color:red">This is a hacky workaround mod that touches sensitive game components. Backup your saved game before using this mod!</span>**
+---
+
+**DO THIS FIRST: BACK UP YOUR SAVE.**  
+This mod touches sensitive game components and is a work-around. Use at your own risk.
+
+---
+
 
 ## Problem
 

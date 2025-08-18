@@ -122,7 +122,10 @@ namespace CitizenEntityCleaner
             try
             {
                 using var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-                using var processedHouseholds = new NativeHashSet<Entity>(householdMembers.Length, Allocator.TempJob);
+                // Create a hash set with capacity equal to number of household members, but never less than 1
+                  using var processedHouseholds =
+                      new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
+
                 
                 foreach (var householdMember in householdMembers)
                 {

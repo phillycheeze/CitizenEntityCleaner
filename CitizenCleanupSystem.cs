@@ -270,6 +270,7 @@ namespace CitizenEntityCleaner
             
             m_isChunkedCleanupInProgress = false;
             m_cleanupIndex = 0;
+            m_lastProgressNotified = -1f;   // <-- reset, ready for next run
             
             // Notify settings that cleanup is complete
             OnCleanupCompleted?.Invoke();

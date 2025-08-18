@@ -29,10 +29,12 @@ namespace CitizenEntityCleaner
         // Reference to our cleanup system
         public static CitizenCleanupSystem CleanupSystem { get; private set; }
 
-        // Keep the same delegate instance and use for both += and -= so -= works (ensure unsubscribe works).
-        // fields
+
+        // --- fields ---
+        // Keep the same delegate instance and use for both += and -= so -= works (ensures unsubscribe works).
         private System.Action<float> _onProgress;
         private System.Action _onCompleted;
+        private System.Action _onNoWork;   // <-- for new event if nothing to clean.
         
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -58,14 +60,15 @@ namespace CitizenEntityCleaner
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
 
-            // on load, event handlers stored in _onProgress / _onCompleted so -= works.
+            // Subscribe in On Load: event handlers stored in _onProgress / _onCompleted so -= works.
             _onProgress  = m_Setting.UpdateCleanupProgress;    // method group
             _onCompleted = m_Setting.FinishCleanupProgress;
+            _onNoWork = m_Setting.FinishCleanupNoWork;   // if nothing to clean
 
-            // Set up callbacks for Cleanup progress and completion.
+            // Set up callbacks for Cleanup progress, completion, or no work.
             CleanupSystem.OnCleanupProgress  += _onProgress;
             CleanupSystem.OnCleanupCompleted += _onCompleted;
-
+            CleanupSystem.OnCleanupNoWork    += _onNoWork;
 
             log.Info("CitizenCleanupSystem registered");
         }
@@ -79,6 +82,7 @@ namespace CitizenEntityCleaner
             {
                 if (_onProgress  != null) CleanupSystem.OnCleanupProgress  -= _onProgress;
                 if (_onCompleted != null) CleanupSystem.OnCleanupCompleted -= _onCompleted;
+                if (_onNoWork    != null) CleanupSystem.OnCleanupNoWork    -= _onNoWork;  // for nothing to clean
             }
     
             // Unregister localization source
@@ -97,6 +101,7 @@ namespace CitizenEntityCleaner
             CleanupSystem = null;
             _onProgress = null;
             _onCompleted = null;
+            _onNoWork = null;
             m_Locale = null;
         }
 

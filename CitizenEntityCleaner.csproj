@@ -10,6 +10,7 @@
 		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
 		<Product>Citizen Entity Cleaner</Product>
 		<Authors>phillycheese</Authors>
+		<AssemblyName>CitizenEntityCleaner</AssemblyName>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->

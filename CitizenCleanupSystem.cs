@@ -14,13 +14,15 @@ namespace CitizenEntityCleaner
         private static ILog s_log = Mod.log;
         
         // ---- constants ----
-        private const int CLEANUP_CHUNK_SIZE = 2000;
-        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;
+        private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
+        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // magic number becomes explicit enum
+        private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
         
         // ---- fields ----
-        private float m_lastProgressNotified = -1f;
-        // Flag to trigger the cleanup operation
-        private bool m_shouldRunCleanup = false;
+        private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
+        private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
+        
+        private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
         
         // Chunked cleanup state
         private NativeList<Entity> m_entitiesToCleanup;
@@ -52,10 +54,10 @@ namespace CitizenEntityCleaner
             s_log.Info("CitizenCleanupSystem created");
         }
 
-        // non-blocking OnUpdate() starts run and lets next frame finish it.
+        // Non-blocking: process one chunk if run is active, otherwise start a run if requested
         protected override void OnUpdate()
         {
-         // If nothing to do, bail out quickly
+         // If nothing active & nothing requested, do nothing this frame
          if (!m_isChunkedCleanupInProgress && !m_shouldRunCleanup)
             return;
             
@@ -66,7 +68,7 @@ namespace CitizenEntityCleaner
                 return;
             }
 
-            // Start a new cleanup run
+            // Start new cleanup run: a run requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
             m_shouldRunCleanup = false;
             s_log.Info("Starting citizen entity cleanup...");
             StartChunkedCleanup();
@@ -220,12 +222,15 @@ namespace CitizenEntityCleaner
         private void StartChunkedCleanup()
         {
             m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
-            m_lastProgressNotified = -1f;   // <-- reset throttle start of each run
+            
+            // reset throttles at start of each run
+            m_lastProgressNotified = -1f;    // UI throttle
+            m_lastLoggedBucket = -1;        // Log throttle
             m_cleanupIndex = 0;
 
+            // immediately finish when nothing to do
             if (m_entitiesToCleanup.Length == 0)
             {
-                // No work: end immediately
                 s_log.Info("Cleanup requested, but there is nothing to clean.");
                 if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
                 m_isChunkedCleanupInProgress = false;
@@ -249,7 +254,8 @@ namespace CitizenEntityCleaner
                 FinishChunkedCleanup();
                 return;
             }
-            
+
+            // Delete a chunk this frame
             int remainingEntities = m_entitiesToCleanup.Length - m_cleanupIndex;
             int chunkSize = math.min(CLEANUP_CHUNK_SIZE, remainingEntities);
             
@@ -257,18 +263,30 @@ namespace CitizenEntityCleaner
             EntityManager.AddComponent<Deleted>(chunk);
             
             m_cleanupIndex += chunkSize;
-            
+
+            // --- Progress (float) for UI, throttled ~5% ---
             float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
-            // throttles UI progress updates to 5% steps
             if (progress >= 0.999f || progress - m_lastProgressNotified >= 0.05f)
             {
                 m_lastProgressNotified = progress;
                 OnCleanupProgress?.Invoke(progress);
             }
-            // this logs on every chunk
-            s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens ({progress:P0})");
-        }
-        
+
+            // --- Progress (int buckets) for logs ---
+            //  LOG_BUCKET_PERCENT = 10 to reduce log spam; change to 5 for 5% (more spam)
+            int percent = math.min(100, (int)math.floor(progress * 100f));
+            int bucket  = percent / LOG_BUCKET_PERCENT;
+            
+            if (bucket > m_lastLoggedBucket)
+            {
+                 m_lastLoggedBucket = bucket;
+                 if (percent >= 100)
+                    s_log.Info("Cleanup 100% (finalizing)…");
+                else
+                    s_log.Info($"Cleanup {bucket * LOG_BUCKET_PERCENT}%…");
+                }
+            }
+
         /// <summary>
         /// Finishes the chunked cleanup process
         /// </summary>
@@ -283,6 +301,7 @@ namespace CitizenEntityCleaner
             m_isChunkedCleanupInProgress = false;
             m_cleanupIndex = 0;
             m_lastProgressNotified = -1f;   // <-- reset, ready for next run
+            m_lastLoggedBucket     = -1;    // (optional) reset log bucket
             
             // Notify settings that cleanup is complete
             OnCleanupCompleted?.Invoke();

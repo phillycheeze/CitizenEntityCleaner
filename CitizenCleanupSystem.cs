@@ -13,6 +13,11 @@ namespace CitizenEntityCleaner
     {
         private static ILog s_log = Mod.log;
         
+        // ---- constants ----
+        private const int CLEANUP_CHUNK_SIZE = 2000;
+        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;
+        
+        // ---- fields ----
         // Flag to trigger the cleanup operation
         private bool m_shouldRunCleanup = false;
         
@@ -20,8 +25,7 @@ namespace CitizenEntityCleaner
         private NativeList<Entity> m_entitiesToCleanup;
         private int m_cleanupIndex = 0;
         private bool m_isChunkedCleanupInProgress = false;
-        private const int CLEANUP_CHUNK_SIZE = 2000;
-        
+
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
         
@@ -32,7 +36,7 @@ namespace CitizenEntityCleaner
         // event instead of public delegate prevents external code accidental overwrite delegate list
         public event System.Action<float> OnCleanupProgress;
         public event System.Action OnCleanupCompleted;
-
+        
        
         protected override void OnCreate()
         {   
@@ -194,7 +198,6 @@ namespace CitizenEntityCleaner
             }
             
             // Check if citizen is homeless and filter is disabled  
-            private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;
             
             if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
             {

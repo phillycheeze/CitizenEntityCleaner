@@ -38,7 +38,6 @@ Deletes any Citizen entites that don't have a PropertyRenter component attached 
 ## Unintended Consequences
 
 ⚠️ **This mod will also delete:**
-- All homeless citizens and households
 - "Pending" citizens that may be buffered for relocation
 - May cause momentary drops in population demand
 - May have other long-term consequences not fully understood

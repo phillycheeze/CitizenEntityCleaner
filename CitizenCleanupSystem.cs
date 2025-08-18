@@ -18,6 +18,7 @@ namespace CitizenEntityCleaner
         private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;
         
         // ---- fields ----
+        private float m_lastProgressNotified = -1f;
         // Flag to trigger the cleanup operation
         private bool m_shouldRunCleanup = false;
         
@@ -245,8 +246,13 @@ namespace CitizenEntityCleaner
             m_cleanupIndex += chunkSize;
             
             float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
-            OnCleanupProgress?.Invoke(progress);
-            
+            // throttles UI progress updates to 5% steps
+            if (progress >= 0.999f || progress - m_lastProgressNotified >= 0.05f)
+            {
+                m_lastProgressNotified = progress;
+                OnCleanupProgress?.Invoke(progress);
+            }
+            // this logs on every chunk
             s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens ({progress:P0})");
         }
         

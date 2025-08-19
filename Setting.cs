@@ -1,10 +1,10 @@
+using Colossal;
 using Colossal.IO.AssetDatabase;
-using Colossal.Localization;    // needed for IDictionarySource
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
-using UnityEngine;            // for About tab Application.OpenURL
-using Game.UI.Widgets;        // for SettingsUIButtonGroup
+using UnityEngine;  // for About tab Application.OpenURL
+
 
 namespace CitizenEntityCleaner
 {
@@ -212,10 +212,10 @@ namespace CitizenEntityCleaner
             {
                 if (Mod.CleanupSystem != null)
                 {
-                    var stats = Mod.CleanupSystem.GetCitizenStatistics();
+                    var (totalCitizens, corruptedCitizens) = Mod.CleanupSystem.GetCitizenStatistics();
 
-                    _totalCitizens = $"{stats.totalCitizens:N0}";
-                    _corruptedCitizens = $"{stats.corruptedCitizens:N0}";
+                    _totalCitizens = $"{totalCitizens:N0}";
+                    _corruptedCitizens = $"{corruptedCitizens:N0}";
                 }
                 else
                 {

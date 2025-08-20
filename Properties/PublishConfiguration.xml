@@ -15,10 +15,9 @@
 ---
 
 **DO THIS FIRST: BACK UP YOUR SAVE.**  
-This mod touches sensitive game components and is a work-around. Use at your own risk.
+**This mod touches sensitive game components and is a work-around. Use at your own risk.**
 
 ---
-
 
 ## Problem
 
@@ -33,9 +32,11 @@ This entity bloat causes several issues:
 - **Cars, etc get abandoned** and permanently occupying parking spots, never being used again
 - **General performance degradation** across querying systems
 
-⚠️ **This mod will also:**
-- Optional: delete all homeless citizens (only if Options checkbox selected)
-- Optional: delete commuters (Options checkbox)
+**Mod Bonus Options:**
+- Delete all homeless citizens (Options checkbox)
+- Delete all commuters (Options checkbox)
+
+⚠️ **This Mod will also:**
 - Delete "Pending" citizens that may be buffered for relocation
 - May cause momentary drops in population demand
 - May have other long-term consequences not fully understood

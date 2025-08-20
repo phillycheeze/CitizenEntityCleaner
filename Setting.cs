@@ -351,7 +351,7 @@ namespace CitizenEntityCleaner
                   "- Revert to original saved city if needed for unexpected behavior.\n" +
                   "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
                 },
-                // No description (tooltip) needed for UsageBlock:
+                // No description (tooltip) needed for UsageBlock
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageBlock)), "" },
 
             };

@@ -349,14 +349,14 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "<1. Backup your save file first!>\n" +
                   "<2. Click [Refresh Counts] to see current statistics.>\n" +
-                  "<3. [ ] Use optional checkboxes to include homeless or commuters.>\n" +
+                  "<3. [ ] use optional checkboxes to include homeless or commuters.>\n" +
                   "<4. Click [Cleanup Citizens] to clean up entities.>"
                 },
                 {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed
                 
                 // Notes (separate block gives larger gap above)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
-                "<Notes:>\n" +
+                "Notes:\n" +
                 "• This mod does not run automatically; [Cleanup Citizens] must be used each time for removals.\n" +
                 "• Revert to original saved city if needed for unexpected behavior."
                 },

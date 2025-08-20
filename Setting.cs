@@ -4,7 +4,6 @@ using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
 using UnityEngine;      // for About tab Application.OpenURL
-using Game.UI.Widgets; // for SettingsUIMultilineText Attribute
 
 
 namespace CitizenEntityCleaner

@@ -346,9 +346,8 @@ namespace CitizenEntityCleaner
                   "2. Click [Refresh Counts] to see current statistics.\r\n" +
                   "3. Select checkbox options as desired.\r\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\r\n\r\n" +
-
-                  "Notes:\n" +
-                  "- Revert to original saved city if needed for unexpected behavior.\n" +
+                  "Notes:\r\n" +
+                  "- Revert to original saved city if needed for unexpected behavior.\r\n" +
                   "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
                 },
                 // No description (tooltip) needed for UsageBlock

@@ -345,7 +345,8 @@ namespace CitizenEntityCleaner
                   "1. BACKUP your save file first!\n" +
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
-                  "4. Click [Cleanup Citizens] to clean up entities.\r\n\r\n" +
+                  "4. Click [Cleanup Citizens] to clean up entities.\n" +
+                  "\n" +
                   "Notes:\n" +
                   "- Revert to original saved city if needed for unexpected behavior.\n" +
                   "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."

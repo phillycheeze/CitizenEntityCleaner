@@ -345,12 +345,12 @@ namespace CitizenEntityCleaner
                 // About tab --> Usage section
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
-                // Step 1 as bold (labels render bold)
+                // Step 1 (label renders bold)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "1. BACKUP your save file first!" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), "" },
 
-                // Usage steps as body text (no extra bold label)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), "" },
+                // Usage steps as body text (no bold)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), " " },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)),
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +

@@ -11,6 +11,8 @@
 		<Product>Citizen Entity Cleaner</Product>
 		<Authors>phillycheese</Authors>
 		<AssemblyName>CitizenEntityCleaner</AssemblyName>
+		<Version>1.4.0</Version>
+
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->

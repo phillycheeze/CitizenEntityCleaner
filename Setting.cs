@@ -3,7 +3,8 @@ using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.Settings;
 using System.Collections.Generic;
-using UnityEngine;  // for About tab Application.OpenURL
+using UnityEngine;      // for About tab Application.OpenURL
+using Game.UI.Widgets; // for SettingsUIMultilineText Attribute
 
 
 namespace CitizenEntityCleaner
@@ -181,15 +182,10 @@ namespace CitizenEntityCleaner
         }
 
        
-        // About tab -> Usage section (bold header line for step 1)
+        // --- About tab: USAGE as a single multiline block ---
+        [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageImportant => " ";    // non-empty so the row renders (bold header)
-
-        // About tab -> Usage section (visible header, body text for other steps)
-        [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageText => " "; // non-empty so the row renders (body text)
-
-
+        public string UsageBlock => string.Empty;
 
         public override void SetDefaults()
         {
@@ -311,7 +307,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "This will permanently delete citizens from corrupted households and those you have filtered out.\n\nPlease backup your save first! Continue?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "Updates all entity counts below to show current statistics from your city. Must have a save loaded.\nAfter cleaning, let the game run unpaused for one minute." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "Must load a saved city first.\nUpdates all entity counts below to show current statistics.\nAfter cleaning, let the game run unpaused for a minute." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
@@ -345,21 +341,19 @@ namespace CitizenEntityCleaner
                 // About tab --> Usage section
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
-                // Step 1 (label renders bold)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "1. BACKUP your save file first!" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), " " },
-
-                // Usage steps as body text (no bold)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), " " },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageText)),
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageBlock)),
+                  "1. BACKUP your save file first!\n" +
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\n" +
-                "\n" +
-                  "Note: revert to original saved city if needed for unexpected behavior.\n" +
-                  "Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
-                }
-                
+                  "\n" +
+                  "Notes:\n" +
+                  "- Revert to original saved city if needed for unexpected behavior.\n" +
+                  "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
+                },
+                // No description (tooltip) needed for UsageBlock:
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageBlock)), "" },
+
             };
         }
 

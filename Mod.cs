@@ -34,10 +34,10 @@ namespace CitizenEntityCleaner
         // --- fields ---
         private static bool s_bannerLogged;    // static guard to avoid duplicates
         private System.Action _onNoWork;   // <-- for new event if nothing to clean.
+
         // Keep the same delegate instance and use for both += and -= so -= works (ensures unsubscribe works).
         private System.Action<float> _onProgress;
         private System.Action _onCompleted;
-
         
         
         public void OnLoad(UpdateSystem updateSystem)

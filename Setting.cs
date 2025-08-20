@@ -144,7 +144,7 @@ namespace CitizenEntityCleaner
         // -------------------------
         // About Tab links
         // -------------------------
-        [SettingsUIButtonGroup("SocialLinks")]    // put Github & Discord links on same line
+        [SettingsUIButtonGroup("SocialLinks")]    // Group to get Github & Discord links on same line
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton
@@ -168,7 +168,7 @@ namespace CitizenEntityCleaner
             }
         }
 
-        // Paradox Mods on its own row (no group)
+        // Paradox Mods link on its own row (no group)
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenParadoxModsButton
@@ -183,12 +183,12 @@ namespace CitizenEntityCleaner
        
         // About tab -> Usage section (bold header line for step 1)
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageImportant => string.Empty;
+        public string UsageImportant => " ";    // non-empty so the row renders (bold header)
 
-         // About tab -> Usage section (visible header, body text for other steps)
+        // About tab -> Usage section (visible header, body text for other steps)
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageText => string.Empty; // value unused; description carries the text steps
-        
+        public string UsageText => " "; // non-empty so the row renders (body text)
+
 
 
         public override void SetDefaults()
@@ -347,7 +347,7 @@ namespace CitizenEntityCleaner
 
                 // Step 1 (label renders bold)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageImportant)), "1. BACKUP your save file first!" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), "" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageImportant)), " " },
 
                 // Usage steps as body text (no bold)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageText)), " " },

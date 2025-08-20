@@ -10,14 +10,8 @@
 	<LongDescription>
 # Citizen Entity Cleaner
 
-## ⚠️ **WARNING** ⚠️
-
----
-
-**DO THIS FIRST: BACK UP YOUR SAVE.**  
+## ⚠️ **[WARNING]** ⚠️ **Backup your save before using this mod.**
 **This mod touches sensitive game components and is a work-around. Use at your own risk.**
-
----
 
 ## Problem
 
@@ -32,11 +26,11 @@ This entity bloat causes several issues:
 - **Cars, etc get abandoned** and permanently occupying parking spots, never being used again
 - **General performance degradation** across querying systems
 
-**Mod Bonus Options:**
-- Delete all homeless citizens (Options checkbox)
-- Delete all commuters (Options checkbox)
+ℹ️ **Mod Bonus Options:**
+- Delete all commuters (Optional ✅)
+- Delete all homeless citizens (Optional ✅)
 
-⚠️ **This Mod will also:**
+ℹ️ **This Mod will also:**
 - Delete "Pending" citizens that may be buffered for relocation
 - May cause momentary drops in population demand
 - May have other long-term consequences not fully understood
@@ -49,11 +43,11 @@ It is a very simple mod that doesn't conflict with other mods or overwrite vanil
 
 ## Usage
 
-1. **Backup your save file first!**
-2. Once a saved city is open, go to mod Options.
-3. Click [Refresh Counts] to see current statistics.
+1. **\[Backup] your save file first!**
+2. Once the saved city is open, go to mod Options.
+3. Click \[Refresh Counts] to see current statistics. (must load saved city first).
 4. Select checkbox options as desired.
-5. Click [Cleanup Citizens] to clean up entities.
+5. Click \[Cleanup Citizens] to clean up entities.
 
 Note: revert to original saved city if needed for unexpected behavior.    
 Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens].

@@ -181,11 +181,16 @@ namespace CitizenEntityCleaner
         }
 
        
-        // --- About tab: USAGE as a single multiline block ---
+        // --- About tab: USAGE ---
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageBlock => string.Empty;
+        public string UsageSteps => string.Empty;   // Note: UsageSteps is a static label, no dynamic value needed.
+        
+        [SettingsUIMultilineText]
+        [SettingsUISection(AboutTab, UsageGroup)]
+        public string UsageNotes => string.Empty;
 
+           
         public override void SetDefaults()
         {
             // Explicit defaults for checkboxes for clarity
@@ -329,7 +334,7 @@ namespace CitizenEntityCleaner
                 // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Opens the GitHub repository in your browser." },
-                
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },
 
@@ -340,15 +345,23 @@ namespace CitizenEntityCleaner
                 // About tab --> Usage section
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageBlock)),
+                // Steps block
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. BACKUP your save file first!\n" +
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
-                  "4. Click [Cleanup Citizens] to clean up entities.\n" +
-                  "\r\n\r\nNotes:\r\n- Revert to original saved city if needed for unexpected behavior.\r\n- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
+                  "4. Click [Cleanup Citizens] to clean up entities."
                 },
-                // No description (tooltip) needed for UsageBlock
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageBlock)), "" },
+                {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
+                
+                // Notes block (separate control to give extra gap)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
+                  "Notes:\n" +
+                  "- Revert to original saved city if needed for unexpected behavior.\n" +
+                  "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
+                },
+                // No description (tooltip) needed for Usag
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" },
 
             };
         }

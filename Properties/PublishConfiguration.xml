@@ -50,7 +50,7 @@ It is a very simple mod that doesn't conflict with other mods or overwrite vanil
 ## Usage
 
 1. **Backup your save file first!**
-2. Open mod Options in-game.
+2. Once a saved city is open, go to mod Options.
 3. Click [Refresh Counts] to see current statistics.
 4. Select checkbox options as desired.
 5. Click [Cleanup Citizens] to clean up entities.
@@ -58,13 +58,9 @@ It is a very simple mod that doesn't conflict with other mods or overwrite vanil
 Note: revert to original saved city if needed for unexpected behavior.    
 Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens].
 
-
 ## What is causing the issue?
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
-
-## Support
-Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
 
 ## Credits
 * phillycheese - mod author
@@ -73,7 +69,10 @@ Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
 * krzychu124 -
 * Honu - 
 
-Feedback / Bug Report: https://discord.com/channels/1024242828114673724/1402078697120469064
+## Feedback / Bug Report:
+* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
+* https://discord.com/channels/1024242828114673724/1402078697120469064
+
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />

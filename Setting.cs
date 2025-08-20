@@ -287,7 +287,7 @@ namespace CitizenEntityCleaner
         {
             return new Dictionary<string, string>
             {
-                { m_Setting.GetSettingsLocaleID(), "Mod.Name" }, //Mod name display in game Options Menu
+                { m_Setting.GetSettingsLocaleID(), Mod.Name }, //Mod name display in game Options Menu
 
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },

@@ -342,12 +342,12 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageBlock)),
-                  "1. BACKUP your save file first!\r\n" +
-                  "2. Click [Refresh Counts] to see current statistics.\r\n" +
-                  "3. Select checkbox options as desired.\r\n" +
+                  "1. BACKUP your save file first!\n" +
+                  "2. Click [Refresh Counts] to see current statistics.\n" +
+                  "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities.\r\n\r\n" +
-                  "Notes:\r\n" +
-                  "- Revert to original saved city if needed for unexpected behavior.\r\n" +
+                  "Notes:\n" +
+                  "- Revert to original saved city if needed for unexpected behavior.\n" +
                   "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
                 },
                 // No description (tooltip) needed for UsageBlock

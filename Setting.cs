@@ -184,7 +184,7 @@ namespace CitizenEntityCleaner
         // --- About tab: USAGE ---
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageSteps => string.Empty;   // Note: UsageSteps is a static label, no dynamic value needed.
+        public string UsageSteps => string.Empty;   // Note: UsageSteps is a static label.
         
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
@@ -342,25 +342,25 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Opens Paradox Mods page in your browser." },
 
 
-                // About tab --> Usage section
+                // About tab --> Usage section header
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
 
-                // Steps block
+                // Steps block (normal spacing)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
-                  "1. BACKUP your save file first!\n" +
+                  "1. Backup your save file first!\n" +
                   "2. Click [Refresh Counts] to see current statistics.\n" +
                   "3. Select checkbox options as desired.\n" +
                   "4. Click [Cleanup Citizens] to clean up entities."
                 },
-                {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
+                {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed
                 
-                // Notes block (separate control to give extra gap)
+                // Notes (separate block gives larger gap above)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
-                  "Notes:\n" +
-                  "- Revert to original saved city if needed for unexpected behavior.\n" +
-                  "- This mod does nothing automatically; it acts only when you click [Cleanup Citizens]."
+                "<Notes:>\n" +
+                "• This mod does nothing automatically; it acts only when you click [Cleanup Citizens].\n" +
+                "• Revert to original saved city if needed for unexpected behavior."
                 },
-                // No description (tooltip) needed for Usag
+                // No description (tooltip) needed for UsageNotes
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" },
 
             };

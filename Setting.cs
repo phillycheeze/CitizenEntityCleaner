@@ -311,7 +311,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "This will permanently delete citizens from corrupted households and those you have filtered out.\n\nPlease backup your save first! Continue?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "Load a saved city first.\nUpdates all entity counts below to show current statistics.\nAfter cleaning, let the game run unpaused for a minute." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "<Load a saved city first.>\nUpdates all entity counts below to show current statistics.\nAfter cleaning, let the game run unpaused for a minute." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },

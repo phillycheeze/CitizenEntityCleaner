@@ -333,13 +333,13 @@ namespace CitizenEntityCleaner
 
                 // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Opens the GitHub repository in your browser." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "GitHub repository for the mod; opens in browser." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Opens the community Discord in your browser." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Discord chat for feedback on the mod; opens in browser." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Paradox Mods" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Opens Paradox Mods page in your browser." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Paradox Mods website; opens in browser." },
 
 
                 // About tab --> Usage section header
@@ -349,7 +349,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Backup your save file first!>\n" +
                   "2. <Click [Refresh Counts] to see current statistics.>\n" +
-                  "3. <[\u00A0\u00A0] use optional checkboxes to include homeless or commuters.>\n" +
+                  "3. <[\u00A0\u00A0\u00A0] use optional checkboxes to include homeless or commuters.>\n" +
                   "4. <Click [Cleanup Citizens] to clean up entities.>"
                 },
                 {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed

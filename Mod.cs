@@ -13,11 +13,11 @@ namespace CitizenEntityCleaner
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
             ?? "Mod Name";    // fallback title
-       
+
         public static string Version =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) // fallback to assembly version if missing
+            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);   // fallback to assembly version if missing
 
         public static string Author =
             Assembly.GetExecutingAssembly()

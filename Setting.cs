@@ -136,12 +136,7 @@ namespace CitizenEntityCleaner
         public string NameText => Mod.Name;
 
         [SettingsUISection(AboutTab, InfoGroup)]
-        public string VersionText =>
-        #if DEBUG
-            $"{Mod.Version} - DEV";
-        #else
-            Mod.Version;
-        #endif
+        public string VersionText => Mod.Version;
 
         [SettingsUISection(AboutTab, InfoGroup)]
         public string AuthorText => Mod.Author;

@@ -17,7 +17,8 @@ namespace CitizenEntityCleaner
             ?? "Citizen Entity Cleaner";    // fallback title
 
         public static readonly string Version =
-            Asm.GetName().Version?.ToString(3) ?? "1.0.0";  // fallback to 1.0.0
+            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? "1.0.0";    // fallback to 1.0.0
 
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
@@ -52,17 +53,12 @@ namespace CitizenEntityCleaner
 
             log.Info(nameof(OnLoad));
 
-            // One time banner
-            #if DEBUG
-              const string BuildTag = " - DEV";
-            #else
-              const string BuildTag = "";
-            #endif
-                if (!s_bannerLogged)    // static guard to avoid duplicates on hot reload
-                {
-                    log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
-                    s_bannerLogged = true;
-                }
+            // One time banner static guard to avoid duplicates on hot reload
+            if (!s_bannerLogged)    
+            {
+                log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
+                s_bannerLogged = true;
+            }
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 log.Info($"Current mod asset at {asset.path}");

@@ -33,7 +33,7 @@ namespace CitizenEntityCleaner
         private EntityQuery m_householdMemberQuery;
         
      
-        private Setting? m_settings; // nullable as it is set later via SetSettings
+        private Setting? m_settings; // nullable. Store setting passed from Mod.Onload
 
         // Callback for when cleanup is in progress and completed
         // event instead of public delegate prevents external code accidental overwrite delegate list
@@ -78,8 +78,6 @@ namespace CitizenEntityCleaner
         /// Sets the settings reference for filtering
         /// </summary>
         public void SetSettings(Setting settings) => m_settings = settings;
-        public Setting? GetSettings() => m_settings; // Nullable getter to allow checking if settings are set
-
 
         /// <summary>
         /// Triggers the cleanup operation to run on the next update

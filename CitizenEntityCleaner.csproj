@@ -17,10 +17,10 @@
 		<Authors>phillycheese</Authors>
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>
-		<!-- AssemblyTitle for About tab, Product for Windows properties, AssemblyName for DLL & folder name  -->
+		<!-- AssemblyTitle for About tab, AssemblyName for DLL & folder name, Product for Windows properties -->
 		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
-		<Product>Citizen Entity Cleaner</Product>
 		<AssemblyName>CitizenEntityCleaner</AssemblyName>
+		<Product>Citizen Entity Cleaner</Product>
 
 		<!-- Compile warnings to prevent NullReferenceException errors-->
 		<Nullable>enable</Nullable>

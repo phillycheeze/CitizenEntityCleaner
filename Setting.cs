@@ -14,7 +14,7 @@ namespace CitizenEntityCleaner
     public class Setting : ModSetting
     {
         // Reuse the same settings key everywhere
-        public const string SettingsKey = "Citizen_Entity_Cleaner";
+        public const string SettingsKey = "CitizenEntityCleaner";
         [FileLocation(SettingsKey)]
 
         public const string kSection = "Main";

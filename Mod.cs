@@ -73,7 +73,7 @@ namespace CitizenEntityCleaner
             GameManager.instance.localizationManager.AddSource("en-US", m_Locale);
             
              // Load saved settings (or defaults on first run)
-            AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
+            AssetDatabase.global.LoadSettings(Setting.SettingsKey, m_Setting, new Setting(this));
 
             // System registration
             // Register the cleanup system to run before the game's deletion system (Modification2)

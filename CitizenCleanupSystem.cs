@@ -11,7 +11,7 @@ namespace CitizenEntityCleaner
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
-        private static ILog s_log = Mod.log;
+        private static readonly ILog s_log = Mod.log;
         
         // ---- constants ----
         private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame

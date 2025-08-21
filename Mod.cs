@@ -16,9 +16,24 @@ namespace CitizenEntityCleaner
                 Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title
             ?? "Citizen Entity Cleaner";    // fallback title
 
-        public static readonly string Version =
-            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? "1.0.0";    // fallback to 1.0.0
+        // Show full version in Debug build; strip metadata in Release
+        public static readonly string Version = GetUiVersion();
+        private static string GetUiVersion()
+        {
+            var raw = Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                      ?? "1.0.0";
+
+#if DEBUG
+        // Show exactly what Debug sets, e.g. "1.4.0 - DEV+abcdef"
+        return raw;
+#else
+            // In Release, trim anything after space or '+', so "1.4.0", clean.
+            int cut = raw.IndexOfAny(new[] { ' ', '+' });
+            return (cut > 0) ? raw.Substring(0, cut) : raw;
+#endif
+        }
+}
+
 
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company

@@ -27,7 +27,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	
-		<!-- UI string: plain in Release, “ - DEV” in Debug -->
+		<!-- UI string: plain in Release, “ - DEV” in Debug build -->
 		<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<InformationalVersion>$(Version)</InformationalVersion>
 		<DefineConstants>TRACE</DefineConstants>

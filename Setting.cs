@@ -12,7 +12,8 @@ namespace CitizenEntityCleaner
     {
         public const string SettingsKey = "CitizenEntityCleaner"; // Reuse same settings key everywhere
     }
-    [FileLocation(SettingsKey)]
+
+    [FileLocation(ModKeys.SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose for About tab.

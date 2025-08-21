@@ -27,12 +27,12 @@ namespace CitizenEntityCleaner
         // Show exactly what Debug sets, e.g. "1.4.0 - DEV+abcdef"
         return raw;
 #else
-            // In Release, trim anything after space or '+', so "1.4.0", clean.
+            // In Release build, trim anything after space or '+', so "1.4.0", clean.
             int cut = raw.IndexOfAny(new[] { ' ', '+' });
             return (cut > 0) ? raw.Substring(0, cut) : raw;
 #endif
         }
-}
+
 
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company

@@ -1,7 +1,6 @@
 using System.Reflection;    // for Assembly attributes
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using Game;
 using Game.Modding;
 using Game.SceneFlow;
 using System;

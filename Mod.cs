@@ -4,22 +4,27 @@ using Colossal.Logging;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
-using Colossal.Localization;
 
 namespace CitizenEntityCleaner
 {
     public class Mod : IMod
     {
-        public static string Author = "phillycheese";
-        public static string Name = Assembly
-            .GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
-            ?? "Citizen Entity Cleaner";    // spaced fallback title
-        public static string Version = Assembly
-            .GetExecutingAssembly()
-            .GetName()
-            .Version.ToString(3);
-            
+        public static readonly string Name =
+            Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
+            ?? "Mod Name";    // fallback title
+       
+        public static string Version =
+            Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) // fallback to assembly version if missing
+
+        public static string Author =
+            Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
+            ?? "Unknown Author";    // fallback author
+
+
         public static ILog log = LogManager
             .GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}")
             .SetShowsErrorsInUI(false);

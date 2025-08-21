@@ -3,15 +3,23 @@
 	<PropertyGroup>
 		<Configurations>Debug;Release</Configurations>
 	
-		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
+		<!--The file where mod information which is required for publishing mod on PDX mods are stored -->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 		<TargetFramework>net472</TargetFramework>
 
+		<!--Single source for Version, Author, and mod Name (note PublishConfiguration is separate) -->
+		<Version>1.4.0</Version>
+		<!-- Shows in About tab -->
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<!-- For Windows file properties -->
+		<FileVersion>$(Version).0</FileVersion>
+	
+		<Authors>phillycheese</Authors>
+		<!-- Company allows reflection of author property -->
+		<Company>$(Authors)</Company>
 		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
 		<Product>Citizen Entity Cleaner</Product>
-		<Authors>phillycheese</Authors>
 		<AssemblyName>CitizenEntityCleaner</AssemblyName>
-		<Version>1.4.0</Version>
 
 	</PropertyGroup>
 	

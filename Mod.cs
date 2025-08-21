@@ -28,22 +28,22 @@ namespace CitizenEntityCleaner
             .GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}")
             .SetShowsErrorsInUI(false);
             
-        private Setting m_Setting;
-        private LocaleEN m_Locale;    // keep a reference to locale source to unregister later
+        private Setting? m_Setting;     // nullable reference to settings, initialized in OnLoad
+        private LocaleEN? m_Locale;    // keep a reference to locale source to unregister later
         
         // Reference to the cleanup system
-        public static CitizenCleanupSystem CleanupSystem { get; private set; }
+        public static CitizenCleanupSystem? CleanupSystem { get; private set; } // nullable; assigned in OnLoad
 
 
         // --- fields ---
         private static bool s_bannerLogged;    // static guard to avoid duplicates
-        private System.Action _onNoWork;   // <-- for new event if nothing to clean.
 
-        // Keep the same delegate instance and use for both += and -= so -= works (ensures unsubscribe works).
-        private System.Action<float> _onProgress;
-        private System.Action _onCompleted;
-        
-        
+        // Keep same delegate instance and use for both += and -= so -= works (ensures unsubscribe works).
+        private System.Action<float>? _onProgress;
+        private System.Action? _onCompleted;
+        private System.Action? _onNoWork;   // <-- for new event if nothing to clean, nullable
+
+
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
@@ -90,13 +90,13 @@ namespace CitizenEntityCleaner
         public void OnDispose()
         {
             log.Info(nameof(OnDispose));
-            
-            // Unhook events BEFORE nulling m_Setting
+
+            // Unhook events BEFORE nulling fields to avoid null reference exceptions.
             if (CleanupSystem != null)
             {
                 if (_onProgress  != null) CleanupSystem.OnCleanupProgress  -= _onProgress;
                 if (_onCompleted != null) CleanupSystem.OnCleanupCompleted -= _onCompleted;
-                if (_onNoWork    != null) CleanupSystem.OnCleanupNoWork    -= _onNoWork;  // for nothing to clean
+                if (_onNoWork    != null) CleanupSystem.OnCleanupNoWork    -= _onNoWork;  // for "nothing to clean"
             }
     
             // Unregister localization source

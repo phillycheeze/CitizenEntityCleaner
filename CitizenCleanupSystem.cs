@@ -32,9 +32,9 @@ namespace CitizenEntityCleaner
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
         
-        // Reference to settings
-        private Setting m_settings;
-        
+     
+        private Setting? m_settings; // nullable as it is set later via SetSettings
+
         // Callback for when cleanup is in progress and completed
         // event instead of public delegate prevents external code accidental overwrite delegate list
         public event System.Action<float> OnCleanupProgress;
@@ -77,10 +77,9 @@ namespace CitizenEntityCleaner
         /// <summary>
         /// Sets the settings reference for filtering
         /// </summary>
-        public void SetSettings(Setting settings)
-        {
-            m_settings = settings;
-        }
+        public void SetSettings(Setting settings) => m_settings = settings;
+        public Setting? GetSettings() => m_settings; // Nullable getter to allow checking if settings are set
+
 
         /// <summary>
         /// Gets the current settings for filtering

@@ -8,11 +8,10 @@
 
 		<!--Single source for Version, Author, and mod Name (note PublishConfiguration is separate) -->
 		<Version>1.4.0</Version>
-		<!-- Shows in About tab -->
-		<InformationalVersion>$(Version)</InformationalVersion>
+		<AssemblyVersion>$(Version).0</AssemblyVersion>
 		<!-- For Windows file properties -->
 		<FileVersion>$(Version).0</FileVersion>
-	
+		
 		<Authors>phillycheese</Authors>
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>

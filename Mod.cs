@@ -17,9 +17,7 @@ namespace CitizenEntityCleaner
             ?? "Citizen Entity Cleaner";    // fallback title
 
         public static readonly string Version =
-        Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? (Asm.GetName().Version?.ToString(3) ?? "1.0.0"); // fallback to 1.0.0 if all else fails
-
+            Asm.GetName().Version?.ToString(3) ?? "1.0.0";  // fallback to 1.0.0
 
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company

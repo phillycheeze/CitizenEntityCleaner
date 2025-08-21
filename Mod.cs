@@ -1,4 +1,4 @@
-using System.Reflection;    // for Assembly, AssemblyTitleAttribute
+using System.Reflection;    // for Assembly attributes
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;

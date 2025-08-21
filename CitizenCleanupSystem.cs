@@ -82,14 +82,6 @@ namespace CitizenEntityCleaner
 
 
         /// <summary>
-        /// Gets the current settings for filtering
-        /// </summary>
-        public Setting GetSettings()
-        {
-            return m_settings;
-        }
-
-        /// <summary>
         /// Triggers the cleanup operation to run on the next update
         /// </summary>
         public void TriggerCleanup()

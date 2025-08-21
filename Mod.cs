@@ -13,17 +13,17 @@ namespace CitizenEntityCleaner
         public static readonly string Name =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
-            ?? "Mod Name";    // fallback title
+            ?? "Citizen Entity Cleaner";    // fallback title
 
         public static readonly string Version =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);   // fallback to assembly version if missing
+            ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0" // fallback to assembly version if missing
 
         public static readonly string Author =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
-            ?? "Unknown Author";    // fallback author
+            ?? "phillycheese";    // fallback author
 
 
         public static ILog log = LogManager
@@ -48,6 +48,10 @@ namespace CitizenEntityCleaner
         
         public void OnLoad(UpdateSystem updateSystem)
         {
+            // If the attribute is missing, warn once.
+            if (Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>() == null)
+                log.Warn("AssemblyTitleAttribute not found; using fallback mod name shown to users.");
+
             log.Info(nameof(OnLoad));
            #if DEBUG
             const string BuildTag = " - DEV";
@@ -66,7 +70,6 @@ namespace CitizenEntityCleaner
 
             // Settings UI
             m_Setting = new Setting(this);
-            m_Setting.RegisterInOptionsUI();
 
             // Localization source (register & keep reference)
             m_Locale = new LocaleEN(m_Setting);
@@ -74,6 +77,8 @@ namespace CitizenEntityCleaner
             
              // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(Setting.SettingsKey, m_Setting, new Setting(this));
+
+            m_Setting.RegisterInOptionsUI();
 
             // System registration
             // Register the cleanup system to run before the game's deletion system (Modification2)

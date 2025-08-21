@@ -8,12 +8,15 @@ using UnityEngine;      // for About tab Application.OpenURL
 
 namespace CitizenEntityCleaner
 {
-    [FileLocation("Citizen_Entity_Cleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose on About tab.
     public class Setting : ModSetting
     {
+        // Reuse the same settings key everywhere
+        public const string SettingsKey = "Citizen_Entity_Cleaner";
+        [FileLocation(SettingsKey)]
+
         public const string kSection = "Main";
 
         public const string MainTab = "Main";

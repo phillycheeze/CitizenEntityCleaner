@@ -9,6 +9,7 @@ namespace CitizenEntityCleaner
 {
     public class Mod : IMod
     {
+        // Mod information
         public static readonly string Name =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
@@ -75,7 +76,7 @@ namespace CitizenEntityCleaner
             AssetDatabase.global.LoadSettings(nameof(CitizenEntityCleaner), m_Setting, new Setting(this));
 
             // System registration
-            // Register our cleanup system to run before the game's deletion system (Modification2)
+            // Register the cleanup system to run before the game's deletion system (Modification2)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);

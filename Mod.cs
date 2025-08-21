@@ -15,12 +15,12 @@ namespace CitizenEntityCleaner
                 .GetCustomAttribute<AssemblyTitleAttribute>()?.Title
             ?? "Mod Name";    // fallback title
 
-        public static string Version =
+        public static readonly string Version =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
             ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3);   // fallback to assembly version if missing
 
-        public static string Author =
+        public static readonly string Author =
             Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
             ?? "Unknown Author";    // fallback author

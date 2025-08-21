@@ -10,7 +10,7 @@ namespace CitizenEntityCleaner
 {
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose on About tab.
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose for About tab.
     public class Setting : ModSetting
     {
         // Reuse the same settings key everywhere

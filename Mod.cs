@@ -46,11 +46,6 @@ namespace CitizenEntityCleaner
         
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // Warn once in log if assembly title is missing
-            var asm = Assembly.GetExecutingAssembly();
-            if (asm.GetCustomAttribute<AssemblyTitleAttribute>() == null)
-                log.Warn("AssemblyTitleAttribute not found; using fallback mod name.");
-
             log.Info(nameof(OnLoad));
 
             // One time banner static guard to avoid duplicates on hot reload

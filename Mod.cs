@@ -1,9 +1,9 @@
 using System.Reflection;    // for Assembly attributes
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
+using Game;
 using Game.Modding;
 using Game.SceneFlow;
-using System;
 
 namespace CitizenEntityCleaner
 {
@@ -17,10 +17,9 @@ namespace CitizenEntityCleaner
             ?? "Citizen Entity Cleaner";    // fallback title
 
         public static readonly string Version =
-            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? (Asm.GetName().Version is Version v
-            ? (v.Build >= 0 ? v.ToString(3) : v.ToString(2)) // if Build defined use 3, fallback to 2 if not
-            : "1.0.0");                  // ultimate fallback (never null)
+        Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? (Asm.GetName().Version?.ToString(3) ?? "1.0.0"); // fallback to 1.0.0 if all else fails
+
 
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company

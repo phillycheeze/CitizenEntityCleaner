@@ -23,8 +23,6 @@
 		<!-- Compile warnings to prevent NullReferenceException errors-->
 		<Nullable>enable</Nullable>
 		
-		<!-- For Windows file properties -->
-		<Description>Cleanup of citizen entities for Cities: Skylines II.</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

@@ -74,9 +74,9 @@ namespace CitizenEntityCleaner
             m_Setting = new Setting(this);
             m_Locale = new LocaleEN(m_Setting); // Register & keep reference
             GameManager.instance.localizationManager.AddSource("en-US", m_Locale);
-            
-             // Load saved settings (or defaults on first run)
-            AssetDatabase.global.LoadSettings(Setting.SettingsKey, m_Setting, new Setting(this));
+
+            // Load saved settings (or defaults on first run)
+            AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));
 
             m_Setting.RegisterInOptionsUI();
 

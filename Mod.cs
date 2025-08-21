@@ -91,19 +91,20 @@ namespace CitizenEntityCleaner
         {
             log.Info(nameof(OnDispose));
 
-            // Unhook events BEFORE nulling fields to avoid null reference exceptions.
+            // 1. Unsubscribe events BEFORE nulling references to avoid null ref exceptions.
             if (CleanupSystem != null)
             {
                 if (_onProgress  != null) CleanupSystem.OnCleanupProgress  -= _onProgress;
                 if (_onCompleted != null) CleanupSystem.OnCleanupCompleted -= _onCompleted;
                 if (_onNoWork    != null) CleanupSystem.OnCleanupNoWork    -= _onNoWork;  // for "nothing to clean"
             }
-    
-            // Unregister localization source
+
+            // 2. Unregister localization source (if added on load)
+            // this is important to avoid memory leaks and proper cleanup.
             if (m_Locale != null)
                 GameManager.instance.localizationManager.RemoveSource("en-US", m_Locale);
 
-            // Unregister settings UI (settings already persisted via ApplyAndSave in setters)
+            // 3. Unregister settings UI (settings already persisted via ApplyAndSave in setters)
             if (m_Setting != null)
             {
                 m_Setting.UnregisterInOptionsUI();

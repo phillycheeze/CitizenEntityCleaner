@@ -37,9 +37,9 @@ namespace CitizenEntityCleaner
 
         // Callback for when cleanup is in progress and completed
         // event instead of public delegate prevents external code accidental overwrite delegate list
-        public event System.Action<float> OnCleanupProgress;
-        public event System.Action OnCleanupCompleted;
-        public event System.Action OnCleanupNoWork;
+        public event System.Action<float>? OnCleanupProgress;
+        public event System.Action? OnCleanupCompleted;
+        public event System.Action? OnCleanupNoWork;
        
         protected override void OnCreate()
         {   

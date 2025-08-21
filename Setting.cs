@@ -8,9 +8,9 @@ using UnityEngine;      // for About tab Application.OpenURL
 
 namespace CitizenEntityCleaner
 {
-    public static class ModKeys
+    internal static class ModKeys
     {
-        public const string SettingsKey = "CitizenEntityCleaner"; // Reuse same settings key everywhere
+        public const string SettingsKey = "CitizenEntityCleaner";
     }
 
     [FileLocation(ModKeys.SettingsKey)]

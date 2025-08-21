@@ -33,7 +33,7 @@ namespace CitizenEntityCleaner
         private Setting m_Setting;
         private LocaleEN m_Locale;    // keep a reference to locale source to unregister later
         
-        // Reference to our cleanup system
+        // Reference to the cleanup system
         public static CitizenCleanupSystem CleanupSystem { get; private set; }
 
 

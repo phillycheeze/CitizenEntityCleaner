@@ -22,7 +22,10 @@
 		<Product>Citizen Entity Cleaner</Product>
 
 		<!-- Compile warnings to prevent NullReferenceException errors-->
-		<Nullable>enable</Nullable>		
+		<Nullable>enable</Nullable>
+		
+		<!-- For Windows file properties -->
+		<Description>Cleanup of citizen entities for Cities: Skylines II.</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

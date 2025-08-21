@@ -34,7 +34,6 @@ namespace CitizenEntityCleaner
         }
 }
 
-
         public static readonly string Author =
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
             ?? "phillycheese";    // fallback author

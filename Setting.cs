@@ -24,7 +24,7 @@ namespace CitizenEntityCleaner
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
-        public const string UsageGroup = "Usage";    //section in About tab
+        public const string UsageGroup = "Usage";    //About tab section for usage instructions
 
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
@@ -144,7 +144,7 @@ namespace CitizenEntityCleaner
         // -------------------------
         // About Tab links
         // -------------------------
-        [SettingsUIButtonGroup("SocialLinks")]    // Group to get Github & Discord links on same line
+        [SettingsUIButtonGroup("SocialLinks")]    // Group to get Github & Discord buttons on the same line
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton

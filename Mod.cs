@@ -56,7 +56,7 @@ namespace CitizenEntityCleaner
             // One time banner static guard to avoid duplicates on hot reload
             if (!s_bannerLogged)    
             {
-                log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
+                log.Info($"Mod: {Name} v{Version} by {Author}");    // add info banner at the top of log
                 s_bannerLogged = true;
             }
 

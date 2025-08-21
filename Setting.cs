@@ -8,17 +8,17 @@ using UnityEngine;      // for About tab Application.OpenURL
 
 namespace CitizenEntityCleaner
 {
+    public static class ModKeys
+    {
+        public const string SettingsKey = "CitizenEntityCleaner"; // Reuse same settings key everywhere
+    }
+    [FileLocation(SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose for About tab.
     public class Setting : ModSetting
     {
-        // Reuse the same settings key everywhere
-        public const string SettingsKey = "CitizenEntityCleaner";
-        [FileLocation(SettingsKey)]
-
         public const string kSection = "Main";
-
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";

@@ -6,12 +6,15 @@
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 		<TargetFramework>net472</TargetFramework>
 
-		<!--Single source for Version, Author, and mod Name (note PublishConfiguration is separate) -->
+		<!--Single source for Version (note PublishConfiguration is separate) -->
 		<Version>1.4.0</Version>
-		<AssemblyVersion>$(Version).0</AssemblyVersion>
+		
 		<!-- For Windows file properties -->
 		<FileVersion>$(Version).0</FileVersion>
-		
+		<!-- Keep CLR binding stable -->
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+
+		<!-- Identity / metadata -->
 		<Authors>phillycheese</Authors>
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>
@@ -20,17 +23,19 @@
 		<AssemblyName>CitizenEntityCleaner</AssemblyName>
 		<Product>Citizen Entity Cleaner</Product>
 
-		<!-- Compile warnings to prevent NullReferenceException errors-->
+		<!-- Compile warnings to prevent NullReferenceExceptions -->
 		<Nullable>enable</Nullable>
-		
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<DefineConstants>TRACE;DEBUG</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+	
+		<!-- UI string: plain in Release, “ - DEV” in Debug -->
+		<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<InformationalVersion>$(Version)</InformationalVersion>
 		<DefineConstants>TRACE</DefineConstants>
-	</PropertyGroup>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<InformationalVersion>$(Version) - DEV</InformationalVersion>
+		<DefineConstants>TRACE;DEBUG</DefineConstants>
+		</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />

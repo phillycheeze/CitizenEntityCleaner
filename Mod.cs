@@ -24,8 +24,8 @@ namespace CitizenEntityCleaner
             Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
             ?? "phillycheese";    // fallback author
 
-        public static ILog log = LogManager
-            .GetLogger($"{nameof(CitizenEntityCleaner)}.{nameof(Mod)}")
+        public static readonly ILog log = LogManager
+            .GetLogger("CitizenEntityCleaner") // log file located in ..\CitySkylines II\logs\CitizenEntityCleaner.log
             .SetShowsErrorsInUI(false);
             
         private Setting? m_Setting;     // nullable reference to settings, initialized in OnLoad

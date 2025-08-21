@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<Configurations>Debug;Release</Configurations>
-	
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored -->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
 		<TargetFramework>net472</TargetFramework>
@@ -23,8 +22,14 @@
 		<Product>Citizen Entity Cleaner</Product>
 
 		<!-- Compile warnings to prevent NullReferenceException errors-->
-		<Nullable>enable</Nullable>
-		
+		<Nullable>enable</Nullable>		
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>TRACE;DEBUG</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE</DefineConstants>
 	</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->

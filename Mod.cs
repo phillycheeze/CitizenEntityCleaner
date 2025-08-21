@@ -48,31 +48,31 @@ namespace CitizenEntityCleaner
         
         public void OnLoad(UpdateSystem updateSystem)
         {
-            // If the attribute is missing, warn once.
-            if (Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>() == null)
-                log.Warn("AssemblyTitleAttribute not found; using fallback mod name shown to users.");
+            // Warn once in log if assembly title is missing
+            var asm = Assembly.GetExecutingAssembly();
+            if (asm.GetCustomAttribute<AssemblyTitleAttribute>() == null)
+                log.Warn("AssemblyTitleAttribute not found; using fallback mod name.");
 
             log.Info(nameof(OnLoad));
-           #if DEBUG
-            const string BuildTag = " - DEV";
-            #else
-            const string BuildTag = "";
-            #endif
 
-            if (!s_bannerLogged)    // static guard to avoid duplicates on hot reload
-            {
-            log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
-            s_bannerLogged = true;
-            }
+            // One time banner
+            #if DEBUG
+              const string BuildTag = " - DEV";
+            #else
+              const string BuildTag = "";
+            #endif
+                if (!s_bannerLogged)    // static guard to avoid duplicates on hot reload
+                {
+                    log.Info($"Mod: {Name} v{Version}{BuildTag} by {Author}");    // add info banner at the top of log
+                    s_bannerLogged = true;
+                }
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 log.Info($"Current mod asset at {asset.path}");
 
-            // Settings UI
+            // Settings + Locale
             m_Setting = new Setting(this);
-
-            // Localization source (register & keep reference)
-            m_Locale = new LocaleEN(m_Setting);
+            m_Locale = new LocaleEN(m_Setting); // Register & keep reference
             GameManager.instance.localizationManager.AddSource("en-US", m_Locale);
             
              // Load saved settings (or defaults on first run)

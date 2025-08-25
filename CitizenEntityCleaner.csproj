@@ -4,7 +4,7 @@
 		<Configurations>Debug;Release</Configurations>
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored -->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 
 		<!--Single source for Version (note PublishConfiguration is separate) -->
 		<Version>1.4.0</Version>
@@ -14,8 +14,6 @@
 		<!-- Keep CLR binding stable -->
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 
-		<!-- Identity / metadata -->
-		<Authors>phillycheese</Authors>
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>
 		<!-- AssemblyTitle for About tab, AssemblyName for DLL & folder name, Product for Windows properties -->

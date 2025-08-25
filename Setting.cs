@@ -138,9 +138,6 @@ namespace CitizenEntityCleaner
         [SettingsUISection(AboutTab, InfoGroup)]
         public string VersionText => Mod.Version;
 
-        [SettingsUISection(AboutTab, InfoGroup)]
-        public string AuthorText => Mod.Author;
-
         // -------------------------
         // About Tab links
         // -------------------------
@@ -328,8 +325,6 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "Display name of this mod." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.AuthorText)), "Author" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.AuthorText)), "Mod author" }, 
 
                 // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },

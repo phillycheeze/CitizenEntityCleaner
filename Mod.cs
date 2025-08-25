@@ -34,10 +34,6 @@ namespace CitizenEntityCleaner
         }
 
 
-        public static readonly string Author =
-            Asm.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company
-            ?? "phillycheese";    // fallback author
-
         public static readonly ILog log = LogManager
             .GetLogger("CitizenEntityCleaner") // log file located in ..\CitySkylines II\logs\CitizenEntityCleaner.log
             .SetShowsErrorsInUI(false);
@@ -47,7 +43,6 @@ namespace CitizenEntityCleaner
         
         // Reference to the cleanup system
         public static CitizenCleanupSystem? CleanupSystem { get; private set; } // nullable; assigned in OnLoad
-
 
         // --- fields ---
         private static bool s_bannerLogged;    // static guard to avoid duplicates
@@ -65,7 +60,7 @@ namespace CitizenEntityCleaner
             // One time banner static guard to avoid duplicates on hot reload
             if (!s_bannerLogged)    
             {
-                log.Info($"Mod: {Name} | Version: {Version} | Author: {Author}");    // add info banner at the top of log
+                log.Info($"Mod: {Name} | Version: {Version}");    // add info banner at the top of log
                 s_bannerLogged = true;
             }
 
@@ -94,9 +89,9 @@ namespace CitizenEntityCleaner
             _onNoWork = m_Setting.FinishCleanupNoWork;   // if nothing to clean
 
             // Set up callbacks for Cleanup progress, completion, or no work.
-            CleanupSystem.OnCleanupProgress  += _onProgress;
+            CleanupSystem.OnCleanupProgress += _onProgress;
             CleanupSystem.OnCleanupCompleted += _onCompleted;
-            CleanupSystem.OnCleanupNoWork    += _onNoWork;
+            CleanupSystem.OnCleanupNoWork += _onNoWork;
 
             log.Info("CitizenCleanupSystem registered");
         }
@@ -126,7 +121,6 @@ namespace CitizenEntityCleaner
             }
             
             // Clean up system reference and callbacks
-    
             CleanupSystem = null;
             _onProgress = null;
             _onCompleted = null;

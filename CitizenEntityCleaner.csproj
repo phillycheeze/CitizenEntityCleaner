@@ -2,11 +2,38 @@
 
 	<PropertyGroup>
 		<Configurations>Debug;Release</Configurations>
-	
-		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
+		<!--The file where mod information which is required for publishing mod on PDX mods are stored -->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
+
+		<!--Single source for Version (note PublishConfiguration is separate) -->
+		<Version>1.4.0</Version>
+		
+		<!-- For Windows file properties -->
+		<FileVersion>$(Version).0</FileVersion>
+		<!-- Keep CLR binding stable -->
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+
+		<!-- Company allows reflection of author property -->
+		<Company>$(Authors)</Company>
+		<!-- AssemblyTitle for About tab, AssemblyName for DLL & folder name, Product for Windows properties -->
+		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
+		<AssemblyName>CitizenEntityCleaner</AssemblyName>
+		<Product>Citizen Entity Cleaner</Product>
+
+		<!-- Compile warnings to prevent NullReferenceExceptions -->
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	
+		<!-- UI string: plain in Release, “ - DEV” in Debug build -->
+		<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<DefineConstants>TRACE</DefineConstants>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<InformationalVersion>$(Version) - DEV</InformationalVersion>
+		<DefineConstants>TRACE;DEBUG</DefineConstants>
+		</PropertyGroup>
 	
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />

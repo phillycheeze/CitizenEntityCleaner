@@ -11,27 +11,36 @@ namespace CitizenEntityCleaner
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
-        private static ILog s_log = Mod.log;
+        private static readonly ILog s_log = Mod.log;
         
-        // Flag to trigger the cleanup operation
-        private bool m_shouldRunCleanup = false;
+        // ---- constants ----
+        private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
+        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // explicit enum (was a magic number)
+        private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
+        
+        // ---- fields ----
+        private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
+        private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
+        
+        private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
         
         // Chunked cleanup state
         private NativeList<Entity> m_entitiesToCleanup;
         private int m_cleanupIndex = 0;
         private bool m_isChunkedCleanupInProgress = false;
-        private const int CLEANUP_CHUNK_SIZE = 2000;
-        
+
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
         
-        // Reference to settings
-        private Setting m_settings;
-        
+     
+        private Setting? m_settings; // nullable. Store setting passed from Mod.Onload
+
         // Callback for when cleanup is in progress and completed
-        public System.Action OnCleanupCompleted;
-        public System.Action<float> OnCleanupProgress;
-        
+        // event instead of public delegate prevents external code accidental overwrite delegate list
+        public event System.Action<float>? OnCleanupProgress;
+        public event System.Action? OnCleanupCompleted;
+        public event System.Action? OnCleanupNoWork;
+       
         protected override void OnCreate()
         {   
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
@@ -40,46 +49,35 @@ namespace CitizenEntityCleaner
                 None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
             });
             
-            RequireForUpdate(m_householdMemberQuery);
             base.OnCreate();
 
             s_log.Info("CitizenCleanupSystem created");
         }
 
+        // Non-blocking: process one chunk if run is active, otherwise start a run if requested
         protected override void OnUpdate()
         {
+         // If nothing active & nothing requested, do nothing this frame
+         if (!m_isChunkedCleanupInProgress && !m_shouldRunCleanup)
+            return;
+            
             // Handle chunked cleanup if in progress, otherwise fallback to boolean flag
             if (m_isChunkedCleanupInProgress)
             {
                 ProcessCleanupChunk();
                 return;
             }
-            
-            if (!m_shouldRunCleanup)
-                return;
 
+            // Start new cleanup run: a run requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
             m_shouldRunCleanup = false;
-            
             s_log.Info("Starting citizen entity cleanup...");
-            
             StartChunkedCleanup();
         }
 
         /// <summary>
         /// Sets the settings reference for filtering
         /// </summary>
-        public void SetSettings(Setting settings)
-        {
-            m_settings = settings;
-        }
-
-        /// <summary>
-        /// Gets the current settings for filtering
-        /// </summary>
-        public Setting GetSettings()
-        {
-            return m_settings;
-        }
+        public void SetSettings(Setting settings) => m_settings = settings;
 
         /// <summary>
         /// Triggers the cleanup operation to run on the next update
@@ -120,7 +118,10 @@ namespace CitizenEntityCleaner
             try
             {
                 using var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-                using var processedHouseholds = new NativeHashSet<Entity>(householdMembers.Length, Allocator.TempJob);
+                // Create a hash set with capacity equal to number of household members, but never less than 1
+                  using var processedHouseholds =
+                      new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
+
                 
                 foreach (var householdMember in householdMembers)
                 {
@@ -173,35 +174,34 @@ namespace CitizenEntityCleaner
         /// <summary>
         /// Determines whether a citizen should be included in cleanup based on filter settings
         /// </summary>
-        private bool ShouldIncludeCitizen(Entity citizenEntity)
-        {
+       private bool ShouldIncludeCitizen(Entity citizenEntity)
+       {
             var settings = m_settings;
             if (settings == null) return true;
-            
-            // Check if citizen is a commuter and filter is disabled
+        
+            // Check commuter (exclude if commuter and IncludeCommuters is false)
             if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
             {
                 var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
                 if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
-                {
                     return false;
-                }
             }
-            
-            // Check if citizen is homeless and filter is disabled  
+        
+            // Check homeless (exclude if homeless and IncludeHomeless is false)
             if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
             {
                 var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
                 var human = transport.m_CurrentTransport;
-                if (EntityManager.Exists(human)) {
+        
+                // Guard: ensure Human exists and has the component before reading it
+                if (EntityManager.Exists(human) && EntityManager.HasComponent<Game.Creatures.Human>(human))
+                {
                     var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);
-                    if ((humanData.m_Flags & (Game.Creatures.HumanFlags)0x40u) != 0 && !settings.IncludeHomeless)
-                    {
+                    if ((humanData.m_Flags & HomelessFlag) != 0 && !settings.IncludeHomeless)
                         return false;
-                    }
                 }
             }
-            
+        
             return true;
         }
 
@@ -211,9 +211,25 @@ namespace CitizenEntityCleaner
         private void StartChunkedCleanup()
         {
             m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
-            m_cleanupIndex = 0;
-            m_isChunkedCleanupInProgress = true;
             
+            // reset throttles at start of each run
+            m_lastProgressNotified = -1f;    // UI throttle
+            m_lastLoggedBucket = -1;        // Log throttle
+            m_cleanupIndex = 0;
+
+            // immediately finish when nothing to do
+            if (m_entitiesToCleanup.Length == 0)
+            {
+                s_log.Info("Cleanup requested, but there is nothing to clean.");
+                if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
+                m_isChunkedCleanupInProgress = false;
+  
+                OnCleanupProgress?.Invoke(1f);    // optional: send final progress of 100%
+                OnCleanupNoWork?.Invoke();
+                return;
+            }
+            
+            m_isChunkedCleanupInProgress = true;
             s_log.Info($"Starting chunked cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");
         }
         
@@ -227,7 +243,8 @@ namespace CitizenEntityCleaner
                 FinishChunkedCleanup();
                 return;
             }
-            
+
+            // Delete a chunk this frame
             int remainingEntities = m_entitiesToCleanup.Length - m_cleanupIndex;
             int chunkSize = math.min(CLEANUP_CHUNK_SIZE, remainingEntities);
             
@@ -235,13 +252,30 @@ namespace CitizenEntityCleaner
             EntityManager.AddComponent<Deleted>(chunk);
             
             m_cleanupIndex += chunkSize;
-            
+
+            // --- Progress (float) for UI, throttled ~5% ---
             float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
-            OnCleanupProgress?.Invoke(progress);
+            if (progress >= 0.999f || progress - m_lastProgressNotified >= 0.05f)
+            {
+                m_lastProgressNotified = progress;
+                OnCleanupProgress?.Invoke(progress);
+            }
+
+            // --- Progress (int buckets) for logs ---
+            //  LOG_BUCKET_PERCENT = 10 to reduce log spam; change to 5 for 5% (more spam)
+            int percent = math.min(100, (int)math.floor(progress * 100f));
+            int bucket  = percent / LOG_BUCKET_PERCENT;
             
-            s_log.Info($"Processed chunk: {m_cleanupIndex}/{m_entitiesToCleanup.Length} citizens ({progress:P0})");
-        }
-        
+            if (bucket > m_lastLoggedBucket)
+            {
+                 m_lastLoggedBucket = bucket;
+                 if (percent >= 100)
+                    s_log.Info("Cleanup 100% (finalizing)…");
+                else
+                    s_log.Info($"Cleanup {bucket * LOG_BUCKET_PERCENT}%…");
+                }
+            }
+
         /// <summary>
         /// Finishes the chunked cleanup process
         /// </summary>
@@ -251,13 +285,24 @@ namespace CitizenEntityCleaner
             {
                 s_log.Info($"Entity cleanup completed. Marked {m_entitiesToCleanup.Length} citizens for deletion.");
                 m_entitiesToCleanup.Dispose();
+                m_entitiesToCleanup = default;    // clear handle after dispose
             }
             
             m_isChunkedCleanupInProgress = false;
+
+            // Final UI snap to 100% only if we didn't already report it
+            if (m_lastProgressNotified < 0.999f)
+            {
+            OnCleanupProgress?.Invoke(1f);
+            }
+
+            // Reset state for next run
             m_cleanupIndex = 0;
-            
+            m_lastProgressNotified = -1f;    // UI throttle reset
+            m_lastLoggedBucket     = -1;    // log throttle reset
+
             // Notify settings that cleanup is complete
-            OnCleanupCompleted?.Invoke();
+            OnCleanupCompleted?.Invoke();   
         }
 
         protected override void OnDestroy()

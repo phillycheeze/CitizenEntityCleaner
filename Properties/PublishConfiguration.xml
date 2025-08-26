@@ -69,9 +69,9 @@ Not sure. It could be another mod or something introduced in a more recent patch
 
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/Thumbnail.png" />
+	<Thumbnail Value="Properties/Thumbnail.jpg" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/Screenshots/CEC-thumbnail05.png" />
+	<Screenshot Value="Properties/Screenshots/CEC-thumbnail05.jpg" />
 	<Screenshot Value="Properties/Screenshots/before.jpg" />
 	<Screenshot Value="Properties/Screenshots/after.jpg" />
 	<!--Tag, can be set multiple times-->

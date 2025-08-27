@@ -41,8 +41,9 @@ This entity bloat causes several issues:
 4. Select checkbox ✅ options as desired.
 5. Click [Cleanup Citizens] to clean up entities.
 
-*Note: this mod does `nothing automatically;` it acts only when you click [Cleanup Citizens].*  
-*Note: revert to original saved city if needed for unexpected behavior.*
+> [!NOTE]
+> This mod does `nothing automatically;` it acts only when you click [Cleanup Citizens].\
+> Revert to original saved city if needed for unexpected behavior.
 
 ## What This Mod Does
 

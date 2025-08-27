@@ -23,40 +23,41 @@ This entity bloat causes several issues:
 - **Cars get abandoned** and permanently occupying parking spots, never being used again
 - **General performance degradation** across querying systems
 
-⚠️ **This mod will also:**
-- Optional: delete all homeless citizens (only if Options checkbox selected)
-- Optional: delete commuters (Options checkbox)
+ℹ️ **Mod Bonus Options:**
+- Delete all commuters (Optional ✅)
+- Delete all homeless citizens (Optional ✅)
+  
+ℹ️ **This mod may also:**
 - Delete "Pending" citizens that may be buffered for relocation
-- May cause momentary drops in population demand
-- May have other long-term consequences not fully understood
+- Cause momentary drops in population demand
+- Have other long-term consequences not fully understood
 - Safe to remove anytime
-
-## What This Mod Does
-
-Deletes any Citizen entites that don't have a PropertyRenter component attached to it. The vanilla game will clean up the households, vehicles, and anything else afterwards. It is a very simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
-
-## Unintended Consequences
-
-⚠️ **This mod will also delete:**
-- "Pending" citizens that may be buffered for relocation
-- May cause momentary drops in population demand
-- May have other long-term consequences not fully understood
 
 ## Usage
 
 1. **Backup your save file first!**
-2. Open mod Options in-game.
+2. Once the saved city is loaded, go to mod Options.
 3. Click [Refresh Counts] to see current statistics.
-4. Select checkbox options as desired.
+4. Select checkbox ✅ options as desired.
 5. Click [Cleanup Citizens] to clean up entities.
 
-Note: revert to original saved city if needed for unexpected behavior.    
-Note: this mod does nothing automatically; it acts only when you click [Cleanup Citizens].
+*Note: this mod does `nothing automatically;` it acts only when you click [Cleanup Citizens].*  
+*Note: revert to original saved city if needed for unexpected behavior.*
 
+## What This Mod Does
+
+Deletes any Citizen entites that don't have a PropertyRenter component attached to it. The vanilla game will clean up the households, vehicles, and anything else afterwards. It is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
 ## What is causing the issue?
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introducted that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. Also, if you notice a sudden drop in population when loading up a save and a bunch of households moving back in, its seems like this issue is related to that as well.
 
-## Thanks to
-yenyang, Konsi, krzychu124, Honu
+## Feedback / Bug Report:
+* Go to Discord channel for Citizen Entity Cleaner on **[Cities: Skylines Modding Discord](https://discord.com/channels/1024242828114673724/1402078697120469064)**
+  
+## Credits
+- phillycheese - mod author
+- yenyang - Feedback, Cooperative development
+- Konsi - Testing, Feedback
+- krzychu124 - Testing, Feedback, Code Sharing
+- Honu - Github Updates, Testing, Feedback, Logo, Cooperative Development, Code Sharing

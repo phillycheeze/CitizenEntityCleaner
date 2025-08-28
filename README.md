@@ -42,12 +42,20 @@ This entity bloat causes several issues:
 5. Click [Cleanup Citizens] to clean up entities.
 
 > [!NOTE]
-> This mod does `nothing automatically;` it acts only when you click [Cleanup Citizens].\
 > Revert to original saved city if needed for unexpected behavior.
 
 ## What This Mod Does
 
-Deletes any Citizen entites that don't have a PropertyRenter component attached to it. The vanilla game will clean up the households, vehicles, and anything else afterwards. It is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
+- Finds households **missing `PropertyRenter`** that still list members
+- Marks these citizen entities for deletion in chunked batches
+- The base game then naturally cleans up remaining references (households, vehicles, households, vehicles, student/patient references, and anything else afterwards).
+- This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
+
+> **Does not do**
+> - Does **not** delete tourists
+> - Does **not** touch citizens in valid households
+> - Does **not** run automatically (only acts when you click **Cleanup Citizens**)
+
 
 ## What is causing the issue?
 

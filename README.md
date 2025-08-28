@@ -53,7 +53,7 @@ This entity bloat causes several issues:
 
 > **Does not do**
 > - Does **not** delete tourists or citizens in valid households
-> - Does **not** run automatically (only acts when you click **Cleanup Citizens**)
+> - Does **not** run automatically (only acts when you click \[Cleanup Citizens])
 
 
 ## What is causing the issue?

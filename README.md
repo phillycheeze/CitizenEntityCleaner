@@ -52,8 +52,7 @@ This entity bloat causes several issues:
 - This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
 > **Does not do**
-> - Does **not** delete tourists
-> - Does **not** touch citizens in valid households
+> - Does **not** delete tourists or citizens in valid households
 > - Does **not** run automatically (only acts when you click **Cleanup Citizens**)
 
 

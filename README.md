@@ -12,7 +12,7 @@ This mod touches sensitive game components and is a work-around. Use at your own
 
 ## Problem
 
-Over time, Citizen and Household entities accumulate to extremely large numbers in Cities Skylines 2, far exceeding your actual population. In my example, the save contained 700,000+ citizen entities while only having a population of 40,000.
+Over time, Citizen and Household entities accumulate to extremely large numbers in Cities Skylines 2, far exceeding your actual population. In my example, the save contained 700,000+ citizen entities while only having a population of 40,000. Some users don't have this bug, but others could have millions of corrupted entities.
 
 ## Performance Impact
 

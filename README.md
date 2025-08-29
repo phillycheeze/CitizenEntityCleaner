@@ -67,5 +67,5 @@ Not sure. It could be another mod or something introduced in a more recent patch
 - phillycheese - mod author
 - yenyang - Feedback, Cooperative development
 - Konsi - Testing, Feedback
-- krzychu124 - Testing, Feedback, Code Sharing
-- Honu - Github Updates, Testing, Feedback, Logo, Cooperative Development, Code Sharing
+- krzychu124 - Feedback, Code Sharing
+- Honu - Testing, Feedback, Logo, Code Updates, UI

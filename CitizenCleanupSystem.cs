@@ -255,7 +255,8 @@ namespace CitizenEntityCleaner
             // Rebuild deletion list from the set
             if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
 
-            m_entitiesToCleanup = new NativeList<Entity>(unique.Count(), Allocator.Persistent);
+            m_entitiesToCleanup = new NativeList<Entity>(unique.Count, Allocator.Persistent);
+
             foreach (var e in unique)
             {
                 m_entitiesToCleanup.Add(e);

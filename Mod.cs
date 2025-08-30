@@ -16,22 +16,13 @@ namespace CitizenEntityCleaner
                 Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title
             ?? "Citizen Entity Cleaner";    // fallback title
 
-        // Show full version in Debug build; strip metadata in Release
-        public static readonly string Version = GetUiVersion();
-        private static string GetUiVersion()
-        {
-            var raw = Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                      ?? "1.0.0";
+        // Versions (short + full)
+        private static readonly string VersionInformationalRaw =
+            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? "1.0.0";
 
-#if DEBUG
-        // Show exactly what Debug sets, e.g. "1.4.0 - DEV+abcdef"
-        return raw;
-#else
-            // In Release build, trim anything after space or '+', so "1.4.0", clean.
-            int cut = raw.IndexOfAny(new[] { ' ', '+' });
-            return (cut > 0) ? raw.Substring(0, cut) : raw;
-#endif
-        }
+        public static readonly string VersionShort = VersionInformationalRaw.Split(' ', '+')[0];
+        public static readonly string VersionInformational = VersionInformationalRaw;
 
 
         public static readonly ILog log = LogManager
@@ -60,7 +51,7 @@ namespace CitizenEntityCleaner
             // One time banner static guard to avoid duplicates on hot reload
             if (!s_bannerLogged)    
             {
-                log.Info($"Mod: {Name} | Version: {Version}");    // add info banner at the top of log
+                log.Info($"Mod: {Name} | Version: {VersionShort} | Info: {VersionInformational}");  // add info banner at the top of log
                 s_bannerLogged = true;
             }
 

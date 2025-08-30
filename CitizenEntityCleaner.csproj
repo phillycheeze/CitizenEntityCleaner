@@ -7,7 +7,7 @@
 		<TargetFramework>net48</TargetFramework>
 
 		<!--Single source for Version (note PublishConfiguration is separate) -->
-		<Version>1.4.0</Version>
+		<Version>1.5.0</Version>
 		
 		<!-- For Windows file properties -->
 		<FileVersion>$(Version).0</FileVersion>
@@ -23,17 +23,23 @@
 
 		<!-- Compile warnings to prevent NullReferenceExceptions -->
 		<Nullable>enable</Nullable>
+	
 	</PropertyGroup>
 	
-		<!-- UI string: plain in Release, “ - DEV” in Debug build -->
-		<PropertyGroup Condition="'$(Configuration)'=='Release'">
+	<!-- Release will have short Version, i.e., 1.5.0 (no +commit) -->
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<InformationalVersion>$(Version)</InformationalVersion>
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<DefineConstants>TRACE</DefineConstants>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<InformationalVersion>$(Version) - DEV</InformationalVersion>
+	</PropertyGroup>
+	<!-- Debug will have long Version, i.e., 1.5.0+commit -->
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
 		<DefineConstants>TRACE;DEBUG</DefineConstants>
-		</PropertyGroup>
+	</PropertyGroup>
+
+		
 	
 	<!--Imports must be after PropertyGroup block-->
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />

@@ -31,6 +31,7 @@ namespace CitizenEntityCleaner
 
         private bool _includeHomeless = false;
         private bool _includeCommuters = false;
+        private bool _includeCorrupt = true; // defaults ON
 
         private string _totalCitizens = "Click Refresh to load";
         private string _corruptedCitizens = "Click Refresh to load";
@@ -43,6 +44,19 @@ namespace CitizenEntityCleaner
         // -------------------------
         // Filter toggles (static labels)
         // -------------------------
+        [SettingsUISection(kSection, kFiltersGroup)]
+        public bool IncludeCorrupt
+        {
+            get => _includeCorrupt;
+            set
+            {
+                if (_includeCorrupt == value) return;
+                _includeCorrupt = value;
+                ApplyAndSave();            // <-- persist the checkbox value.
+                RefreshEntityCounts();    // optional live update
+            }
+        }
+
         [SettingsUISection(kSection, kFiltersGroup)]
         public bool IncludeHomeless
         {
@@ -136,7 +150,12 @@ namespace CitizenEntityCleaner
         public string NameText => Mod.Name;
 
         [SettingsUISection(AboutTab, InfoGroup)]
-        public string VersionText => Mod.Version;
+        public string VersionText => Mod.VersionShort;
+
+        #if DEBUG
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public string InformationalVersionText => Mod.VersionInformational;
+        #endif
 
         // -------------------------
         // About Tab links
@@ -165,7 +184,7 @@ namespace CitizenEntityCleaner
             }
         }
 
-        // Paradox Mods link on its own row (no group)
+        [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenParadoxModsButton
@@ -176,7 +195,6 @@ namespace CitizenEntityCleaner
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
             }
         }
-
        
         // --- About tab: USAGE ---
         [SettingsUIMultilineText]
@@ -190,10 +208,11 @@ namespace CitizenEntityCleaner
            
         public override void SetDefaults()
         {
-            // Explicit defaults for checkboxes for clarity
+            // Explicit defaults for checkboxes
+            _includeCorrupt = true;
             _includeHomeless  = false;
             _includeCommuters = false;
-
+           
             // Display strings
             _totalCitizens = "Click Refresh to load";
             _corruptedCitizens = "Click Refresh to load";
@@ -209,10 +228,10 @@ namespace CitizenEntityCleaner
             {
                 if (Mod.CleanupSystem != null)
                 {
-                    var (totalCitizens, corruptedCitizens) = Mod.CleanupSystem.GetCitizenStatistics();
+                    var (totalCitizens, citizensToClean) = Mod.CleanupSystem.GetCitizenStatistics();
 
                     _totalCitizens = $"{totalCitizens:N0}";
-                    _corruptedCitizens = $"{corruptedCitizens:N0}";
+                    _corruptedCitizens = $"{citizensToClean:N0}";
                 }
                 else
                 {
@@ -297,15 +316,18 @@ namespace CitizenEntityCleaner
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, also counts and cleans up citizens that the game officially flags as Homeless." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, counts and cleans up **homeless** citizens." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Include Commuters" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)), "When enabled, also counts and cleans up commuter citizens. Commuters include citizens that don't live in your city but travel to your city for work.\n\nSometimes, commuters previously lived in your city but moved out due to homelessness (feature added in game version 1.2.5)." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)), "When enabled, counts and cleans up **commuter** citizens. Commuters include citizens that don't live in your city but travel to your city for work.\n\nSometimes, commuters previously lived in your city but moved out due to homelessness (feature added in game version 1.2.5)." },
 
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Include Corrupt Citizens" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)), "When enabled (default), counts and cleans up **corrupt** citizens; residents that lack a PropertyRenter component.\n\n Corrupt citizens are the main target of this mod. If the city contains too many, it could cause issues over time." },
+                
                 // Buttons (STATIC labels)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component. This also includes filtered citizens.\n\nBE CAREFUL: this is a hacky workaround and may corrupt other data. Create a backup of your save first!" },
-                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "This will permanently delete citizens from corrupted households and those you have filtered out.\n\nPlease backup your save first! Continue?" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component.\n Cleanup also includes any optional items selected [ ✓ ].\n\nBE CAREFUL: this is a workaround and may corrupt other data. Create a backup of your save first!" },
+                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "Permanently delete items selected in options.\n\n<Please backup your save first!>\n Continue?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "<Load a saved city first to get numbers.>\nUpdates all entity counts to show current city statistics.\nAfter cleaning, let the game run unpaused for a minute." },
@@ -315,16 +337,21 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)), "Shows the current cleanup status. Updates live while the settings screen is open." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities currently in the simulation." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities currently in the simulation. Includes possible corrupt entities" },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Corrupted Citizens (including filters above)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizens in households without PropertyRenter components that will be cleaned up and deleted." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Citizens to Clean: select [ ✓ ] above" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizen entities to remove when you click **[Cleanup]**,\n\nbased on the selected boxes [ ✓ ]." },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "Display name of this mod." },
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
+                // Informational version with commit ID only displays in DEBUG builds
+                #if DEBUG
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.InformationalVersionText)), "Informational Version" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.InformationalVersionText)), "Mod Version with Commit ID" },
+                #endif
 
                 // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
@@ -344,7 +371,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Backup your save file first!>\n" +
                   "2. <Click [Refresh Counts] to see current statistics.>\n" +
-                  "3. <[ ✓ ]  Use optional checkboxes to include homeless or commuters.>\n" +
+                  "3. <[ ✓ ] Select the items to include: Corrupt, Homeless, Commuters.>\n" +
                   "4. <Click [Cleanup Citizens] to clean up entities.>"
                 },
                 {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed
@@ -352,7 +379,7 @@ namespace CitizenEntityCleaner
                 // Notes (separate block gives larger gap above)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
                 "Notes:\n" +
-                "• This mod does not run automatically; [Cleanup Citizens] must be used each time for removals.\n" +
+                "• This mod does **not** run automatically; use **[Cleanup Citizens]** each time for removals.\n" +
                 "• Revert to original saved city if needed for unexpected behavior."
                 },
                 

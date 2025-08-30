@@ -1,8 +1,10 @@
-using Unity.Entities;
-using Unity.Collections;
-using Unity.Mathematics;
 using Colossal.Logging;
-using Game.Common;
+using Game.Buildings;   // for PropertyRenter
+using Game.Citizens;    // for Citizen, HouseholdMember
+using Game.Common;       //for Deleted
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
 
 namespace CitizenEntityCleaner
 {
@@ -12,43 +14,58 @@ namespace CitizenEntityCleaner
     public partial class CitizenCleanupSystem : SystemBase
     {
         private static readonly ILog s_log = Mod.log;
-        
-        // ---- constants ----
+
+        #region Constants
         private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
-        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // explicit enum (was a magic number)
         private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
-        
-        // ---- fields ----
+        #endregion
+
+        #region Fields
+        // ---- state, queries ----
         private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
         private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
-        
         private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
-        
+
         // Chunked cleanup state
         private NativeList<Entity> m_entitiesToCleanup;
         private int m_cleanupIndex = 0;
         private bool m_isChunkedCleanupInProgress = false;
 
         // Cached query for reuse
+        private EntityQuery m_citizenQuery; // query for all citizens (exclude Deleted) to build commuter snapshot
         private EntityQuery m_householdMemberQuery;
-        
-     
-        private Setting? m_settings; // nullable. Store setting passed from Mod.Onload
 
+        // settings + snapshots
+        private Setting? m_settings; // nullable. Store setting passed from Mod.Onload
+        private NativeHashSet<Entity> m_commuterCitizens; // snapshot of commuters (built when commuter checkbox is ON)
+        #endregion
+
+        #region Events
         // Callback for when cleanup is in progress and completed
         // event instead of public delegate prevents external code accidental overwrite delegate list
         public event System.Action<float>? OnCleanupProgress;
         public event System.Action? OnCleanupCompleted;
         public event System.Action? OnCleanupNoWork;
-       
+        #endregion
+
+
+        /// <summary>
+        /// Setup queries and log creation
+        /// </summary>
         protected override void OnCreate()
         {   
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
             {
-                All = new ComponentType[] { ComponentType.ReadOnly<Game.Citizens.HouseholdMember>() },
-                None = new ComponentType[] { ComponentType.ReadOnly<Deleted>() }
+                All = new[] { ComponentType.ReadOnly<HouseholdMember>() },
+                None = new[] { ComponentType.ReadOnly<Deleted>() }
             });
             
+            m_citizenQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[] { ComponentType.ReadOnly<Citizen>() },
+                None = new[] { ComponentType.ReadOnly<Deleted>() }
+            });
+
             base.OnCreate();
 
             s_log.Info("CitizenCleanupSystem created");
@@ -74,6 +91,7 @@ namespace CitizenEntityCleaner
             StartChunkedCleanup();
         }
 
+        #region Public API
         /// <summary>
         /// Sets the settings reference for filtering
         /// </summary>
@@ -91,14 +109,14 @@ namespace CitizenEntityCleaner
         /// <summary>
         /// Gets citizen statistics for display
         /// </summary>
-        public (int totalCitizens, int corruptedCitizens) GetCitizenStatistics()
+        public (int totalCitizens, int citizensToClean) GetCitizenStatistics()
         {
             try
             {
                 int totalCitizens = m_householdMemberQuery.CalculateEntityCount();
-                int corruptedCitizens = GetCorruptedCitizenCount();
-                
-                return (totalCitizens, corruptedCitizens);
+                int citizensToClean = GetCitizensToCleanCount();
+
+                return (totalCitizens, citizensToClean);
             }
             catch (System.Exception ex)
             {
@@ -106,112 +124,165 @@ namespace CitizenEntityCleaner
                 return (0, 0);
             }
         }
+        #endregion
 
+        #region Selection Logic (build deletion set)
         /// <summary>
-        /// Gets all corrupted citizen entities (those in households without PropertyRenter)
-        /// Applies additional filtering based on settings for homeless and commuters
+        /// Builds the deletion set based on toggle options == true:
+        /// - Corrupt households (no PropertyRenter & not homeless/commuter/tourist)
+        /// - HomelessHousehold members when IncludeHomeless == true
+        /// - CommuterHousehold members when IncludeCommuters == true
+        /// Note: tourists are implicitly safe (hotels provide PropertyRenter); homeless check is Transport-agnostic.
         /// </summary>
-        private NativeList<Entity> GetCorruptedCitizenEntities(Allocator allocator)
+        private NativeList<Entity> GetDeletionCandidates(Allocator allocator)
         {
-            var corruptedCitizens = new NativeList<Entity>(allocator);
-            
+            using var householdMembers = m_householdMemberQuery.ToComponentDataArray<HouseholdMember>(Allocator.TempJob);
+            var candidates = new NativeList<Entity>(math.max(1, householdMembers.Length), allocator); // presize capacity - reduce reallocs
+
             try
             {
-                using var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
                 // Create a hash set with capacity equal to number of household members, but never less than 1
-                  using var processedHouseholds =
-                      new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
+                using var processedHouseholds =
+                    new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
 
-                
                 foreach (var householdMember in householdMembers)
                 {
                     Entity householdEntity = householdMember.m_Household;
-                    
-                    // Skip if already processed or doesn't exist
-                    if (processedHouseholds.Contains(householdEntity) || !EntityManager.Exists(householdEntity))
+
+                    // Skip if missing or already processed
+                    if (!EntityManager.Exists(householdEntity)) continue;
+                    if (!processedHouseholds.Add(householdEntity)) continue;
+
+                    // Must have members buffer
+                    if (!EntityManager.HasBuffer<HouseholdCitizen>(householdEntity))
                         continue;
-                        
-                    processedHouseholds.Add(householdEntity);
-                    
-                    // Check if household is corrupted (no PropertyRenter component)
-                    if (!EntityManager.HasComponent<Game.Buildings.PropertyRenter>(householdEntity) &&
-                        EntityManager.HasBuffer<Game.Citizens.HouseholdCitizen>(householdEntity))
+
+                    // If household has PropertyRenter, it's not corrupt → skip
+                    bool hasPropertyRenter = EntityManager.HasComponent<PropertyRenter>(householdEntity);
+                    if (hasPropertyRenter)
+                        continue;
+
+                    // No PropertyRenter: could be Homeless, Commuter, Tourist, or a truly corrupt resident household
+                    bool isHomelessHH = EntityManager.HasComponent<HomelessHousehold>(householdEntity);
+                    bool isCommuterHH = EntityManager.HasComponent<CommuterHousehold>(householdEntity);
+                    bool isTouristHH = EntityManager.HasComponent<TouristHousehold>(householdEntity);  // Optional guard: tourists generally have PropertyRenter via hotels already
+
+                    // Include when the matching toggle option is ON:
+                    // - Corrupt resident households: no PropertyRenter (not homeless/commuter/tourist) → IncludeCorrupt
+                    // - Homeless households    → IncludeHomeless
+                    // - Commuter households    → IncludeCommuters
+                    bool isResidentCorrupt = (!isHomelessHH && !isCommuterHH && !isTouristHH); // resident + no PR ⇒ corrupt
+
+                    bool includeThisHousehold =
+                        (isResidentCorrupt && (m_settings?.IncludeCorrupt ?? true))   // include if toggle ON (default ON)
+                        || (isHomelessHH && (m_settings?.IncludeHomeless == true))      // include if toggle ON
+                        || (isCommuterHH && (m_settings?.IncludeCommuters == true));    // include if toggle ON
+
+                    if (!includeThisHousehold)
+                        continue;
+
+                    // Include ALL members of this (already-approved) household
+                    var householdCitizens = EntityManager.GetBuffer<HouseholdCitizen>(householdEntity);
+                    for (int j = 0; j < householdCitizens.Length; j++)
                     {
-                        var householdCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
-                        
-                        foreach (var householdCitizen in householdCitizens)
-                        {
-                            Entity citizenEntity = householdCitizen.m_Citizen;
-                            
-                            if (EntityManager.Exists(citizenEntity) && !EntityManager.HasComponent<Deleted>(citizenEntity))
-                            {
-                                if (ShouldIncludeCitizen(citizenEntity))
-                                {
-                                    corruptedCitizens.Add(citizenEntity);
-                                }
-                            }
-                        }
+                        var citizenEntity = householdCitizens[j].m_Citizen;
+                        if (!EntityManager.Exists(citizenEntity)) continue;
+                        if (EntityManager.HasComponent<Deleted>(citizenEntity)) continue;
+
+                        candidates.Add(citizenEntity);
                     }
                 }
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting corrupted citizen entities: {ex.Message}");
+                s_log.Warn($"Error building deletion candidates: {ex.Message}");
             }
             
-            return corruptedCitizens;
+            return candidates;
         }
 
         /// <summary>
-        /// Gets count of corrupted citizens
+        /// Gets the count of citizens to clean based on toggles:
+        /// IncludeCorrupt, IncludeHomeless, IncludeCommuters.
+        /// Internally counts results of GetDeletionCandidates
         /// </summary>
-        private int GetCorruptedCitizenCount()
+        private int GetCitizensToCleanCount()
         {
-            using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
-            return corruptedCitizens.Length;
+            using var candidates = GetDeletionCandidates(Allocator.TempJob);
+            return candidates.Length;
+        }
+        #endregion
+
+        #region Helpers
+        // Build a one-shot snapshot of all commuter citizens
+        private void BuildCommuterSet(Allocator alloc)
+        {
+            if (m_commuterCitizens.IsCreated) m_commuterCitizens.Dispose();
+
+            using var entities = m_citizenQuery.ToEntityArray(Allocator.TempJob);
+            using var citizens = m_citizenQuery.ToComponentDataArray<Citizen>(Allocator.TempJob);
+
+            int capacity = math.max(1, entities.Length);
+            m_commuterCitizens = new NativeHashSet<Entity>(capacity, alloc);
+
+            for (int i = 0; i < citizens.Length; i++)
+            {
+                if ((citizens[i].m_State & CitizenFlags.Commuter) != 0)
+                    m_commuterCitizens.Add(entities[i]);
+            }
         }
 
-        /// <summary>
-        /// Determines whether a citizen should be included in cleanup based on filter settings
-        /// </summary>
-       private bool ShouldIncludeCitizen(Entity citizenEntity)
-       {
-            var settings = m_settings;
-            if (settings == null) return true;
-        
-            // Check commuter (exclude if commuter and IncludeCommuters is false)
-            if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
-            {
-                var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
-                if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
-                    return false;
-            }
-        
-            // Check homeless (exclude if homeless and IncludeHomeless is false)
-            if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
-            {
-                var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
-                var human = transport.m_CurrentTransport;
-        
-                // Guard: ensure Human exists and has the component before reading it
-                if (EntityManager.Exists(human) && EntityManager.HasComponent<Game.Creatures.Human>(human))
-                {
-                    var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);
-                    if ((humanData.m_Flags & HomelessFlag) != 0 && !settings.IncludeHomeless)
-                        return false;
-                }
-            }
-        
-            return true;
-        }
+        // Merge (set-union) the commuter snapshot into deletion list, de-duplicated
+        private void UnionCommutersIntoCleanup()
+        {
+            if (!m_commuterCitizens.IsCreated) return;
 
+            // De-dupe with a temp set
+            var unique = new NativeHashSet<Entity>(math.max(1, m_entitiesToCleanup.Length * 2), Allocator.Temp);
+
+            // Seed with current deletion list
+            for (int i = 0; i < m_entitiesToCleanup.Length; i++)
+                unique.Add(m_entitiesToCleanup[i]);
+
+            // Add all commuters (skip invalid or already deleted)
+            foreach (var e in m_commuterCitizens)
+            {
+                if (!EntityManager.Exists(e)) continue;
+                if (EntityManager.HasComponent<Deleted>(e)) continue;
+                unique.Add(e);
+            }
+
+            // Rebuild deletion list from the set
+            if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
+
+            m_entitiesToCleanup = new NativeList<Entity>(unique.Count(), Allocator.Persistent);
+            foreach (var e in unique)
+            {
+                m_entitiesToCleanup.Add(e);
+            }
+
+            unique.Dispose();
+
+        }
+        #endregion
+
+        #region Chunked Cleanup Workflow
         /// <summary>
         /// Starts the chunked cleanup process
         /// </summary>
         private void StartChunkedCleanup()
         {
-            m_entitiesToCleanup = GetCorruptedCitizenEntities(Allocator.Persistent);
-            
+            // Build the base set according to toggles:
+            // Corrupt residents (if IncludeCorrupt) + Homeless (if IncludeHomeless) + Commuters (if IncludeCommuters)
+            m_entitiesToCleanup = GetDeletionCandidates(Allocator.Persistent);
+
+            // If "Include Commuters" is ON, add all commuters
+            if (m_settings?.IncludeCommuters == true)
+            {
+                BuildCommuterSet(Allocator.Persistent); // scans flags, builds snapshot
+                UnionCommutersIntoCleanup(); // merge the base deletion list + commuters lists (+ de-dupe)
+            }
+
             // reset throttles at start of each run
             m_lastProgressNotified = -1f;    // UI throttle
             m_lastLoggedBucket = -1;        // Log throttle
@@ -222,13 +293,14 @@ namespace CitizenEntityCleaner
             {
                 s_log.Info("Cleanup requested, but there is nothing to clean.");
                 if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
+                if (m_commuterCitizens.IsCreated) m_commuterCitizens.Dispose(); // avoid lingering snapshot
                 m_isChunkedCleanupInProgress = false;
-  
-                OnCleanupProgress?.Invoke(1f);    // optional: send final progress of 100%
+
+                OnCleanupProgress?.Invoke(1f);  // optional: send final progress of 100%
                 OnCleanupNoWork?.Invoke();
                 return;
             }
-            
+
             m_isChunkedCleanupInProgress = true;
             s_log.Info($"Starting chunked cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");
         }
@@ -283,11 +355,16 @@ namespace CitizenEntityCleaner
         {
             if (m_entitiesToCleanup.IsCreated)
             {
-                s_log.Info($"Entity cleanup completed. Marked {m_entitiesToCleanup.Length} citizens for deletion.");
+                s_log.Info($"Cleanup completed. Marked {m_entitiesToCleanup.Length} entities for deletion.");
                 m_entitiesToCleanup.Dispose();
                 m_entitiesToCleanup = default;    // clear handle after dispose
             }
-            
+
+            if (m_commuterCitizens.IsCreated)
+            {
+                m_commuterCitizens.Dispose();
+            }
+
             m_isChunkedCleanupInProgress = false;
 
             // Final UI snap to 100% only if we didn't already report it
@@ -304,6 +381,7 @@ namespace CitizenEntityCleaner
             // Notify settings that cleanup is complete
             OnCleanupCompleted?.Invoke();   
         }
+        #endregion
 
         protected override void OnDestroy()
         {
@@ -312,6 +390,11 @@ namespace CitizenEntityCleaner
                 m_entitiesToCleanup.Dispose();
             }
             
+            if (m_commuterCitizens.IsCreated)
+            {
+                m_commuterCitizens.Dispose();
+            }
+
             s_log.Info("CitizenCleanupSystem destroyed");
             base.OnDestroy();
         }

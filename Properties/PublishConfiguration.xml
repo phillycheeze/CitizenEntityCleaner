@@ -108,7 +108,7 @@
 - **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
 - Refactor and performance tuning	
 - **Safe:** Tourists are now excluded explicitly
-- **Improved Logs & Versioning:** Easier to track
+- **Improved Logs and Versioning:** Easier to track
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

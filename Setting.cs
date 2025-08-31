@@ -29,9 +29,10 @@ namespace CitizenEntityCleaner
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
 
+        private bool _includeCorrupt = true; // defaults ON
         private bool _includeHomeless = false;
         private bool _includeCommuters = false;
-        private bool _includeCorrupt = true; // defaults ON
+        private bool _includeMovingAwayNoPR = false;
 
         private string _totalCitizens = "Click Refresh to load";
         private string _corruptedCitizens = "Click Refresh to load";
@@ -82,6 +83,20 @@ namespace CitizenEntityCleaner
                 RefreshEntityCounts();    // optional live update
             }
         }
+
+        [SettingsUISection(kSection, kFiltersGroup)]
+        public bool IncludeMovingAwayNoPR
+        {
+            get => _includeMovingAwayNoPR;
+            set
+            {
+                if (_includeMovingAwayNoPR == value) return;
+                _includeMovingAwayNoPR = value;
+                ApplyAndSave();            // <-- persist the checkbox value.
+                RefreshEntityCounts();    // optional
+            }
+        }
+
 
         // -------------------------
         // Buttons (static labels)
@@ -212,7 +227,8 @@ namespace CitizenEntityCleaner
             _includeCorrupt = true;
             _includeHomeless  = false;
             _includeCommuters = false;
-           
+            _includeMovingAwayNoPR = false;
+
             // Display strings
             _totalCitizens = "Click Refresh to load";
             _corruptedCitizens = "Click Refresh to load";
@@ -315,15 +331,23 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Include Corrupt Citizens" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)), "When enabled (default), counts and cleans up **corrupt** citizens;\n" +
+                "residents that lack a PropertyRenter component (and are not homeless, commuters, tourists, or moving-away).\n\n" +
+                "Corrupt citizens are the main target of this mod. If the city contains too many, it could cause issues over time." },
+
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, counts and cleans up **homeless** citizens." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Include Commuters" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)), "When enabled, counts and cleans up **commuter** citizens. Commuters include citizens that don't live in your city but travel to your city for work.\n\nSometimes, commuters previously lived in your city but moved out due to homelessness (feature added in game version 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Include Corrupt Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)), "When enabled (default), counts and cleans up **corrupt** citizens; residents that lack a PropertyRenter component.\n\n Corrupt citizens are the main target of this mod. If the city contains too many, it could cause issues over time." },
-                
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Include Moving-Away (with no rent)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
+                    "When enabled, counts and cleans up citizens currently **moving away** who **do not** have a PropertyRenter component.\n\n" +
+                    "Moving-away citizens with PropertyRenter are preserved and not included." },
+
                 // Buttons (STATIC labels)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component.\n Cleanup also includes any optional items selected [ ✓ ].\n\nBE CAREFUL: this is a workaround and may corrupt other data. Create a backup of your save first!" },
@@ -337,7 +361,9 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)), "Shows the current cleanup status. Updates live while the settings screen is open." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities currently in the simulation. Includes possible corrupt entities" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities **currently in the simulation.**\n\n" +
+                "This number may not match your population because it may include possible corrupt entities." },
+
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Citizens to Clean: select [ ✓ ] above" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizen entities to remove when you click **[Cleanup]**,\n\nbased on the selected boxes [ ✓ ]." },
@@ -371,7 +397,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Backup your save file first!>\n" +
                   "2. <Click [Refresh Counts] to see current statistics.>\n" +
-                  "3. <[ ✓ ] Select the items to include: Corrupt, Homeless, Commuters.>\n" +
+                  "3. <[ ✓ ] Select the items to include using the checkboxes>\n" +
                   "4. <Click [Cleanup Citizens] to clean up entities.>"
                 },
                 {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed

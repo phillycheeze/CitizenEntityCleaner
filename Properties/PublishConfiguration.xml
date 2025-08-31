@@ -27,10 +27,11 @@
 		- **Abandoned Cars** permanently occupying parking spots, never being used again
 		- **General performance degradation** across querying systems
 
-		ℹ️ **Mod Options:**
+		ℹ️ **Mod Options**
 		- Include **corrupt citizens** in cleanup (optional ✅)
 		- Include **commuters** in cleanup (optional ✅)
 		- Include **homeless** in cleanup (optional ✅)
+		- Include **moving-away** (that have no rent) in cleanup (optional ✅)
 
 		ℹ️ **This Mod may also:**
 		- Delete "Pending" citizens that may be buffered for relocation
@@ -38,8 +39,7 @@
 		- Have other long-term consequences not fully understood
 		- Safe to remove anytime
 
-		## Usage
-
+		ℹ️ **Usage**
 		1. **\[Backup] your save file first!**
 		2. Load the city, then open **Options → Citizen Entity Cleaner**.
 		3. Click \[Refresh Counts] to see current statistics.
@@ -47,34 +47,34 @@
 		5. Click \[Cleanup Citizens] to clean up entities.
 
 		**Note**
-		This mod does **not** run automatically; it only runs when you click \[Cleanup Citizens].  
+		This mod does **not** run automatically; it only runs when you click \[Cleanup Citizens].
 		Revert to the original saved city if you see unexpected behavior.
 
-	## What This Mod Does
+		## What This Mod Does
 
-	- Everything is optional, pick and choose which items to remove (corrupt citizens, commuters, homeless).
-	- For Corrupt Citizens: the mod finds households missing "PropertyRenter" that still list members.
-	- Marks these citizen entities for deletion in **chunked batches**
-	- The base game then naturally cleans up remaining references (households, vehicles, households, vehicles, student/patient references, and anything else afterwards).
-	- This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
+		- Everything is optional, pick and choose which items to remove (corrupt citizens, commuters, homeless).
+		- For Corrupt Citizens: the mod finds households missing "PropertyRenter" that still list members.
+		- Marks these citizen entities for deletion in chunked batches.
+		- The base game then naturally cleans up remaining references (households, vehicles, student/patient references, and anything else afterwards).
+		- This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
-	## What is causing the issue?
+		## What is causing the issue?
 
-	Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
+		Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
 
-	## Feedback / Bug Report:
-	* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
-	* https://discord.com/channels/1024242828114673724/1402078697120469064
+		## Feedback / Bug Report:
+		* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
+		* https://discord.com/channels/1024242828114673724/1402078697120469064
 
-	## Credits
-	- phillycheese - mod author
-	- yenyang - feedback, cooperative development
-	- Konsi - testing, feedback
-	- krzychu124 - testing, feedback
-	- Honu - Github code updates, testing, feedback, logo, cooperative development
+		## Credits
+		- phillycheese - mod author
+		- yenyang - feedback, cooperative development
+		- Konsi - testing, feedback
+		- krzychu124 - testing, feedback
+		- Honu - Github code updates, testing, feedback, logo, cooperative development
 
 
-</LongDescription>
+	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
@@ -99,12 +99,16 @@
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
 - UI updates
-- Everything is optional for Cleanup now: Corrupt, Commuters, Homeless
+- New: Corrupt citizens are now optional to remove (along with Homeless/Commuter)
+- New: Option to remove moving-away citizens (that have no PropertyRenter component)
 - Refactor and performance tuning
-- More accurate homeless/commuter handling; explicit exclusion of tourists
+- More accurate homeless/commuter handling
+- Homeless is now transport-agnostic (previously only worked for walking homeless)
+- Explicit exclusion of tourists
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />
 	<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1402078697120469064" />
 </Publish>
+

@@ -78,9 +78,10 @@
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/Screenshots/10-Before.jpg" />
-	<Screenshot Value="Properties/Screenshots/20-After.jpg" />
-	<Screenshot Value="Properties/Screenshots/30-CEC-thumbnail.jpg" />
+	<Screenshot Value="Properties/Screenshots/10-CEC-thumbnail.png" />
+	<Screenshot Value="Properties/Screenshots/20-Before.jpg" />
+	<Screenshot Value="Properties/Screenshots/30-After.jpg" />
+	
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->

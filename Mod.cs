@@ -1,49 +1,44 @@
+using Colossal;         // IDictionarySource, IDictionaryEntryError
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
 using System;
-using System.Reflection;    // for Assembly attributes
+using System.Reflection;    // Assembly attributes
+using System.Collections.Generic;  // List, Dictionary
 
 namespace CitizenEntityCleaner
 {
     public class Mod : IMod
     {
-        // Mod information
+        // ---- Mod metadata ----
         private static readonly Assembly Asm = Assembly.GetExecutingAssembly();
-
         public static readonly string Name =
-                Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title
-            ?? "Citizen Entity Cleaner";    // fallback title
+                Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
 
         // Versions (short + full)
         private static readonly string VersionInformationalRaw =
-            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? "1.0.0";
+            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
 
         public static readonly string VersionShort = VersionInformationalRaw.Split(' ', '+')[0];
         public static readonly string VersionInformational = VersionInformationalRaw;
 
-
+        // ---- Logging ----
         public static readonly ILog log = LogManager
             .GetLogger("CitizenEntityCleaner") // log file located in ..\CitySkylines II\logs\CitizenEntityCleaner.log
             .SetShowsErrorsInUI(false);
 
-        private Setting? m_Setting;     // nullable; assigned in OnLoad
-        private LocaleEN? m_Locale;    // keep a reference to locale source to unregister later
+        // ---- State ----
+        private static bool s_bannerLogged;    // static guard to avoid duplicates
 
-        // Reference to the cleanup system
+        private Setting? m_Setting;     // nullable; assigned in OnLoad
         public static CitizenCleanupSystem? CleanupSystem { get; private set; } // nullable; assigned in OnLoad
 
-        // --- fields ---
-        private static bool s_bannerLogged;    // static guard to avoid duplicates
-        private bool m_LocaleRegistered;
-
         // Keep same delegate instances and use for both += and -= so -= works (ensures unsubscribe works).
-        private System.Action<float>? _onProgress;
-        private System.Action? _onCompleted;
-        private System.Action? _onNoWork;   // <-- for new event if nothing to clean, nullable
+        private Action<float>? _onProgress;
+        private Action? _onCompleted;
+        private Action? _onNoWork;   // <-- for event if nothing to clean, nullable
 
 
         public void OnLoad(UpdateSystem updateSystem)
@@ -56,23 +51,30 @@ namespace CitizenEntityCleaner
                 log.Info($"Mod: {Name} | Version: {VersionShort} | Info: {VersionInformational}");  // add info banner at the top of log
                 s_bannerLogged = true;
             }
-
+            // Asset path (diagnostics)
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 log.Info($"Current mod asset at {asset.path}");
 
-            Mod.log.Info("[DebugPing] OnLoad reached");
+            log.Info("[DebugPing] OnLoad reached"); // debug ping
 
-            // Settings + Locale
+            // ---- Settings + Locale ----
             m_Setting = new Setting(this);
-            m_Locale = new LocaleEN(m_Setting); // keep reference
 
-            // Run the locale self-test in DEBUG builds (logs to CitizenEntityCleaner.log)
+            // ----- Locales -----
+            // ADD LOCALES HERE (each line = one language)
+            var en = new LocaleEN(m_Setting);
+            var fr = new LocaleFR(m_Setting);
+            // var es = new LocaleES(m_Setting); // future
+            // var de = new LocaleDE(m_Setting); // future
+
 #if DEBUG
-            LocaleSelfTest.ValidateRequiredEntries(m_Locale!, m_Setting!, Mod.log);
+            DebugValidateLocaleKeys(en, m_Setting, log, "en-US");
+            DebugValidateLocaleKeys(fr, m_Setting, log, "fr-FR");
 #endif
-            // Register locale source
-            GameManager.instance.localizationManager.AddSource("en-US", m_Locale);
-            m_LocaleRegistered = true;
+
+            RegisterLocale("en-US", en);
+            RegisterLocale("fr-FR", fr);
+
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));
@@ -80,7 +82,7 @@ namespace CitizenEntityCleaner
             // Expose Options UI
             m_Setting.RegisterInOptionsUI();
 
-            // System registration, callbacks (run before deletion system)
+            // System registration (run before deletion system)
             updateSystem.UpdateAt<CitizenCleanupSystem>(SystemUpdatePhase.Modification1);
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
@@ -98,7 +100,7 @@ namespace CitizenEntityCleaner
             log.Info("CitizenCleanupSystem registered");
         }
 
-        // Hardened OnDispose with try/catch guards for common NREs
+        // Hardened OnDispose with try/catch guards for each step, helps with cross-mod common NREs
         // Ensures all resources are cleaned up and events unsubscribed
         public void OnDispose()
         {
@@ -106,66 +108,42 @@ namespace CitizenEntityCleaner
             {
                 log.Info(nameof(OnDispose));
 
-                // 1) Unsubscribe events BEFORE nulling references
-                if (CleanupSystem != null)
-                {
-                    try { if (_onProgress != null) CleanupSystem.OnCleanupProgress -= _onProgress; }
-                    catch (System.Exception ex) { log.Warn($"[Events] Unsub OnCleanupProgress failed: {ex.GetType().Name}: {ex.Message}"); }
-
-                    try { if (_onCompleted != null) CleanupSystem.OnCleanupCompleted -= _onCompleted; }
-                    catch (System.Exception ex) { log.Warn($"[Events] Unsub OnCleanupCompleted failed: {ex.GetType().Name}: {ex.Message}"); }
-
-                    try { if (_onNoWork != null) CleanupSystem.OnCleanupNoWork -= _onNoWork; }
-                    catch (System.Exception ex) { log.Warn($"[Events] Unsub OnCleanupNoWork failed: {ex.GetType().Name}: {ex.Message}"); }
-                }
-
-                // 2) Unregister Options UI (safe even if UI never opened)
+                // Unregister Options UI (safe even if UI never opened)
                 if (m_Setting != null)
                 {
                     try { m_Setting.UnregisterInOptionsUI(); }
-                    catch (System.Exception ex) { log.Warn($"[UI] UnregisterInOptionsUI failed: {ex.GetType().Name}: {ex.Message}"); }
+                    catch (Exception ex) { log.Warn($"[UI] UnregisterInOptionsUI failed: {ex.GetType().Name}: {ex.Message}"); }
                 }
 
-                // 3) Remove locale source safely (only if actually added)
-                if (m_LocaleRegistered && m_Locale != null && GameManager.instance != null)
+                // Unsubscribe
+                if (CleanupSystem != null)
                 {
-                    var lm = GameManager.instance.localizationManager;
-                    if (lm != null)
-                    {
-                        try
-                        {
-                            lm.RemoveSource("en-US", m_Locale);
-                        }
-                        catch (System.NullReferenceException ex)
-                        {
-                            // Common when another mod throws during dictionary-changed notification
-                            log.Info("[Locale] RemoveSource ignored (NRE likely from another mod during dictionary change).");
-#if DEBUG
-                            log.Debug(ex.ToString());
-#endif
-                        }
-                        catch (System.Exception ex)
-                        {
-                            log.Warn($"[Locale] RemoveSource failed: {ex.GetType().Name}: {ex.Message}");
-                        }
-                    }
+                    var cs = CleanupSystem;
+
+                    try { if (_onProgress != null) cs.OnCleanupProgress -= _onProgress; }
+                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupProgress failed: {ex.GetType().Name}: {ex.Message}"); }
+
+                    try { if (_onCompleted != null) cs.OnCleanupCompleted -= _onCompleted; }
+                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupCompleted failed: {ex.GetType().Name}: {ex.Message}"); }
+
+                    try { if (_onNoWork != null) cs.OnCleanupNoWork -= _onNoWork; }
+                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupNoWork failed: {ex.GetType().Name}: {ex.Message}"); }
                 }
+
+                // Note: Do not call localizationManager.RemoveSource(...) here.
+                // CS2 manages locale sources; removing them can break other mods' listeners.
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                // Last-resort guard: log it for diagnostics,
-                // but do not rethrow. Nothing escapes OnDispose, avoids crashing game.
+                // Last-resort guard: log but do not rethrow; nothing escapes OnDispose.
                 log.Error($"OnDispose fatal: {ex.GetType().Name}: {ex.Message}");
 #if DEBUG
-                log.Debug(ex.ToString());   // stack trace in debug builds
+                log.Debug(ex.ToString());
 #endif
             }
             finally
             {
-                // 4) Clear flags and references so loader can reload cleanly
-                m_LocaleRegistered = false;
-                m_Locale = null;
-
+                // Clear references
                 _onProgress = null;
                 _onCompleted = null;
                 _onNoWork = null;
@@ -174,6 +152,59 @@ namespace CitizenEntityCleaner
                 m_Setting = null;
             }
         }
+
+
+        // ---- helpers ----
+        private void RegisterLocale(string localeId, IDictionarySource source)
+        {
+            var lm = GameManager.instance?.localizationManager;
+            if (lm == null || source == null) return;
+
+            try
+            {
+                lm.AddSource(localeId, source);
+                log.Info($"[Locale] Registered {localeId}");
+            }
+            catch (Exception ex)
+            {
+                log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
+            }
+        }
+
+#if DEBUG
+        // Simple self-test that ensures critical keys exist for ANY locale.
+        private static void DebugValidateLocaleKeys(IDictionarySource src, Setting setting, ILog logger, string id)
+        {
+            var entries = src.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>());
+            var keys = new HashSet<string>();
+            foreach (var kv in entries) keys.Add(kv.Key);
+
+            string[] required =
+            {
+                setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)),
+                setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)),
+                setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),
+                setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),
+                setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)),
+                setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),
+                setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)),
+                setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),
+            };
+
+            int missing = 0;
+            foreach (var k in required)
+            {
+                if (!keys.Contains(k))
+                {
+                    missing++;
+                    logger.Warn($"[LocaleSelfTest:{id}] Missing key: {k}");
+                }
+            }
+
+            if (missing == 0)
+                logger.Info($"[LocaleSelfTest:{id}] All required keys present.");
+        }
+#endif
 
     }
 }

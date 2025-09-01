@@ -1,5 +1,5 @@
 ﻿// LocaleFR.cs
-using Colossal;                    // IDictionarySource, IDictionaryEntryError
+using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
@@ -112,6 +112,7 @@ namespace CitizenEntityCleaner
                   "4. <Cliquez [Nettoyer citoyens] pour lancer le nettoyage.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 
+                // Notes block
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
                   "Notes :\n" +
                   "• Le mod **ne** s’exécute pas automatiquement ; utilisez **[Nettoyer]** à chaque fois.\n" +

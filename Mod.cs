@@ -1,4 +1,4 @@
-using Colossal;         // IDictionarySource, IDictionaryEntryError
+using Colossal;         // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;
@@ -68,10 +68,12 @@ namespace CitizenEntityCleaner
             var en = new LocaleEN(m_Setting);
             var fr = new LocaleFR(m_Setting);
             var es = new LocaleES(m_Setting);
+            var de = new LocaleDE(m_Setting);
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
+            RegisterLocale("de-DE", de);
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));

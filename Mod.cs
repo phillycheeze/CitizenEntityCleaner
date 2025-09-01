@@ -154,7 +154,7 @@ namespace CitizenEntityCleaner
             catch (System.Exception ex)
             {
                 // Last-resort guard: log it for diagnostics,
-                // but do not rethrow. Nothing escapes OnDispose to avoid crashing the game.
+                // but do not rethrow. Nothing escapes OnDispose, avoids crashing game.
                 log.Error($"OnDispose fatal: {ex.GetType().Name}: {ex.Message}");
 #if DEBUG
                 log.Debug(ex.ToString());   // stack trace in debug builds

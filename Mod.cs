@@ -65,19 +65,20 @@ namespace CitizenEntityCleaner
             m_Setting = new Setting(this);
 
             // ----- Locales -----
-            // ADD LOCALES HERE (each line = one language)
+            // ADD LOCALES HERE
             var en = new LocaleEN(m_Setting);
             var fr = new LocaleFR(m_Setting);
-            // var es = new LocaleES(m_Setting); // future
-            // var de = new LocaleDE(m_Setting); // future
+            var es = new LocaleES(m_Setting);
 
 #if DEBUG
             DebugValidateLocaleKeys(en, m_Setting, log, "en-US");
             DebugValidateLocaleKeys(fr, m_Setting, log, "fr-FR");
+            DebugValidateLocaleKeys(es, m_Setting, log, "es-ES");
 #endif
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
+            RegisterLocale("es-ES", es);
 
 
             // Load saved settings (or defaults on first run)
@@ -169,8 +170,9 @@ namespace CitizenEntityCleaner
             }
         }
 
+
 #if DEBUG
-        // Simple self-test that critical keys exist for ANY locale
+        // Optional simple helper test that critical keys exist for ANY locale (only in DEBUG builds)
         private static void DebugValidateLocaleKeys(IDictionarySource src, Setting setting, ILog logger, string id)
         {
             var entries = src.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>());
@@ -182,11 +184,6 @@ namespace CitizenEntityCleaner
                 setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)),
                 setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)),
                 setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),
             };
 
             int missing = 0;

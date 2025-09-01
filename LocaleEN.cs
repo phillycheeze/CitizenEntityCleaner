@@ -1,7 +1,6 @@
 ﻿// LocaleEN.cs
 using Colossal;                    // IDictionarySource, IDictionaryEntryError
-using Colossal.Logging;            // ILog
-using System.Collections.Generic;  // IEnumerable, KeyValuePair, Dictionary, List, HashSet
+using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
 {
@@ -121,42 +120,4 @@ namespace CitizenEntityCleaner
         public void Unload() { }
     }
 
-#if DEBUG
-    /// <summary>DEBUG-only: validates critical locale keys exist; logs warnings if missing.</summary>
-    public static class LocaleSelfTest
-    {
-        public static void ValidateRequiredEntries(LocaleEN source, Setting setting, ILog log)
-        {
-            var entries = source.ReadEntries(new List<IDictionaryEntryError>(),
-                                             new Dictionary<string, int>());
-            var keys = new HashSet<string>();
-            foreach (var kv in entries) keys.Add(kv.Key);
-
-            var required = new[]
-            {
-                setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)),
-                setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),
-            };
-
-            int missing = 0;
-            foreach (var k in required)
-            {
-                if (!keys.Contains(k))
-                {
-                    missing++;
-                    log.Warn($"[LocaleSelfTest] Missing locale entry: {k}");
-                }
-            }
-
-            if (missing == 0)
-                log.Info("[LocaleSelfTest] All required locale keys present.");
-        }
-    }
-#endif
 }

@@ -51,11 +51,15 @@ namespace CitizenEntityCleaner
                 log.Info($"Mod: {Name} | Version: {VersionShort} | Info: {VersionInformational}");  // add info banner at the top of log
                 s_bannerLogged = true;
             }
-            // Asset path (diagnostics)
-            if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            // Asset path for diagnostics
+            if (GameManager.instance?.modManager != null &&
+                GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+            {
                 log.Info($"Current mod asset at {asset.path}");
-
-            log.Info("[DebugPing] OnLoad reached"); // debug ping
+            }
+#if DEBUG
+            log.Info("[DebugPing] OnLoad reached");
+#endif
 
             // ---- Settings + Locale ----
             m_Setting = new Setting(this);
@@ -100,22 +104,13 @@ namespace CitizenEntityCleaner
             log.Info("CitizenCleanupSystem registered");
         }
 
-        // Hardened OnDispose with try/catch guards for each step, helps with cross-mod common NREs
-        // Ensures all resources are cleaned up and events unsubscribed
         public void OnDispose()
         {
             try
             {
                 log.Info(nameof(OnDispose));
 
-                // Unregister Options UI (safe even if UI never opened)
-                if (m_Setting != null)
-                {
-                    try { m_Setting.UnregisterInOptionsUI(); }
-                    catch (Exception ex) { log.Warn($"[UI] UnregisterInOptionsUI failed: {ex.GetType().Name}: {ex.Message}"); }
-                }
-
-                // Unsubscribe
+                // Unsubscribe events
                 if (CleanupSystem != null)
                 {
                     var cs = CleanupSystem;
@@ -130,12 +125,18 @@ namespace CitizenEntityCleaner
                     catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupNoWork failed: {ex.GetType().Name}: {ex.Message}"); }
                 }
 
-                // Note: Do not call localizationManager.RemoveSource(...) here.
-                // CS2 manages locale sources; removing them can break other mods' listeners.
+                // Unregister Options UI
+                if (m_Setting != null)
+                {
+                    try { m_Setting.UnregisterInOptionsUI(); }
+                    catch (Exception ex) { log.Warn($"[UI] UnregisterInOptionsUI failed: {ex.GetType().Name}: {ex.Message}"); }
+                }
+
+
             }
             catch (Exception ex)
             {
-                // Last-resort guard: log but do not rethrow; nothing escapes OnDispose.
+                // Last-resort guard: log but do not rethrow
                 log.Error($"OnDispose fatal: {ex.GetType().Name}: {ex.Message}");
 #if DEBUG
                 log.Debug(ex.ToString());
@@ -152,7 +153,6 @@ namespace CitizenEntityCleaner
                 m_Setting = null;
             }
         }
-
 
         // ---- helpers ----
         private void RegisterLocale(string localeId, IDictionarySource source)
@@ -172,11 +172,11 @@ namespace CitizenEntityCleaner
         }
 
 #if DEBUG
-        // Simple self-test that ensures critical keys exist for ANY locale.
+        // Simple self-test that critical keys exist for ANY locale
         private static void DebugValidateLocaleKeys(IDictionarySource src, Setting setting, ILog logger, string id)
         {
             var entries = src.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>());
-            var keys = new HashSet<string>();
+            var keys = new HashSet<string>(StringComparer.Ordinal);
             foreach (var kv in entries) keys.Add(kv.Key);
 
             string[] required =

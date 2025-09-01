@@ -6,8 +6,7 @@ using System.Collections.Generic;  // IEnumerable, KeyValuePair, Dictionary, Lis
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// English locale entries for the Citizen Entity Cleaner settings UI.
-    /// Mirrors the original inlined LocaleEN from Setting.cs.
+    /// English locale entries
     /// </summary>
     public class LocaleEN : IDictionarySource
     {

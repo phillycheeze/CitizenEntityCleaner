@@ -5,7 +5,7 @@ using System.Collections.Generic;  // IEnumerable, KeyValuePair, Dictionary
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// French (fr-FR) locale entries for the Citizen Entity Cleaner settings UI.
+    /// French (fr-FR) locale entries
     /// </summary>
     public class LocaleFR : IDictionarySource
     {

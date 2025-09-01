@@ -99,13 +99,13 @@
 	 
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
+- UI updates and refactor: basic language support (EN, FR, ES, DE)
 - Corrupt citizens are now "optional" to remove (not forced)
 - **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
 - Option to remove Homeless or Commuters still available
 - More accurate homeless/commuter handling via Household level checks
 - **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
-- UI updates and refactor
-- **Safe:** Tourists are now excluded explicitly
+- Tourists are now excluded explicitly
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

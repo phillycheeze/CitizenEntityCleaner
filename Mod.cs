@@ -29,10 +29,10 @@ namespace CitizenEntityCleaner
         public static readonly ILog log = LogManager
             .GetLogger("CitizenEntityCleaner") // log file located in ..\CitySkylines II\logs\CitizenEntityCleaner.log
             .SetShowsErrorsInUI(false);
-            
+
         private Setting? m_Setting;     // nullable; assigned in OnLoad
         private LocaleEN? m_Locale;    // keep a reference to locale source to unregister later
-        
+
         // Reference to the cleanup system
         public static CitizenCleanupSystem? CleanupSystem { get; private set; } // nullable; assigned in OnLoad
 
@@ -51,7 +51,7 @@ namespace CitizenEntityCleaner
             log.Info(nameof(OnLoad));
 
             // One time banner static guard (avoid duplicates on hot reload)
-            if (!s_bannerLogged)    
+            if (!s_bannerLogged)
             {
                 log.Info($"Mod: {Name} | Version: {VersionShort} | Info: {VersionInformational}");  // add info banner at the top of log
                 s_bannerLogged = true;
@@ -68,7 +68,7 @@ namespace CitizenEntityCleaner
 
             // Run the locale self-test in DEBUG builds (logs to CitizenEntityCleaner.log)
 #if DEBUG
-        LocaleSelfTest.ValidateRequiredEntries(m_Locale!, m_Setting!, Mod.log);
+            LocaleSelfTest.ValidateRequiredEntries(m_Locale!, m_Setting!, Mod.log);
 #endif
             // Register locale source
             GameManager.instance.localizationManager.AddSource("en-US", m_Locale);
@@ -76,7 +76,7 @@ namespace CitizenEntityCleaner
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));
-            
+
             // Expose Options UI
             m_Setting.RegisterInOptionsUI();
 
@@ -176,3 +176,4 @@ namespace CitizenEntityCleaner
         }
 
     }
+}

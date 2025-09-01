@@ -6,7 +6,6 @@ using Game.Modding;
 using Game.SceneFlow;
 using System;
 using System.Reflection;    // Assembly attributes
-using System.Collections.Generic;  // List, Dictionary
 
 namespace CitizenEntityCleaner
 {
@@ -70,16 +69,9 @@ namespace CitizenEntityCleaner
             var fr = new LocaleFR(m_Setting);
             var es = new LocaleES(m_Setting);
 
-#if DEBUG
-            DebugValidateLocaleKeys(en, m_Setting, log, "en-US");
-            DebugValidateLocaleKeys(fr, m_Setting, log, "fr-FR");
-            DebugValidateLocaleKeys(es, m_Setting, log, "es-ES");
-#endif
-
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
-
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));
@@ -169,37 +161,6 @@ namespace CitizenEntityCleaner
                 log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
             }
         }
-
-
-#if DEBUG
-        // Optional simple helper test that critical keys exist for ANY locale (only in DEBUG builds)
-        private static void DebugValidateLocaleKeys(IDictionarySource src, Setting setting, ILog logger, string id)
-        {
-            var entries = src.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>());
-            var keys = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var kv in entries) keys.Add(kv.Key);
-
-            string[] required =
-            {
-                setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)),
-                setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),
-            };
-
-            int missing = 0;
-            foreach (var k in required)
-            {
-                if (!keys.Contains(k))
-                {
-                    missing++;
-                    logger.Warn($"[LocaleSelfTest:{id}] Missing key: {k}");
-                }
-            }
-
-            if (missing == 0)
-                logger.Info($"[LocaleSelfTest:{id}] All required keys present.");
-        }
-#endif
 
     }
 }

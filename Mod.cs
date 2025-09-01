@@ -110,21 +110,6 @@ namespace CitizenEntityCleaner
             {
                 log.Info(nameof(OnDispose));
 
-                // Unsubscribe events
-                if (CleanupSystem != null)
-                {
-                    var cs = CleanupSystem;
-
-                    try { if (_onProgress != null) cs.OnCleanupProgress -= _onProgress; }
-                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupProgress failed: {ex.GetType().Name}: {ex.Message}"); }
-
-                    try { if (_onCompleted != null) cs.OnCleanupCompleted -= _onCompleted; }
-                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupCompleted failed: {ex.GetType().Name}: {ex.Message}"); }
-
-                    try { if (_onNoWork != null) cs.OnCleanupNoWork -= _onNoWork; }
-                    catch (Exception ex) { log.Warn($"[Events] Unsub OnCleanupNoWork failed: {ex.GetType().Name}: {ex.Message}"); }
-                }
-
                 // Unregister Options UI
                 if (m_Setting != null)
                 {
@@ -132,11 +117,24 @@ namespace CitizenEntityCleaner
                     catch (Exception ex) { log.Warn($"[UI] UnregisterInOptionsUI failed: {ex.GetType().Name}: {ex.Message}"); }
                 }
 
+                // Unsubscribe events
+                var cs = CleanupSystem;
+                if (cs != null)
+                {
+                    try { if (_onProgress != null) cs.OnCleanupProgress -= _onProgress; }
+                    catch (Exception ex) { log.Warn($"[Events] OnCleanupProgress -= failed: {ex.GetType().Name}: {ex.Message}"); }
+
+                    try { if (_onCompleted != null) cs.OnCleanupCompleted -= _onCompleted; }
+                    catch (Exception ex) { log.Warn($"[Events] OnCleanupCompleted -= failed: {ex.GetType().Name}: {ex.Message}"); }
+
+                    try { if (_onNoWork != null) cs.OnCleanupNoWork -= _onNoWork; }
+                    catch (Exception ex) { log.Warn($"[Events] OnCleanupNoWork -= failed: {ex.GetType().Name}: {ex.Message}"); }
+                }
 
             }
             catch (Exception ex)
             {
-                // Last-resort guard: log but do not rethrow
+                // Last-resort guard
                 log.Error($"OnDispose fatal: {ex.GetType().Name}: {ex.Message}");
 #if DEBUG
                 log.Debug(ex.ToString());

@@ -165,14 +165,26 @@ namespace CitizenEntityCleaner
         [SettingsUISection(AboutTab, InfoGroup)]
         public string VersionText => Mod.VersionShort;
 
-        #if DEBUG
+#if DEBUG
         [SettingsUISection(AboutTab, InfoGroup)]
         public string InformationalVersionText => Mod.VersionInformational;
-        #endif
+#endif
 
         // -------------------------
         // About Tab links
         // -------------------------
+        [SettingsUIButtonGroup("SocialLinks")]
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public bool OpenParadoxModsButton
+        {
+            set
+            {
+                try { Application.OpenURL("https://mods.paradoxplaza.com/mods/117161/Windows"); }
+                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
+            }
+        }
+
         [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
@@ -196,20 +208,9 @@ namespace CitizenEntityCleaner
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
             }
         }
-
-        [SettingsUIButtonGroup("SocialLinks")]
-        [SettingsUIButton]
-        [SettingsUISection(AboutTab, InfoGroup)]
-        public bool OpenParadoxModsButton
-        {
-            set
-            {
-                try { Application.OpenURL("https://mods.paradoxplaza.com/mods/117161/Windows"); }
-                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
-            }
-        }
-       
-        // --- About tab: USAGE ---
+        // -------------------------
+        // About tab: USAGE
+        // -------------------------
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageSteps => string.Empty;
@@ -233,9 +234,9 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Idle";
         }
 
-        // -------------------------
-        // Logic
-        // -------------------------
+        /// <summary>
+        /// Update display values; handles null/errors
+        /// </summary>
         public void RefreshEntityCounts()
         {
             try
@@ -260,7 +261,7 @@ namespace CitizenEntityCleaner
                 _corruptedCitizens = "Error";
             }
 
-            // Nudge UI to re-read values
+            // Make UI re-read values
             ApplyAndSave();
         }
 

@@ -10,14 +10,14 @@ using Game.Agents;          // for MovingAway
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// ECS System that handles cleanup of citizen entities when triggered via settings UI
+    /// ECS System for cleanup of citizen entities triggered via UI
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
         private static readonly ILog s_log = Mod.log;
 
         #region Constants
-        private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
+        private const int CLEANUP_CHUNK_SIZE = 2000;    // entities to mark per frame
         private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
         #endregion
 
@@ -25,7 +25,7 @@ namespace CitizenEntityCleaner
         // ---- state, queries ----
         private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
         private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
-        private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
+        private bool m_shouldRunCleanup = false;    // Flag to trigger cleanup operation
 
         // Chunked cleanup state
         private NativeList<Entity> m_entitiesToCleanup;
@@ -41,7 +41,6 @@ namespace CitizenEntityCleaner
 
         #region Events
         // Callback for when cleanup is in progress and completed
-        // event instead of public delegate prevents external code accidental overwrite delegate list
         public event System.Action<float>? OnCleanupProgress;
         public event System.Action? OnCleanupCompleted;
         public event System.Action? OnCleanupNoWork;
@@ -78,7 +77,7 @@ namespace CitizenEntityCleaner
                 return;
             }
 
-            // Start new cleanup run: a run requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
+            // Start new cleanup run: requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
             m_shouldRunCleanup = false;
             s_log.Info("Starting citizen entity cleanup...");
             StartChunkedCleanup();
@@ -121,7 +120,7 @@ namespace CitizenEntityCleaner
 
         #region Selection Logic (build deletion set)
         /// <summary>
-        /// Builds the deletion set based on toggle options == true:
+        /// Builds deletion set based on toggle options == true:
         /// - Corrupt households (no PropertyRenter & not homeless/commuter/tourist)
         /// - HomelessHousehold members when IncludeHomeless == true
         /// - CommuterHousehold members when IncludeCommuters == true
@@ -163,14 +162,14 @@ namespace CitizenEntityCleaner
                     // Corrupt resident = no PR and not homeless/commuter/tourist
                     bool isResidentCorrupt = !hasPropertyRenter && !isHomelessHH && !isCommuterHH && !isTouristHH;
 
-                    // Do we need to inspect citizens in this household at all?
+                    // Check if we can skip citizens
                     bool householdMatchesAny =
                         (wantHomeless && isHomelessHH) ||
                         (wantCommuters && isCommuterHH) ||
                         (wantCorrupt && isResidentCorrupt);
 
-                    // If nothing about this HH is interesting AND we’re not doing the Moving-Away (no PR) pass,
-                    // skip to the next household.
+                    // If HH has no match and MovingAway toggle is off,
+                    // skip to next household.
                     if (!householdMatchesAny && !wantMovingAwayNoPR) continue;
 
                     // Iterate members and apply per-citizen rules
@@ -198,7 +197,7 @@ namespace CitizenEntityCleaner
                         else if (wantCorrupt && isResidentCorrupt)
                             add = !movingAway;
 
-                        // Independent toggle: Moving-Away (that have no PropertyRenter)
+                        // Independent toggle: Moving-Away (with no PropertyRenter)
                         if (!add && wantMovingAwayNoPR && movingAway && !hasPropertyRenter)
                             add = true;
 
@@ -216,9 +215,8 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Gets the count of citizens to clean based on toggles:
+        /// Count citizens to clean based on toggles:
         /// IncludeCorrupt, IncludeHomeless, IncludeCommuters.
-        /// Internally counts results of GetDeletionCandidates
         /// </summary>
         private int GetCitizensToCleanCount()
         {
@@ -230,14 +228,14 @@ namespace CitizenEntityCleaner
         #region Helpers
 
         // Returns true if the citizen is Moving-Away state.
-        // rely on Game.Agents.MovingAway to avoid field-name guesswork.
+        // uses Game.Agents.MovingAway primary
         private bool IsMovingAway(Entity citizenEntity)
         {
             // Primary: tag component exists?
             if (EntityManager.HasComponent<MovingAway>(citizenEntity))
                 return true;
 
-            // Secondary cross-check: enum purpose value, not a flag
+            // Secondary optional check
             if (EntityManager.HasComponent<TravelPurpose>(citizenEntity))
             {
                 var tp = EntityManager.GetComponentData<TravelPurpose>(citizenEntity);
@@ -300,7 +298,7 @@ namespace CitizenEntityCleaner
             
             m_cleanupIndex += chunkSize;
 
-            // --- Progress (float) for UI, throttled ~5% ---
+            // --- UI progress throttled ~5% ---
             float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
             if (progress >= 0.999f || progress - m_lastProgressNotified >= 0.05f)
             {
@@ -308,7 +306,7 @@ namespace CitizenEntityCleaner
                 OnCleanupProgress?.Invoke(progress);
             }
 
-            // --- Progress (int buckets) for logs ---
+            // --- Log progress ---
             //  LOG_BUCKET_PERCENT = 10 to reduce log spam; change to 5 for 5% (more spam)
             int percent = math.min(100, (int)math.floor(progress * 100f));
             int bucket  = percent / LOG_BUCKET_PERCENT;
@@ -337,7 +335,7 @@ namespace CitizenEntityCleaner
 
             m_isChunkedCleanupInProgress = false;
 
-            // Final UI snap to 100% only if we didn't already report it
+            // Final UI snap to 100%
             if (m_lastProgressNotified < 0.999f)
             {
             OnCleanupProgress?.Invoke(1f);

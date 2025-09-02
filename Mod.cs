@@ -86,7 +86,7 @@ namespace CitizenEntityCleaner
             CleanupSystem = updateSystem.World.GetOrCreateSystemManaged<CitizenCleanupSystem>();
             CleanupSystem.SetSettings(m_Setting);
 
-            // Wire up progress / completion callbacks
+            // Progress / completion callbacks
             _onProgress = m_Setting.UpdateCleanupProgress;
             _onCompleted = m_Setting.FinishCleanupProgress;
             _onNoWork = m_Setting.FinishCleanupNoWork;
@@ -147,7 +147,7 @@ namespace CitizenEntityCleaner
             }
         }
 
-        // ---- helpers ----
+        // ---- Helpers ----
         private void RegisterLocale(string localeId, IDictionarySource source)
         {
             var lm = GameManager.instance?.localizationManager;

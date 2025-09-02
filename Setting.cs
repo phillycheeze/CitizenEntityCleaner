@@ -173,7 +173,7 @@ namespace CitizenEntityCleaner
         // -------------------------
         // About Tab links
         // -------------------------
-        [SettingsUIButtonGroup("SocialLinks")]    // Group to get Github & Discord buttons on the same line
+        [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton
@@ -212,7 +212,7 @@ namespace CitizenEntityCleaner
         // --- About tab: USAGE ---
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageSteps => string.Empty;   // Note: UsageSteps is a static label.
+        public string UsageSteps => string.Empty;
         
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
@@ -260,11 +260,13 @@ namespace CitizenEntityCleaner
                 _corruptedCitizens = "Error";
             }
 
-            // Nudge the UI to re-read values (labels remain static)
+            // Nudge UI to re-read values
             ApplyAndSave();
         }
 
-        /// <summary>Starts progress tracking for cleanup operation</summary>
+        /// <summary>
+        /// Starts progress tracking for cleanup operation
+        /// </summary>
         public void StartCleanupProgress()
         {
             _isCleanupInProgress = true;
@@ -273,7 +275,9 @@ namespace CitizenEntityCleaner
             ApplyAndSave();
         }
 
-        /// <summary>Updates cleanup progress display</summary>
+        /// <summary>
+        /// Updates cleanup progress display
+        /// </summary>
         public void UpdateCleanupProgress(float progress)
         {
             if (_isCleanupInProgress)
@@ -284,12 +288,14 @@ namespace CitizenEntityCleaner
             }
         }
 
-        /// <summary>Finishes progress tracking and refreshes final counts</summary>
+        /// <summary>
+        /// Finishes progress tracking and refreshes final counts
+        /// </summary>
         public void FinishCleanupProgress()
         {
             _isCleanupInProgress = false;
             _cleanupStatus = "Complete";
-            RefreshEntityCounts();    // updates values & calls ApplyAndSave()
+            RefreshEntityCounts();
         }
         
         /// <summary>
@@ -299,7 +305,7 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = false;
             _cleanupStatus = "Nothing to clean";
-            RefreshEntityCounts();    // updates values and calls ApplyAndSave()
+            RefreshEntityCounts();
         }
     }
 }

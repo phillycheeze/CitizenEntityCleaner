@@ -1,6 +1,6 @@
 ﻿// LocaleDE.cs
-using Colossal;                    // IDictionarySource, IDictionaryEntryError
-using System.Collections.Generic;  // Dictionary, IEnumerable, IList
+using Colossal;                    // IDictionarySource
+using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
 {

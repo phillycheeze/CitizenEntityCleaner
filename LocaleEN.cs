@@ -26,7 +26,7 @@ namespace CitizenEntityCleaner
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filters" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Main" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles

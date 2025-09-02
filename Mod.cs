@@ -63,17 +63,18 @@ namespace CitizenEntityCleaner
             // ---- Settings + Locale ----
             m_Setting = new Setting(this);
 
-            // ----- Locales -----
             // ADD LOCALES HERE
             var en = new LocaleEN(m_Setting);
             var fr = new LocaleFR(m_Setting);
             var es = new LocaleES(m_Setting);
             var de = new LocaleDE(m_Setting);
+            var it = new LocaleIT(m_Setting);
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
             RegisterLocale("de-DE", de);
+            RegisterLocale("it-IT", it);
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));

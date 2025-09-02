@@ -5,7 +5,7 @@ using System.Collections.Generic;  // Dictionary
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// French locale entries
+    /// French locale entries (fr-FR)
     /// </summary>
     public class LocaleFR : IDictionarySource
     {
@@ -26,7 +26,7 @@ namespace CitizenEntityCleaner
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filtres" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Général" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Infos" },
 
                 // Filter toggles

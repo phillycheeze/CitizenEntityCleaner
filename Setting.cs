@@ -1,8 +1,8 @@
-using Colossal.IO.AssetDatabase;
-using Game.Modding;
-using Game.Settings;
-using UnityEngine;      // for About tab Application.OpenURL
-using Game.UI.Widgets; // for SettingsUIMultilineText, SettingsUIDisplayName
+using Colossal.IO.AssetDatabase;    // [FileLocation]
+using Game.Modding;     // IMod
+using Game.Settings;    // ModSetting, [SettingsUI*]
+using UnityEngine;      // About tab Application.OpenURL
+using Game.UI.Widgets;  // SettingsUIMultilineText
 
 
 namespace CitizenEntityCleaner
@@ -12,37 +12,54 @@ namespace CitizenEntityCleaner
         public const string SettingsKey = "CitizenEntityCleaner";
     }
 
+    /// <summary>
+    /// Mod settings UI and State
+    /// </summary>
     [FileLocation(ModKeys.SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose for About tab.
+
     public class Setting : ModSetting
     {
+        // ---- UI structure ----
         public const string kSection = "Main";
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
         public const string UsageGroup = "Usage";    //About tab section for usage instructions
-
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
 
+        // ---- UI text defaults ----
+        private const string DefaultCountPrompt = "Click Refresh to load";
+        private const string StatusIdle = "Idle";
+        private const string SystemNA = "System not available";
+        private const string ErrorText = "Error";
+
+        // ---- External links ----
+        private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
+        private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
+        private const string UrlDiscord = "https://discord.com/channels/1024242828114673724/1402078697120469064";
+
+        // ---- Backing fields for UI ----
         private bool _includeCorrupt = true; // defaults ON
+        private bool _includeMovingAwayNoPR = false;
         private bool _includeHomeless = false;
         private bool _includeCommuters = false;
-        private bool _includeMovingAwayNoPR = false;
 
-        private string _totalCitizens = "Click Refresh to load";
-        private string _corruptedCitizens = "Click Refresh to load";
-        private string _cleanupStatus = "Idle";
+        private string _totalCitizens = DefaultCountPrompt;
+        private string _corruptedCitizens = DefaultCountPrompt;
+        private string _cleanupStatus = StatusIdle;
 
-        internal bool _isCleanupInProgress = false;
+        private bool _isCleanupInProgress = false;
 
+        /// <summary>
+        /// Create settings object for this mod
+        ///</summary>
         public Setting(IMod mod) : base(mod) { }
 
-        // -------------------------
-        // Filter toggles (static labels)
-        // -------------------------
+        // ---- Filter toggles ----
         [SettingsUISection(kSection, kFiltersGroup)]
         public bool IncludeCorrupt
         {
@@ -96,9 +113,28 @@ namespace CitizenEntityCleaner
         }
 
 
-        // -------------------------
-        // Buttons (static labels)
-        // -------------------------
+        // ---- Actions (buttons) ----
+
+        [SettingsUIButton]
+        [SettingsUISection(kSection, kButtonGroup)]
+        public bool RefreshCountsButton
+        {
+            set
+            {
+                if (_isCleanupInProgress)
+                {
+                    Mod.log.Info("Cleanup in progress, ignoring refresh button click");
+                    return;
+                }
+
+                Mod.log.Info("Refresh counts button clicked");
+                RefreshEntityCounts();
+            }
+        }
+
+        /// <summary>
+        /// Asks for confirmation, starts progress, then triggers CleanupSystem.
+        /// </summary>
         [SettingsUIButton]
         [SettingsUIConfirmation]
         [SettingsUISection(kSection, kButtonGroup)]
@@ -126,26 +162,8 @@ namespace CitizenEntityCleaner
             }
         }
 
-        [SettingsUIButton]
-        [SettingsUISection(kSection, kButtonGroup)]
-        public bool RefreshCountsButton
-        {
-            set
-            {
-                if (_isCleanupInProgress)
-                {
-                    Mod.log.Info("Cleanup in progress, ignoring refresh button click");
-                    return;
-                }
 
-                Mod.log.Info("Refresh counts button clicked");
-                RefreshEntityCounts();
-            }
-        }
-
-        // -------------------------
-        // Read-only displays (dynamic VALUES; labels are static via locale)
-        // -------------------------
+        // ---- Read-only displays ----
         [SettingsUISection(kSection, kButtonGroup)]
         public string CleanupStatusDisplay => _cleanupStatus;
 
@@ -156,9 +174,7 @@ namespace CitizenEntityCleaner
         public string CorruptedCitizensDisplay => _corruptedCitizens;
 
 
-        // -------------------------
-        // About Tab info
-        // -------------------------
+        // ---- About tab: info ----
         [SettingsUISection(AboutTab, InfoGroup)]
         public string NameText => Mod.Name;
 
@@ -170,9 +186,7 @@ namespace CitizenEntityCleaner
         public string InformationalVersionText => Mod.VersionInformational;
 #endif
 
-        // -------------------------
-        // About Tab links
-        // -------------------------
+        // ---- About tab links: order below determines button order ----
         [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
@@ -180,7 +194,7 @@ namespace CitizenEntityCleaner
         {
             set
             {
-                try { Application.OpenURL("https://mods.paradoxplaza.com/mods/117161/Windows"); }
+                try { Application.OpenURL(UrlParadoxMods); }
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
             }
         }
@@ -192,7 +206,7 @@ namespace CitizenEntityCleaner
         {
             set
             {
-                try { Application.OpenURL("https://github.com/phillycheeze/CitizenEntityCleaner"); }
+                try { Application.OpenURL(UrlGitHub); }
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
             }
         }
@@ -204,13 +218,12 @@ namespace CitizenEntityCleaner
         {
             set
             {
-                try { Application.OpenURL("https://discord.com/channels/1024242828114673724/1402078697120469064"); }
+                try { Application.OpenURL(UrlDiscord); }
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
             }
         }
-        // -------------------------
-        // About tab: USAGE
-        // -------------------------
+
+        // ---- About tab: USAGE ----
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageSteps => string.Empty;
@@ -219,19 +232,21 @@ namespace CitizenEntityCleaner
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageNotes => string.Empty;
 
-           
+        /// <summary>
+        /// Initialize checkbox defaults and display text
+        /// </summary>
         public override void SetDefaults()
         {
             // Explicit defaults for checkboxes
             _includeCorrupt = true;
+            _includeMovingAwayNoPR = false;
             _includeHomeless  = false;
             _includeCommuters = false;
-            _includeMovingAwayNoPR = false;
 
             // Display strings
-            _totalCitizens = "Click Refresh to load";
-            _corruptedCitizens = "Click Refresh to load";
-            _cleanupStatus = "Idle";
+            _totalCitizens = DefaultCountPrompt;
+            _corruptedCitizens = DefaultCountPrompt;
+            _cleanupStatus = StatusIdle;
         }
 
         /// <summary>
@@ -250,15 +265,15 @@ namespace CitizenEntityCleaner
                 }
                 else
                 {
-                    _totalCitizens = "System not available";
-                    _corruptedCitizens = "System not available";
+                    _totalCitizens = SystemNA;
+                    _corruptedCitizens = SystemNA;
                 }
             }
             catch (System.Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
-                _totalCitizens = "Error";
-                _corruptedCitizens = "Error";
+                _totalCitizens = ErrorText;
+                _corruptedCitizens = ErrorText;
             }
 
             // Make UI re-read values
@@ -272,7 +287,7 @@ namespace CitizenEntityCleaner
         {
             _isCleanupInProgress = true;
             _cleanupStatus = "Cleanup in progress… 0%";
-            _corruptedCitizens = "Cleaning... 0%";
+            _corruptedCitizens = "Cleaning… 0%";
             ApplyAndSave();
         }
 
@@ -284,7 +299,7 @@ namespace CitizenEntityCleaner
             if (_isCleanupInProgress)
             {
                 _cleanupStatus = $"Cleanup in progress… {progress:P0}";
-                _corruptedCitizens = $"Cleaning... {progress:P0}";
+                _corruptedCitizens = $"Cleaning… {progress:P0}";
                 ApplyAndSave();
             }
         }

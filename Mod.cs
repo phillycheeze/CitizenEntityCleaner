@@ -1,9 +1,9 @@
 using Colossal;         // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
-using Game;
+using Game;                 // UpdateSystem
 using Game.Modding;
-using Game.SceneFlow;
+using Game.SceneFlow;       // GameManager
 using System;
 using System.Reflection;    // Assembly attributes
 
@@ -152,15 +152,21 @@ namespace CitizenEntityCleaner
         private void RegisterLocale(string localeId, IDictionarySource source)
         {
             var lm = GameManager.instance?.localizationManager;
-            if (lm == null || source == null) return;
-
-            try
+            if (lm == null)
             {
+                log.Debug("[Locale] No localization manager; skip " + localeId);
+                return;
+            }
+            if (source == null)
+            {
+                log.Debug("[Locale] Null source; skip " + localeId);
+                return;
+            }
+
+            try {
                 lm.AddSource(localeId, source);
                 log.Info($"[Locale] Registered {localeId}");
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
             }
         }

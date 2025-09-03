@@ -27,58 +27,65 @@ namespace CitizenEntityCleaner
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filtros" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Acciones" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Información" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Incluir ciudadanos corruptos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
-                  "Cuando está activado (por defecto), cuenta y limpia ciudadanos **corruptos**;\n" +
-                  "residentes que no tienen el componente PropertyRenter (y que no son sin hogar, commuters, turistas ni en mudanza).\n\n" +
-                  "Los corruptos son el objetivo principal del mod. Si hay demasiados, puede causar problemas con el tiempo." },
+                  "Cuando está activado (predeterminado), cuenta y limpia ciudadanos **corruptos**;\n" +
+                  "residentes que no tienen el componente PropertyRenter (y que no sean sin hogar, pendulares, turistas o en mudanza).\n\n" +
+                  "Los ciudadanos corruptos son el objetivo principal de este mod. Si hay demasiados en la ciudad, pueden causar problemas con el tiempo." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Incluir sin hogar" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Incluir ciudadanos sin hogar" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Cuando está activado, cuenta y limpia ciudadanos **sin hogar**." },
+                  "Cuando está activado, cuenta y limpia a los **ciudadanos sin hogar**." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Incluir commuters" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Incluir pendulares" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
-                  "Cuando está activado, cuenta y limpia **commuters**. Son ciudadanos que no viven en tu ciudad pero viajan para trabajar.\n\n" +
-                  "A veces fueron residentes que se marcharon tras quedarse sin hogar (añadido en la versión 1.2.5 del juego)." },
+                  "Cuando está activado, cuenta y limpia a los **pendulares**. Los pendulares no viven en tu ciudad, pero se desplazan para trabajar.\n\n" +
+                  "A veces vivían aquí y se marcharon por quedarse sin hogar (función añadida en la versión 1.2.5 del juego)." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Incluir en mudanza (sin alquiler)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Cuando está activado, cuenta y limpia ciudadanos **en mudanza** que **no** tienen el componente PropertyRenter.\n\n" +
-                  "Los que sí tienen PropertyRenter se conservan y no se incluyen." },
+                  "Cuando está activado, cuenta y limpia a los ciudadanos que **están mudándose** y **no** tienen el componente PropertyRenter.\n\n" +
+                  "Los ciudadanos en mudanza con PropertyRenter se conservan y no se incluyen." },
 
-                // Buttons (Main/General group)
+                // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Limpiar ciudadanos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "<Carga primero una ciudad guardada.>\nElimina ciudadanos de hogares que ya no tienen el componente PropertyRenter.\n" +
-                  " La limpieza también incluye los elementos opcionales marcados [ ✓ ].\n\n" +
-                  "¡CUIDADO! Es un apaño y puede corromper otros datos. ¡Haz una copia de seguridad antes!" },
+                  "La limpieza también incluye cualquier elemento opcional marcado [ ✓ ].\n\n" +
+                  "**CUIDADO**: esto es un apaño y puede corromper otros datos. ¡Haz una copia de seguridad de tu partida primero!" },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "Eliminará permanentemente los elementos seleccionados en las opciones.\n\n<¡Haz copia de seguridad primero!>\n¿Continuar?" },
+                  "Los elementos seleccionados en las opciones se eliminarán de forma permanente.\n\n<Por favor, haz antes una copia de seguridad.>\n¿Continuar?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Actualizar recuentos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)),
-                  "<Carga una ciudad guardada para ver números.>\nActualiza todos los recuentos para mostrar las estadísticas actuales.\n" +
-                  "Tras limpiar, deja el juego un minuto sin pausar." },
+                  "<Carga primero una ciudad para obtener cifras.>\n" +
+                  "Actualiza todos los contadores para mostrar las estadísticas actuales de la ciudad.\n" +
+                  "Después de limpiar, deja el juego sin pausa durante un minuto." },
 
-                // Displays (read-only)
+                // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Estado" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)),
-                  "Muestra el estado actual de la limpieza. Se actualiza en directo mientras las opciones están abiertas." },
+                  "Muestra el estado de la limpieza. Se actualiza en vivo durante una limpieza activa; en otro caso pulsa [Actualizar recuentos] para recalcular.\n\n" +
+                  "\"**Idle**\" = no hay limpieza en curso o aún no hay ciudad cargada.\n" +
+                  "\"**Nothing to clean**\" = ningún ciudadano coincide con los filtros seleccionados (o ya los eliminaste).\n" +
+                  "\"**Complete**\" = la última limpieza terminó; permanece hasta que cambies filtros o ejecutes una nueva limpieza." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Ciudadanos totales" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total de ciudadanos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)),
                   "Número total de entidades de ciudadanos **actualmente en la simulación.**\n\n" +
-                  "Puede no coincidir con la población porque puede incluir entidades corruptas." },
+                  "Puede diferir de tu población porque puede incluir entidades corruptas." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
                   "Ciudadanos a limpiar: marca [ ✓ ] arriba" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
-                  "Número de entidades que se eliminarán al hacer clic en **[Limpiar]**,\n\n" +
+                  "Número de entidades de ciudadanos que se eliminarán al pulsar **[Limpiar ciudadanos]**, \n\n" +
                   "según las casillas [ ✓ ] seleccionadas." },
+
+                // Prompts (used by Setting.cs for placeholder text)
+                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Haz clic en [Actualizar recuentos]" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Nombre del mod" },
@@ -92,31 +99,31 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.InformationalVersionText)), "Versión del mod con ID de commit" },
 #endif
 
-                // External link buttons (About tab)
+                // About tab links (the three external link buttons)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Repositorio GitHub del mod; se abre en el navegador." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "Repositorio del mod en GitHub; se abre en el navegador." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Chat de Discord para comentarios; se abre en el navegador." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Canal de Discord para comentarios; se abre en el navegador." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Paradox Mods" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Página de Paradox Mods; se abre en el navegador." },
 
-                // Usage section (header + blocks)
+                // About tab --> Usage section header & blocks
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USO" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
-                  "1. <¡Haz una copia de seguridad de tu partida!>\n" +
-                  "2. <Haz clic en [Actualizar recuentos] para ver las estadísticas.>\n" +
-                  "3. <[ ✓ ] Selecciona qué incluir usando las casillas>\n" +
-                  "4. <Haz clic en [Limpiar ciudadanos] para limpiar entidades.>" },
+                  "1. <¡Haz primero una copia de seguridad de tu partida!>\n" +
+                  "2. <Haz clic en [Actualizar recuentos] para ver las estadísticas actuales.>\n" +
+                  "3. <[ ✓ ] Selecciona los elementos a incluir con las casillas>\n" +
+                  "4. <Haz clic en [Limpiar ciudadanos] para iniciar la limpieza.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 
                 // Notes block
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
                   "Notas:\n" +
-                  "• Este mod **no** se ejecuta automáticamente; usa **[Limpiar ciudadanos]** cada vez.\n" +
-                  "• Vuelve a una copia de seguridad si aparece un comportamiento inesperado." },
+                  "• Este mod **no** se ejecuta automáticamente; usa **[Limpiar ciudadanos]** cada vez que quieras eliminar.\n" +
+                  "• Vuelve a tu ciudad guardada original si es necesario por comportamiento inesperado." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" },
             };
         }

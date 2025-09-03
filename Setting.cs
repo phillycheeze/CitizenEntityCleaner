@@ -1,8 +1,8 @@
 using Colossal.IO.AssetDatabase;    // [FileLocation]
 using Game.Modding;     // IMod
 using Game.Settings;    // ModSetting, [SettingsUI*]
-using UnityEngine;      // About tab Application.OpenURL
-using Game.UI.Widgets;  // SettingsUIMultilineText
+using UnityEngine;      // Application.OpenURL
+using Game.SceneFlow;   // GameManager
 
 
 namespace CitizenEntityCleaner
@@ -32,10 +32,21 @@ namespace CitizenEntityCleaner
         public const string kFiltersGroup = "Filters";
 
         // ---- UI text defaults ----
-        private const string DefaultCountPrompt = "Click Refresh to load";
-        private const string StatusIdle = "Idle";
+        private const string DefaultCountPrompt = "Click [Refresh Counts]";
         private const string SystemNA = "System not available";
         private const string ErrorText = "Error";
+
+        // ---- Localization (static prompt) ----
+        private const string RefreshPromptKey = "CitizenEntityCleaner/Prompt/RefreshCounts";
+
+        private static string L(string key, string fallback)
+        {
+            var dict = GameManager.instance?.localizationManager?.activeDictionary;
+            return (dict != null && dict.TryGetValue(key, out var s) && !string.IsNullOrWhiteSpace(s))
+                ? s
+                : fallback;
+        }
+
 
         // ---- External links ----
         private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
@@ -50,7 +61,10 @@ namespace CitizenEntityCleaner
 
         private string _totalCitizens = DefaultCountPrompt;
         private string _corruptedCitizens = DefaultCountPrompt;
-        private string _cleanupStatus = StatusIdle;
+        private bool _needsRefresh = true;  // whether "Citizens to Clean" should show the prompt
+
+
+        private string _cleanupStatus = "Idle";
 
         private bool _isCleanupInProgress = false;
 
@@ -58,6 +72,20 @@ namespace CitizenEntityCleaner
         /// Create settings object for this mod
         ///</summary>
         public Setting(IMod mod) : base(mod) { }
+
+        // ---- Helpers ----
+        private void ResetStatusIfNotRunning()
+        {
+            if (!_isCleanupInProgress)
+                _cleanupStatus = "Idle";
+        }
+
+        // Mark 'Citizens to Clean' count as stale so the getter shows the localized prompt until refreshed.
+        private void SetCleanCountNeedsRefresh()
+        {
+            _needsRefresh = true;   // don't store the localized string anymore
+            ApplyAndSave();
+        }
 
         // ---- Filter toggles ----
         [SettingsUISection(kSection, kFiltersGroup)]
@@ -68,8 +96,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeCorrupt == value) return;
                 _includeCorrupt = value;
-                ApplyAndSave();            // <-- persist the checkbox value.
-                RefreshEntityCounts();    // optional live update
+                ResetStatusIfNotRunning();
+                SetCleanCountNeedsRefresh();
             }
         }
 
@@ -81,8 +109,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeHomeless == value) return;  // <-- remember if user checks box.
                 _includeHomeless = value;
-                ApplyAndSave();          // <-- persist the checkbox value.
-                RefreshEntityCounts();   // optional live update
+                ResetStatusIfNotRunning();
+                SetCleanCountNeedsRefresh();
             }
         }
 
@@ -94,8 +122,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeCommuters == value) return;
                 _includeCommuters = value;
-                ApplyAndSave();            // <-- persist the checkbox value.
-                RefreshEntityCounts();    // optional live update
+                ResetStatusIfNotRunning();
+                SetCleanCountNeedsRefresh();
             }
         }
 
@@ -107,8 +135,8 @@ namespace CitizenEntityCleaner
             {
                 if (_includeMovingAwayNoPR == value) return;
                 _includeMovingAwayNoPR = value;
-                ApplyAndSave();            // <-- persist the checkbox value.
-                RefreshEntityCounts();    // optional
+                ResetStatusIfNotRunning();
+                SetCleanCountNeedsRefresh();
             }
         }
 
@@ -127,7 +155,7 @@ namespace CitizenEntityCleaner
                     return;
                 }
 
-                Mod.log.Info("Refresh counts button clicked");
+                Mod.log.Info("Refresh Counts button clicked");
                 RefreshEntityCounts();
             }
         }
@@ -165,13 +193,16 @@ namespace CitizenEntityCleaner
 
         // ---- Read-only displays ----
         [SettingsUISection(kSection, kButtonGroup)]
-        public string CleanupStatusDisplay => _cleanupStatus;
+        public string CleanupStatusDisplay => string.IsNullOrEmpty(_cleanupStatus) ? "Idle" : _cleanupStatus;
 
         [SettingsUISection(kSection, kButtonGroup)]
         public string TotalCitizensDisplay => _totalCitizens;
 
+        // If a language change occurs while UI is open, this getter re-reads the localized prompt.
+        // Then, "Click [Refresh Counts]" reflects in the current language without storing a stale string.
         [SettingsUISection(kSection, kButtonGroup)]
-        public string CorruptedCitizensDisplay => _corruptedCitizens;
+        public string CorruptedCitizensDisplay =>
+            _needsRefresh ? L(RefreshPromptKey, DefaultCountPrompt) : _corruptedCitizens;
 
 
         // ---- About tab: info ----
@@ -237,16 +268,17 @@ namespace CitizenEntityCleaner
         /// </summary>
         public override void SetDefaults()
         {
-            // Explicit defaults for checkboxes
+            // Checkbox defaults
             _includeCorrupt = true;
             _includeMovingAwayNoPR = false;
             _includeHomeless  = false;
             _includeCommuters = false;
 
             // Display strings
-            _totalCitizens = DefaultCountPrompt;
-            _corruptedCitizens = DefaultCountPrompt;
-            _cleanupStatus = StatusIdle;
+            _totalCitizens = L(RefreshPromptKey, DefaultCountPrompt);
+            _corruptedCitizens = L(RefreshPromptKey, DefaultCountPrompt);
+            _cleanupStatus = "Idle";
+            _needsRefresh = true;   // show prompt until refreshed
         }
 
         /// <summary>
@@ -262,11 +294,23 @@ namespace CitizenEntityCleaner
 
                     _totalCitizens = $"{totalCitizens:N0}";
                     _corruptedCitizens = $"{citizensToClean:N0}";
+
+                    // Don’t overwrite "Complete" immediately after a cleanup; keep it until filters change or a new cleanup runs.
+                    if (!_isCleanupInProgress && _cleanupStatus != "Complete")
+                    {
+                        _cleanupStatus = citizensToClean > 0 ? "Idle" : "Nothing to clean";
+                    }
+                    _needsRefresh = false; // we have fresh data now
                 }
                 else
                 {
                     _totalCitizens = SystemNA;
                     _corruptedCitizens = SystemNA;
+
+                    // No system (e.g., no city loaded). Prefer "Idle" over "Nothing to clean".
+                    if (!_isCleanupInProgress && _cleanupStatus != "Complete")
+                        _cleanupStatus = "Idle";
+                    _needsRefresh = false;
                 }
             }
             catch (System.Exception ex)
@@ -274,6 +318,7 @@ namespace CitizenEntityCleaner
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
                 _totalCitizens = ErrorText;
                 _corruptedCitizens = ErrorText;
+                _needsRefresh = false;  // show error, not the prompt
             }
 
             // Make UI re-read values
@@ -286,8 +331,10 @@ namespace CitizenEntityCleaner
         public void StartCleanupProgress()
         {
             _isCleanupInProgress = true;
-            _cleanupStatus = "Cleanup in progress… 0%";
-            _corruptedCitizens = "Cleaning… 0%";
+            _needsRefresh = false;  // ensure progress isn't hidden by prompt
+            var pct = 0f.ToString("P0");    // e.g. "0%" localized
+            _cleanupStatus = $"Cleanup in progress… {pct}";
+            _corruptedCitizens = $"Cleaning… {pct}";
             ApplyAndSave();
         }
 
@@ -298,8 +345,10 @@ namespace CitizenEntityCleaner
         {
             if (_isCleanupInProgress)
             {
-                _cleanupStatus = $"Cleanup in progress… {progress:P0}";
-                _corruptedCitizens = $"Cleaning… {progress:P0}";
+                _needsRefresh = false;
+                var pct = progress.ToString("P0");
+                _cleanupStatus = $"Cleanup in progress… {pct}";
+                _corruptedCitizens = $"Cleaning… {pct}";
                 ApplyAndSave();
             }
         }
@@ -309,8 +358,16 @@ namespace CitizenEntityCleaner
         /// </summary>
         public void FinishCleanupProgress()
         {
+            if (!_isCleanupInProgress)
+            {
+#if DEBUG
+                Mod.log.Debug("FinishCleanupProgress called while not in progress; ignoring.");
+#endif
+                return;
+            }
+
             _isCleanupInProgress = false;
-            _cleanupStatus = "Complete";
+            _cleanupStatus = "Complete";    // set first so Refresh won't change it
             RefreshEntityCounts();
         }
         
@@ -319,6 +376,14 @@ namespace CitizenEntityCleaner
         /// </summary>
         public void FinishCleanupNoWork()
         {
+            if (!_isCleanupInProgress)
+            {
+#if DEBUG
+                Mod.log.Debug("FinishCleanupNoWork called while not in progress; ignoring.");
+#endif
+                return;
+            }
+
             _isCleanupInProgress = false;
             _cleanupStatus = "Nothing to clean";
             RefreshEntityCounts();

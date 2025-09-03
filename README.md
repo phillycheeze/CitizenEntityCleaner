@@ -66,6 +66,6 @@ Not sure. It could be another mod or something introduced in a more recent patch
 ## Credits
 - phillycheese - mod author
 - yenyang - feedback, coop development
-- Konsi - testing, feedback
+- Konsi - feedback
 - krzychu124 - feedback, code sharing
 - Honu - testing, feedback, logo, code updates

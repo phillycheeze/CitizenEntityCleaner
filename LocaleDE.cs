@@ -21,7 +21,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetSettingsLocaleID(), Mod.Name },
 
                 // Tabs
-                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Haupt" },
+                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Start" },
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Über" },
 
                 // Groups
@@ -32,8 +32,8 @@ namespace CitizenEntityCleaner
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger einschließen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
-                  "Wenn aktiviert (Standard), zählt und bereinigt **korrupte** Bürger:\n" +
-                  "Bewohner ohne PropertyRenter (und nicht obdachlos, Pendler, Touristen oder wegziehend).\n\n" +
+                  "Wenn aktiviert (Standard), zählt und bereinigt **korrupte** Bürger;\n" +
+                  "Bewohner ohne PropertyRenter-Komponente (und nicht obdachlos, Pendler, Tourist oder wegziehend).\n\n" +
                   "Korrupte Bürger sind das Hauptziel dieses Mods. Zu viele können langfristig Probleme verursachen." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Obdachlose einschließen" },
@@ -47,40 +47,45 @@ namespace CitizenEntityCleaner
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Wegziehende (ohne Miete) einschließen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Wenn aktiviert, zählt und bereinigt Bürger, die **wegziehen** und **keinen** PropertyRenter haben.\n\n" +
-                  "Wegziehende mit PropertyRenter bleiben erhalten." },
+                  "Wenn aktiviert, zählt und bereinigt Bürger, die **wegziehen** und **keine** PropertyRenter-Komponente haben.\n\n" +
+                  "Wegziehende mit PropertyRenter bleiben erhalten und werden nicht einbezogen." },
 
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Bürger bereinigen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "<Zuerst einen Spielstand laden.>\n" +
-                  "Entfernt Bürger aus Haushalten ohne PropertyRenter.\n" +
-                  "Beinhaltet auch alle optional markierten Elemente [ ✓ ].\n\n" +
-                  "VORSICHT: Workaround – vorher Backup erstellen!" },
+                  "<Zuerst einen Spielstand laden.>\nEntfernt Bürger aus Haushalten, die keine PropertyRenter-Komponente mehr haben.\n" +
+                  "Die Bereinigung umfasst auch alle optional markierten Elemente [ ✓ ].\n\n" +
+                  "**VORSICHT**: Dies ist ein Workaround und kann andere Daten beschädigen. Erstelle zuerst ein Backup deines Spielstands!" },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "Ausgewählte Elemente werden dauerhaft gelöscht.\n\n<Bitte zuerst Backup erstellen!>\nFortfahren?" },
+                  "Ausgewählte Elemente in den Optionen werden dauerhaft gelöscht.\n\n<Bitte zuerst ein Backup erstellen!>\nFortfahren?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Aktualisieren" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)),
-                  "<Lade zuerst einen Spielstand, um Zahlen zu sehen.>\n" +
-                  "Aktualisiert alle Zähler mit den aktuellen Stadtstatistiken.\n" +
+                  "<Lade zuerst einen Spielstand, um Zahlen zu erhalten.>\n" +
+                  "Aktualisiert alle Zähler, um die aktuellen Stadtstatistiken anzuzeigen.\n" +
                   "Nach dem Bereinigen das Spiel eine Minute unpausiert laufen lassen." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)),
-                  "Zeigt den aktuellen Bereinigungsstatus. Aktualisiert sich live, solange die Einstellungen geöffnet sind." },
+                  "Zeigt den Bereinigungsstatus. Aktualisiert sich live während einer laufenden Bereinigung; ansonsten [Aktualisieren] drücken, um neu zu berechnen.\n\n" +
+                  "\"**Idle**\" = keine Bereinigung läuft oder noch keine Stadt geladen.\n" +
+                  "\"**Nothing to clean**\" = keine Bürger entsprechen den gewählten Filtern (oder du hast sie bereits entfernt).\n" +
+                  "\"**Complete**\" = letzte Bereinigung abgeschlossen; bleibt bestehen, bis du Filter änderst oder erneut bereinigst." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Bürger gesamt" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)),
                   "Gesamtzahl der Bürger-Entitäten **derzeit in der Simulation.**\n\n" +
-                  "Kann von der Bevölkerung abweichen, wenn korrupte Entitäten enthalten sind." },
+                  "Kann von der Bevölkerung abweichen, da möglicherweise korrupte Entitäten enthalten sind." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
-                  "Zu bereinigende Bürger: [ ✓ ] oben auswählen" },
+                  "Zu bereinigende Bürger: oben [ ✓ ] wählen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
                   "Anzahl der Bürger-Entitäten, die beim Klick auf **[Bürger bereinigen]** entfernt werden,\n\n" +
                   "abhängig von den gewählten Kästchen [ ✓ ]." },
+
+                // Prompts (used by Setting.cs for placeholder text)
+                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Klicke auf [Aktualisieren]" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod-Name" },
@@ -94,18 +99,19 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.InformationalVersionText)), "Mod-Version mit Commit-ID" },
 #endif
 
-                // About tab links (external)
+                // About tab links
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "GitHub-Repository des Mods (öffnet Browser)." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "GitHub-Repository des Mods; öffnet im Browser." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Discord-Kanal für Feedback (öffnet Browser)." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Discord-Kanal für Feedback; öffnet im Browser." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Paradox Mods" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Paradox-Mods-Seite (öffnet Browser)." },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Paradox-Mods-Website; öffnet im Browser." },
 
-                // Usage section
+                // About tab --> Usage section header & blocks
                 { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "NUTZUNG" },
+
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Sichere zuerst deinen Spielstand!>\n" +
                   "2. <Klicke [Aktualisieren], um die aktuellen Statistiken zu sehen.>\n" +

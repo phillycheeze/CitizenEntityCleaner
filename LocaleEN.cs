@@ -53,29 +53,39 @@ namespace CitizenEntityCleaner
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component.\n Cleanup also includes any optional items selected [ ✓ ].\n\nBE CAREFUL: this is a workaround and may corrupt other data. Create a backup of your save first!" },
+                  "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component.\n" +
+                  "Cleanup also includes any optional items selected [ ✓ ].\n\n" +
+                  "**BE CAREFUL**: this is a workaround and may corrupt other data. Create a backup of your save first!" },
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Permanently delete items selected in options.\n\n<Please backup your save first!>\n Continue?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)),
-                  "<Load a saved city first to get numbers.>\nUpdates all entity counts to show current city statistics.\nAfter cleaning, let the game run unpaused for a minute." },
+                  "<Load a saved city first to get numbers.>\n" +
+                  "Updates all entity counts to show current city statistics.\n" +
+                  "After cleaning, let the game run unpaused for a minute." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)),
-                  "Shows the current cleanup status. Updates live while the settings screen is open." },
+                  "Shows the cleanup status. Updates live during an active cleanup; otherwise press [Refresh Counts] to recompute.\n\n" +
+                  "\"**Idle**\" = no cleanup running or no city loaded yet.\n" +
+                  "\"**Nothing to clean**\" = no citizens match the selected filters (or you already removed them).\n" +
+                  "\"**Complete**\" = last cleanup finished; persists until you change filters or run a new cleanup." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)),
                   "Total number of citizen entities **currently in the simulation.**\n\n" +
-                  "This number may not match your population because it may include possible corrupt entities." },
+                  "This number can differ from your population because it may include corrupt entities." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
                   "Citizens to Clean: select [ ✓ ] above" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)),
                   "Number of citizen entities to remove when you click **[Cleanup]**,\n\n" +
                   "based on the selected boxes [ ✓ ]." },
+
+                // Prompts (used by Setting.cs for placeholder text)
+                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Click [Refresh Counts]" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
@@ -120,5 +130,4 @@ namespace CitizenEntityCleaner
 
         public void Unload() { }
     }
-
 }

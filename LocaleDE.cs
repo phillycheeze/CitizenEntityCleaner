@@ -68,7 +68,6 @@ namespace CitizenEntityCleaner
                   "Aktualisiert alle Zähler, um die aktuellen Stadtstatistiken anzuzeigen.\n" +
                   "Lasse das Spiel nach dem Bereinigen eine Minute lang unpausiert laufen." },
 
-
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)),

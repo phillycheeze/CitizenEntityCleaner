@@ -119,7 +119,7 @@ namespace CitizenEntityCleaner
                   "1. <Sichere zuerst deinen Spielstand!>\n" +
                   "2. <Klicke [Aktualisieren], um die aktuellen Statistiken zu sehen.>\n" +
                   "3. <[ ✓ ] Wähle die gewünschten Elemente über die Kästchen>\n" +
-                  "4. <Klicke [Bürger bereinigen], um die Bereinigung zu starten.>" },
+                  "4. <Klicke [Bürger Bereinigen], um die Bereinigung zu starten.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 
                 // Notes block

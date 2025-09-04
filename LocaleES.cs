@@ -115,9 +115,9 @@ namespace CitizenEntityCleaner
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <¡Haz primero una copia de seguridad de tu partida!>\n" +
-                  "2. <Haz clic en [Actualizar recuentos] para ver las estadísticas actuales.>\n" +
+                  "2. <Haz clic en [Actualizar Recuentos] para ver las estadísticas actuales.>\n" +
                   "3. <[ ✓ ] Selecciona los elementos a incluir con las casillas>\n" +
-                  "4. <Haz clic en [Limpiar ciudadanos] para iniciar la limpieza.>" },
+                  "4. <Haz clic en [Limpiar Ciudadanos] para iniciar la limpieza.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 
                 // Notes block

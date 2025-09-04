@@ -36,19 +36,20 @@ namespace CitizenEntityCleaner
                   "residentes que no tienen el componente PropertyRenter (y que no sean sin hogar, pendulares, turistas o en mudanza).\n\n" +
                   "Los ciudadanos corruptos son el objetivo principal de este mod. Si hay demasiados en la ciudad, pueden causar problemas con el tiempo." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Incluir ciudadanos sin hogar" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Cuando está activado, cuenta y limpia a los **ciudadanos sin hogar**." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Incluir en mudanza (sin alquiler)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
+                  "Cuando está activado, cuenta y limpia a los ciudadanos que **están mudándose** y **no** tienen el componente PropertyRenter.\n\n" +
+                  "Los ciudadanos en mudanza con PropertyRenter se conservan y no se incluyen." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Incluir pendulares" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "Cuando está activado, cuenta y limpia a los **pendulares**. Los pendulares no viven en tu ciudad, pero se desplazan para trabajar.\n\n" +
                   "A veces vivían aquí y se marcharon por quedarse sin hogar (función añadida en la versión 1.2.5 del juego)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Incluir en mudanza (sin alquiler)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Cuando está activado, cuenta y limpia a los ciudadanos que **están mudándose** y **no** tienen el componente PropertyRenter.\n\n" +
-                  "Los ciudadanos en mudanza con PropertyRenter se conservan y no se incluyen." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Incluir ciudadanos sin hogar" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
+                  "Cuando está activado, cuenta y limpia a los **ciudadanos sin hogar**.\n\n" +
+                  "<CUIDADO>: eliminar ciudadanos sin hogar puede causar efectos inesperados." },
 
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Limpiar ciudadanos" },

@@ -1,5 +1,6 @@
 ﻿// LocaleDE.cs
 using Colossal;                    // IDictionarySource
+using Colossal.IO.AssetDatabase.Internal;
 using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
@@ -30,25 +31,26 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger einschließen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger einbeziehen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
                   "Wenn aktiviert (Standard), zählt und bereinigt **korrupte** Bürger;\n" +
                   "Bewohner ohne PropertyRenter-Komponente (und nicht obdachlos, Pendler, Tourist oder wegziehend).\n\n" +
                   "Korrupte Bürger sind das Hauptziel dieses Mods. Zu viele können langfristig Probleme verursachen." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Obdachlose einschließen" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Wenn aktiviert, zählt und bereinigt **obdachlose** Bürger." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Wegziehende (ohne Miete) einbeziehen" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
+                  "Wenn aktiviert, zählt und bereinigt Bürger, die **wegziehen** und **keine** PropertyRenter-Komponente haben.\n\n" +
+                  "Wegziehende mit PropertyRenter bleiben erhalten und werden nicht einbezogen." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendler einschließen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendler einbeziehen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "Wenn aktiviert, zählt und bereinigt **Pendler**. Pendler leben nicht in deiner Stadt, kommen aber zur Arbeit hierher.\n\n" +
                   "Manche lebten früher hier und sind wegen Obdachlosigkeit weggezogen (seit Spielversion 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Wegziehende (ohne Miete) einschließen" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Wenn aktiviert, zählt und bereinigt Bürger, die **wegziehen** und **keine** PropertyRenter-Komponente haben.\n\n" +
-                  "Wegziehende mit PropertyRenter bleiben erhalten und werden nicht einbezogen." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Obdachlose einbeziehen" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
+                  "Wenn aktiviert, zählt und bereinigt **Obdachlose**.\n\n" +
+                  "<VORSICHT>: Das Löschen von Obdachlosen kann zu unerwarteten Nebenwirkungen führen." },
 
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Bürger bereinigen" },

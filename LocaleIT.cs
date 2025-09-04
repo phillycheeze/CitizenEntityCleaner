@@ -36,19 +36,20 @@ namespace CitizenEntityCleaner
                   "residenti senza il componente PropertyRenter (e che non siano senzatetto, pendolari, turisti o in partenza).\n\n" +
                   "I cittadini corrotti sono l’obiettivo principale di questa mod. Se la città ne contiene troppi, nel tempo possono causare problemi." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Includi senzatetto" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Se abilitato, conta e ripulisce i **senzatetto**." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Includi in partenza (senza affitto)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
+                  "Se abilitato, conta e ripulisce i cittadini **in partenza** che **non** hanno il componente PropertyRenter.\n\n" +
+                  "I cittadini in partenza con PropertyRenter vengono conservati e non sono inclusi." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Includi pendolari" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "Se abilitato, conta e ripulisce i **pendolari**. I pendolari non vivono nella tua città ma viaggiano per lavorare.\n\n" +
                   "A volte i pendolari vivevano qui in passato e sono andati via per mancanza di alloggio (funzione introdotta con la versione di gioco 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Includi in partenza (senza affitto)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Se abilitato, conta e ripulisce i cittadini **in partenza** che **non** hanno il componente PropertyRenter.\n\n" +
-                  "I cittadini in partenza con PropertyRenter vengono conservati e non sono inclusi." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Includi senzatetto" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
+                  "Se abilitato, conta e ripulisce i **senzatetto**.\n\n" +
+                  "<ATTENZIONE>: eliminare i senzatetto può causare effetti imprevisti." },
 
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Pulisci cittadini" },

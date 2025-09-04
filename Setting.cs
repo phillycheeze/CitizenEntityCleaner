@@ -47,7 +47,6 @@ namespace CitizenEntityCleaner
                 : fallback;
         }
 
-
         // ---- External links ----
         private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
         private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
@@ -87,7 +86,7 @@ namespace CitizenEntityCleaner
             ApplyAndSave();
         }
 
-        // ---- Filter toggles ----
+        // ---- Filter & order of toggles ----
         [SettingsUISection(kSection, kFiltersGroup)]
         public bool IncludeCorrupt
         {
@@ -102,13 +101,13 @@ namespace CitizenEntityCleaner
         }
 
         [SettingsUISection(kSection, kFiltersGroup)]
-        public bool IncludeHomeless
+        public bool IncludeMovingAwayNoPR
         {
-            get => _includeHomeless;
+            get => _includeMovingAwayNoPR;
             set
             {
-                if (_includeHomeless == value) return;  // <-- remember if user checks box.
-                _includeHomeless = value;
+                if (_includeMovingAwayNoPR == value) return;
+                _includeMovingAwayNoPR = value;
                 ResetStatusIfNotRunning();
                 SetCleanCountNeedsRefresh();
             }
@@ -128,18 +127,17 @@ namespace CitizenEntityCleaner
         }
 
         [SettingsUISection(kSection, kFiltersGroup)]
-        public bool IncludeMovingAwayNoPR
+        public bool IncludeHomeless
         {
-            get => _includeMovingAwayNoPR;
+            get => _includeHomeless;
             set
             {
-                if (_includeMovingAwayNoPR == value) return;
-                _includeMovingAwayNoPR = value;
+                if (_includeHomeless == value) return;
+                _includeHomeless = value;
                 ResetStatusIfNotRunning();
                 SetCleanCountNeedsRefresh();
             }
         }
-
 
         // ---- Actions (buttons) ----
 
@@ -176,7 +174,7 @@ namespace CitizenEntityCleaner
                     return;
                 }
 
-                Mod.log.Info("Cleanup entities button clicked");
+                Mod.log.Info("Cleanup Citizens button clicked");
                 if (Mod.CleanupSystem != null)
                 {
                     StartCleanupProgress();

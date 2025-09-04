@@ -36,19 +36,20 @@ namespace CitizenEntityCleaner
                   "résidents dépourvus du composant PropertyRenter (et qui ne sont ni sans-abri, ni navetteurs, ni touristes, ni en train de partir).\n\n" +
                   "Les citoyens corrompus sont la cible principale de ce mod. Trop nombreux, ils peuvent poser des problèmes à la longue." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Inclure les sans-abri" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Lorsqu’activé, compte et nettoie les **citoyens sans-abri**." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Inclure les citoyens qui déménagent (sans loyer)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
+                  "Lorsqu’activé, compte et nettoie les citoyens **en train de partir** qui **n’ont pas** le composant PropertyRenter.\n\n" +
+                  "Les citoyens qui déménagent avec PropertyRenter sont conservés (non inclus)." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Inclure les navetteurs" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "Lorsqu’activé, compte et nettoie les **navetteurs**. Les navetteurs ne vivent pas dans votre ville mais y viennent pour travailler.\n\n" +
                   "Parfois, des navetteurs vivaient auparavant dans votre ville puis sont partis à cause du sans-abrisme (fonction ajoutée en version 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Inclure les citoyens qui déménagent (sans loyer)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Lorsqu’activé, compte et nettoie les citoyens **en train de partir** qui **n’ont pas** le composant PropertyRenter.\n\n" +
-                  "Les citoyens qui déménagent avec PropertyRenter sont conservés (non inclus)." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Inclure les sans-abri" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
+                  "Lorsque cette option est activée, compte et nettoie les **sans-abri**.\n\n" +
+                  "<ATTENTION>: supprimer des sans-abri peut entraîner des effets secondaires imprévus." },
 
                 // Buttons (Main group)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Nettoyer les citoyens" },

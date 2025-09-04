@@ -25,30 +25,30 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Info" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filtros" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Grupos a eliminar" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Acciones" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Incluir ciudadanos corruptos" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Ciudadanos corruptos" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
-                  "Cuando está activado (predeterminado), cuenta y limpia ciudadanos **corruptos**;\n" +
+                  "Cuando está activado (predeterminado), cuenta y limpia ciudadanos **Corruptos**;\n" +
                   "residentes que no tienen el componente PropertyRenter (y que no sean sin hogar, pendulares, turistas o en mudanza).\n\n" +
                   "Los ciudadanos corruptos son el objetivo principal de este mod. Si hay demasiados en la ciudad, pueden causar problemas con el tiempo." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Incluir en mudanza (sin alquiler)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "En mudanza (salida, Rent = 0)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Cuando está activado, cuenta y limpia a los ciudadanos que **están mudándose** y **no** tienen el componente PropertyRenter.\n\n" +
-                  "Los ciudadanos en mudanza con PropertyRenter se conservan y no se incluyen." },
+                  "Si está activado, cuenta y elimina a los ciudadanos con estado **En mudanza** y Rent = 0 (es decir, sin componente PropertyRenter).\n\n" +
+                  "Los ciudadanos en mudanza con PropertyRenter o con Rent > 0 no se eliminan." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Incluir pendulares" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendulares" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
-                  "Cuando está activado, cuenta y limpia a los **pendulares**. Los pendulares no viven en tu ciudad, pero se desplazan para trabajar.\n\n" +
+                  "Cuando está activado, cuenta y limpia a los **Pendulares**. Los pendulares no viven en tu ciudad, pero se desplazan para trabajar.\n\n" +
                   "A veces vivían aquí y se marcharon por quedarse sin hogar (función añadida en la versión 1.2.5 del juego)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Incluir ciudadanos sin hogar" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Ciudadanos sin hogar" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Cuando está activado, cuenta y limpia a los **ciudadanos sin hogar**.\n\n" +
+                  "Cuando está activado, cuenta y limpia a los **Ciudadanos Sin Hogar**.\n\n" +
                   "<CUIDADO>: eliminar ciudadanos sin hogar puede causar efectos inesperados." },
 
                 // Buttons (Main group)

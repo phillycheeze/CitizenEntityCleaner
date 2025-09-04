@@ -26,28 +26,27 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Über" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filter" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Zu bereinigende Gruppen" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Aktionen" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger einbeziehen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
-                  "Wenn aktiviert (Standard), zählt und bereinigt **korrupte** Bürger;\n" +
+                  "Wenn aktiviert (Standard), zählt und bereinigt die **Korrupten**:\n" +
                   "Bewohner ohne PropertyRenter-Komponente (und nicht obdachlos, Pendler, Tourist oder wegziehend).\n\n" +
                   "Korrupte Bürger sind das Hauptziel dieses Mods. Zu viele können langfristig Probleme verursachen." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Wegziehende (ohne Miete) einbeziehen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Wegziehende (Rent = 0)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Wenn aktiviert, zählt und bereinigt Bürger, die **wegziehen** und **keine** PropertyRenter-Komponente haben.\n\n" +
-                  "Wegziehende mit PropertyRenter bleiben erhalten und werden nicht einbezogen." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendler einbeziehen" },
+                  "Wenn aktiviert, zählt und entfernt Bürger mit dem Status **Wegziehend** und Rent = 0 (also ohne PropertyRenter-Komponente).\n\n" +
+                  "Wegziehende mit PropertyRenter oder Rent > 0 werden nicht entfernt." },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendler" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "Wenn aktiviert, zählt und bereinigt **Pendler**. Pendler leben nicht in deiner Stadt, kommen aber zur Arbeit hierher.\n\n" +
                   "Manche lebten früher hier und sind wegen Obdachlosigkeit weggezogen (seit Spielversion 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Obdachlose einbeziehen" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Obdachlose" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
                   "Wenn aktiviert, zählt und bereinigt **Obdachlose**.\n\n" +
                   "<VORSICHT>: Das Löschen von Obdachlosen kann zu unerwarteten Nebenwirkungen führen." },

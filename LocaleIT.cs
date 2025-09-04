@@ -25,30 +25,30 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Info" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filtri" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Gruppi da rimuovere" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Azioni" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Includi cittadini corrotti" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Cittadini corrotti" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
-                  "Se abilitato (predefinito), conta e ripulisce i **cittadini corrotti**;\n" +
+                  "Se abilitato (predefinito), conta e ripulisce i **Cittadini Corrotti**;\n" +
                   "residenti senza il componente PropertyRenter (e che non siano senzatetto, pendolari, turisti o in partenza).\n\n" +
                   "I cittadini corrotti sono l’obiettivo principale di questa mod. Se la città ne contiene troppi, nel tempo possono causare problemi." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Includi in partenza (senza affitto)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "In partenza (Rent = 0)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "Se abilitato, conta e ripulisce i cittadini **in partenza** che **non** hanno il componente PropertyRenter.\n\n" +
-                  "I cittadini in partenza con PropertyRenter vengono conservati e non sono inclusi." },
+                  "Se abilitato, conta e rimuove i cittadini con stato **In partenza** e Rent = 0 (cioè senza componente PropertyRenter).\n\n" +
+                  "I cittadini in partenza con PropertyRenter o con Rent > 0 non vengono rimossi." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Includi pendolari" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Pendolari" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
-                  "Se abilitato, conta e ripulisce i **pendolari**. I pendolari non vivono nella tua città ma viaggiano per lavorare.\n\n" +
+                  "Se abilitato, conta e ripulisce i **Pendolari**. I pendolari non vivono nella tua città ma viaggiano per lavorare.\n\n" +
                   "A volte i pendolari vivevano qui in passato e sono andati via per mancanza di alloggio (funzione introdotta con la versione di gioco 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Includi senzatetto" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Senzatetto" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
-                  "Se abilitato, conta e ripulisce i **senzatetto**.\n\n" +
+                  "Se abilitato, conta e ripulisce i **Senzatetto**.\n\n" +
                   "<ATTENZIONE>: eliminare i senzatetto può causare effetti imprevisti." },
 
                 // Buttons (Main group)

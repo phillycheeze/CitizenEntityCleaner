@@ -1,5 +1,6 @@
 ﻿// LocaleEN.cs
 using Colossal;                    // IDictionarySource
+using Colossal.IO.AssetDatabase.Internal;
 using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
@@ -25,28 +26,28 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filters" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Cleanup Targets" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
 
                 // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Include Corrupt Citizens" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Corrupt Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCorrupt)),
                   "When enabled (default), counts and cleans up **corrupt** citizens;\n" +
                   "residents that lack a PropertyRenter component (and are not homeless, commuters, tourists, or moving-away).\n\n" +
                   "Corrupt citizens are the main target of this mod. If the city contains too many, it could cause problems over time." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Include Moving-Away (with no rent)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeMovingAwayNoPR)), "Moving-Away (Rent = 0)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeMovingAwayNoPR)),
-                  "When enabled, counts and cleans up citizens currently **moving away** who **do not** have a PropertyRenter component.\n\n" +
-                  "Moving-away citizens with PropertyRenter are preserved and not included." },
+                  "When enabled, counts and cleans up citizens currently **Moving-Away** with Rent = 0 (i.e., no PropertyRenter component).\n\n" +
+                  "Moving-Away citizens with PropertyRenter or Rent > 0 are not removed." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Include Commuters" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Commuters" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)),
                   "When enabled, counts and cleans up **commuter** citizens. Commuters include citizens that don't live in your city but travel to your city for work.\n\n" +
                   "Sometimes, commuters previously lived in your city but moved out due to homelessness (feature added in game version 1.2.5)." },
 
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Homeless" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)),
                   "When enabled, counts and cleans up **homeless** citizens.\n\n" +
                   "<BE CAREFUL>: deleting homeless can cause unknown side effects." },

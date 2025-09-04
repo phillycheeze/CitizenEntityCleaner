@@ -22,7 +22,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetSettingsLocaleID(), Mod.Name },
 
                 // Tabs
-                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Start" },
+                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Aktionen" },
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Über" },
 
                 // Groups

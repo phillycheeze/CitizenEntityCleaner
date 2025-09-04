@@ -21,8 +21,8 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetSettingsLocaleID(), Mod.Name },
 
                 // Tabs
-                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Principale" },
-                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Informazioni" },
+                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Azioni" },
+                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Info" },
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filtri" },

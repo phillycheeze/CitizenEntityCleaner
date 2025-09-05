@@ -8,7 +8,8 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Some saves might have many abandoned Citizen entities leaving behind households, vehicles, and other entities while also decreasing performance. This mod provides a hack to manually clean those up." /-->
 	<LongDescription>
-		# Citizen Entity Cleaner
+		## Citizen Entity Cleaner
+		_Basic language support: 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano._
 
 		## ⚠️ **[WARNING]** ⚠️
 		**DO THIS FIRST: BACK UP YOUR SAVE.**
@@ -29,9 +30,10 @@
 
 		ℹ️ **Mod Options**
 		- Include **corrupt citizens** in cleanup (optional ✅)
+		- Include **moving-away** (that have no rent) in cleanup (optional ✅)
 		- Include **commuters** in cleanup (optional ✅)
 		- Include **homeless** in cleanup (optional ✅)
-		- Include **moving-away** (that have no rent) in cleanup (optional ✅)
+
 
 		ℹ️ **This Mod may also:**
 		- Delete "Pending" citizens that may be buffered for relocation
@@ -105,7 +107,7 @@
 - More accurate homeless/commuter handling via Household level checks
 - **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
 - Tourists are now excluded explicitly
-- UI updates and refactor: basic language support (EN, FR, ES, DE, IT)
+- UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN)
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

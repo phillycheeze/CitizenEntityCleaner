@@ -1,4 +1,4 @@
-﻿// LocaleIT.cs
+// LocaleIT.cs
 using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
 
@@ -57,6 +57,7 @@ namespace CitizenEntityCleaner
                   "<Carica prima una città salvata.>\nRimuove i cittadini dai nuclei familiari che non hanno più il componente PropertyRenter.\n" +
                   "La pulizia include anche eventuali elementi opzionali selezionati [ ✓ ].\n\n" +
                   "**ATTENZIONE**: questa è una soluzione di ripiego e può danneggiare altri dati. Crea prima un backup del tuo salvataggio!" },
+
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Elimina in modo permanente gli elementi selezionati nelle opzioni.\n\n<Per favore, esegui prima un backup!>\nContinuare?" },
 

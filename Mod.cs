@@ -39,7 +39,6 @@ namespace CitizenEntityCleaner
         private Action? _onCompleted;
         private Action? _onNoWork;   // <-- for event if nothing to clean, nullable
 
-
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
@@ -69,12 +68,29 @@ namespace CitizenEntityCleaner
             var es = new LocaleES(m_Setting);
             var de = new LocaleDE(m_Setting);
             var it = new LocaleIT(m_Setting);
+            var zhCN = new LocaleZH_CN(m_Setting); // Simplified Chinese, not fully translated
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
             RegisterLocale("de-DE", de);
             RegisterLocale("it-IT", it);
+
+            // Register ZH under several common ids so LocalizationManager can find matching one
+            RegisterLocale("zh-HANS", zhCN);    // log shows this is used
+            RegisterLocale("zh-CN", zhCN);      // common Steam locale Simplified Chinese
+            RegisterLocale("zh-Hans", zhCN);    // common alias (case variant)
+            RegisterLocale("zh-Hans-CN", zhCN); // common alias (region variant)
+
+            // Optional: log what the game switches to (guarded for null)
+#if DEBUG
+            var lm = GameManager.instance?.localizationManager;
+            if (lm != null)
+            {
+                Mod.log.Info($"[Locale] Active at load: {lm.activeLocaleId}");
+                lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");
+            }
+#endif
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));

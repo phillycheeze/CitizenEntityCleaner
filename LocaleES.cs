@@ -1,4 +1,4 @@
-﻿// LocaleES.cs
+// LocaleES.cs
 using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
 
@@ -57,6 +57,7 @@ namespace CitizenEntityCleaner
                   "<Carga primero una ciudad guardada.>\nElimina ciudadanos de hogares que ya no tienen el componente PropertyRenter.\n" +
                   "La limpieza también incluye cualquier elemento opcional marcado [ ✓ ].\n\n" +
                   "**CUIDADO**: esto es un apaño y puede corromper otros datos. ¡Haz una copia de seguridad de tu partida primero!" },
+
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Los elementos seleccionados en las opciones se eliminarán de forma permanente.\n\n<Por favor, haz antes una copia de seguridad.>\n¿Continuar?" },
 

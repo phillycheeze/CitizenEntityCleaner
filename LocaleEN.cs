@@ -1,4 +1,4 @@
-﻿// LocaleEN.cs
+// LocaleEN.cs
 using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
 

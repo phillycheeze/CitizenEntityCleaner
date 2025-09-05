@@ -1,4 +1,4 @@
-﻿// LocaleFR.cs
+// LocaleFR.cs
 using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
 
@@ -57,6 +57,7 @@ namespace CitizenEntityCleaner
                   "<Chargez d’abord une partie enregistrée.>\nSupprime les citoyens des ménages qui n’ont plus le composant PropertyRenter.\n" +
                   "Le nettoyage inclut aussi les éléments optionnels cochés [ ✓ ].\n\n" +
                   "**ATTENTION** : solution de contournement pouvant corrompre d’autres données. Faites d’abord une sauvegarde de votre partie !" },
+                
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Supprime définitivement les éléments cochés dans les options.\n\n<Merci de sauvegarder d’abord !>\nContinuer ?" },
 

@@ -1,6 +1,5 @@
 ﻿// LocaleEN.cs
 using Colossal;                    // IDictionarySource
-using Colossal.IO.AssetDatabase.Internal;
 using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner

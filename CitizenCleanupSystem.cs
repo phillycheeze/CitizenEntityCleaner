@@ -120,10 +120,11 @@ namespace CitizenEntityCleaner
 
         #region Selection Logic (build deletion set)
         /// <summary>
-        /// Builds deletion set based on toggle options == true:
-        /// - Corrupt households (no PropertyRenter & not homeless/commuter/tourist)
+        /// Builds deletion set based on toggles:
+        /// - Corrupt households (no PropertyRenter & not homeless/commuter/tourist) - excludes members who are Moving-Away
         /// - HomelessHousehold members when IncludeHomeless == true
         /// - CommuterHousehold members when IncludeCommuters == true
+        /// - Moving-Away (no PropertyRenter) when IncludeMovingAwayNoPR == true
         /// Note: tourists are implicitly safe (hotels provide PropertyRenter); homeless check is Transport-agnostic.
         /// </summary>
         private NativeList<Entity> GetDeletionCandidates(Allocator allocator)
@@ -153,7 +154,7 @@ namespace CitizenEntityCleaner
                     bool isCommuterHH = EntityManager.HasComponent<CommuterHousehold>(householdEntity);
                     bool isTouristHH = EntityManager.HasComponent<TouristHousehold>(householdEntity);
 
-                    // Which categories are enabled?
+                    // Category toggles per user settings
                     bool wantCorrupt = (m_settings?.IncludeCorrupt ?? true);
                     bool wantHomeless = (m_settings?.IncludeHomeless == true);
                     bool wantCommuters = (m_settings?.IncludeCommuters == true);
@@ -183,26 +184,34 @@ namespace CitizenEntityCleaner
 
                         bool movingAway = IsMovingAway(citizenEntity);
 
-                        bool add = false;
+                        bool add = false;   // add == include citizen in the deletion set
 
-                        // Homeless ON → delete all members of homeless HH
+                        // Category precedence: Homeless → Commuter → Corrupt (then Moving-Away as independent rule)
+
+                        // Homeless ON → include all members of homeless HH
                         if (wantHomeless && isHomelessHH)
                             add = true;
 
-                        // Commuters ON → delete all members of commuter HH
+                        // Commuters ON → include all members of commuter HH
                         else if (wantCommuters && isCommuterHH)
                             add = true;
 
-                        // Corrupt ON → delete corrupt members but EXCLUDE Moving-Away
+                        // Corrupt ON → include all members of corrupt HH, except those Moving-Away
                         else if (wantCorrupt && isResidentCorrupt)
-                            add = !movingAway;
+                        {
+                            if (movingAway)
+                                add = false;
+                            else
+                                add = true;
+                        }
 
                         // Independent toggle: Moving-Away (with no PropertyRenter)
+                        // runs only if not included above
                         if (!add && wantMovingAwayNoPR && movingAway && !hasPropertyRenter)
                             add = true;
 
                         if (add)
-                            candidates.Add(citizenEntity);
+                            candidates.Add(citizenEntity);  // mark for deletion
                     }
                 }
             }

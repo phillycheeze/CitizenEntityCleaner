@@ -12,16 +12,16 @@ namespace CitizenEntityCleaner
     public class Mod : IMod
     {
         // ---- Mod metadata ----
-        private static readonly Assembly Asm = Assembly.GetExecutingAssembly();
+        private static readonly Assembly s_asm = Assembly.GetExecutingAssembly();
         public static readonly string Name =
-                Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
+                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
 
         // Versions (short + full)
-        private static readonly string VersionInformationalRaw =
-            Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
+        private static readonly string s_versionInformationalRaw =
+            s_asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
 
-        public static readonly string VersionShort = VersionInformationalRaw.Split(' ', '+')[0];
-        public static readonly string VersionInformational = VersionInformationalRaw;
+        public static readonly string VersionShort = s_versionInformationalRaw.Split(' ', '+')[0];
+        public static readonly string VersionInformational = s_versionInformationalRaw;
 
         // ---- Logging ----
         public static readonly ILog log = LogManager
@@ -37,7 +37,7 @@ namespace CitizenEntityCleaner
         // Keep same delegate instances and use for both += and -= so -= works (ensures unsubscribe works).
         private Action<float>? _onProgress;
         private Action? _onCompleted;
-        private Action? _onNoWork;   // <-- for event if nothing to clean, nullable
+        private Action? _onNoWork;   // for event if nothing to clean, nullable
 
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -82,15 +82,16 @@ namespace CitizenEntityCleaner
             RegisterLocale("zh-Hans", zhCN);    // common alias (case variant)
             RegisterLocale("zh-Hans-CN", zhCN); // common alias (region variant)
 
-            // Optional: log what the game switches to (guarded for null)
-#if DEBUG
+            // Log language selected (guarded for null)
             var lm = GameManager.instance?.localizationManager;
             if (lm != null)
             {
-                Mod.log.Info($"[Locale] Active at load: {lm.activeLocaleId}");
-                lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");
-            }
+                Mod.log.Info($"[Locale] Active at load: {lm.activeLocaleId}");  // One-time info at load
+#if DEBUG
+            // Debug-only: track locale changes for testing
+            lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");
 #endif
+            }
 
             // Load saved settings (or defaults on first run)
             AssetDatabase.global.LoadSettings(ModKeys.SettingsKey, m_Setting, new Setting(this));

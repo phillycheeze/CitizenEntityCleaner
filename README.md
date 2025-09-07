@@ -23,9 +23,11 @@ This entity bloat causes several issues:
 - **Cars get abandoned** and permanently occupying parking spots, never being used again
 - **General performance degradation** across querying systems
 
-ℹ️ **Mod Bonus Options:**
-- Delete all commuters (Optional ✅)
-- Delete all homeless citizens (Optional ✅)
+ℹ️ **Mod Options:**
+- Include **corrupt citizens** in cleanup (optional ✅)
+- Include **moving-away** (that have no rent) in cleanup (optional ✅)
+- Include **commuters** in cleanup (optional ✅)
+- Include **homeless** in cleanup (optional ✅)
   
 ℹ️ **This mod may also:**
 - Delete "Pending" citizens that may be buffered for relocation
@@ -42,7 +44,9 @@ This entity bloat causes several issues:
 5. Click [Cleanup Citizens] to clean up entities.
 
 > [!NOTE]
-> Revert to original saved city if needed for unexpected behavior.
+> This mod does **not** run automatically; it only runs when you click \[Cleanup Citizens].
+> Revert to original saved city if you see unexpected behavior.
+		
 
 ## What This Mod Does
 
@@ -50,10 +54,6 @@ This entity bloat causes several issues:
 - Marks these citizen entities for deletion in chunked batches
 - The base game then naturally cleans up remaining references (households, vehicles, households, vehicles, student/patient references, and anything else afterwards).
 - This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
-
-> **Does not do**
-> - Does **not** delete tourists or citizens in valid households
-> - Does **not** run automatically (only acts when you click \[Cleanup Citizens])
 
 
 ## What is causing the issue?
@@ -68,4 +68,4 @@ Not sure. It could be another mod or something introduced in a more recent patch
 - yenyang - feedback, coop development
 - Konsi - feedback
 - krzychu124 - feedback, code sharing
-- Honu - testing, feedback, logo, code updates
+- Honu - testing, feedback, logo, PR/coop development

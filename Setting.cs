@@ -159,7 +159,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Asks for confirmation, starts progress, then triggers CleanupSystem.
+        /// Confirmation pop-up: on Yes, triggers CleanupSystem.
         /// </summary>
         [SettingsUIButton]
         [SettingsUIConfirmation]
@@ -168,23 +168,26 @@ namespace CitizenEntityCleaner
         {
             set
             {
+                // Prevent user double-clicks during a run
                 if (_isCleanupInProgress)
                 {
                     Mod.log.Info("Cleanup already in progress, ignoring button click");
                     return;
                 }
 
-                Mod.log.Info("Cleanup Citizens button clicked");
-                if (Mod.CleanupSystem != null)
+                // Must have a system to run
+                if (Mod.CleanupSystem == null)
                 {
-                    StartCleanupProgress();
-           
-                    Mod.CleanupSystem.TriggerCleanup();
+                    Mod.log.Warn("CleanupSystem not available, check if city is loaded");
+                    return;
                 }
-                else
-                {
-                    Mod.log.Warn("CleanupSystem is not available");
-                }
+
+                _isCleanupInProgress = true;
+                _needsRefresh = false;
+
+                Mod.log.Info("Cleanup Citizens confirmed YES; triggering cleanup");
+                Mod.CleanupSystem.TriggerCleanup();
+
             }
         }
 
@@ -319,21 +322,7 @@ namespace CitizenEntityCleaner
                 _needsRefresh = false;  // show error, not the prompt
             }
 
-            // Make UI re-read values
-            ApplyAndSave();
-        }
-
-        /// <summary>
-        /// Starts progress tracking for cleanup operation
-        /// </summary>
-        public void StartCleanupProgress()
-        {
-            _isCleanupInProgress = true;
-            _needsRefresh = false;  // ensure progress isn't hidden by prompt
-            var pct = 0f.ToString("P0");    // e.g. "0%" localized
-            _cleanupStatus = $"Cleanup in progress… {pct}";
-            _corruptedCitizens = $"Cleaning… {pct}";
-            ApplyAndSave();
+            Apply();
         }
 
         /// <summary>
@@ -341,14 +330,20 @@ namespace CitizenEntityCleaner
         /// </summary>
         public void UpdateCleanupProgress(float progress)
         {
-            if (_isCleanupInProgress)
+            if (!_isCleanupInProgress)
             {
-                _needsRefresh = false;
-                var pct = progress.ToString("P0");
-                _cleanupStatus = $"Cleanup in progress… {pct}";
-                _corruptedCitizens = $"Cleaning… {pct}";
-                ApplyAndSave();
+#if DEBUG
+                Mod.log.Debug("Ignoring progress update because no cleanup is active.");
+#endif
+                return;
             }
+
+            _needsRefresh = false;
+            var pct = progress.ToString("P0");
+            _cleanupStatus = $"Cleanup in progress… {pct}";
+            _corruptedCitizens = $"Cleaning… {pct}";
+            Apply();
+ 
         }
 
         /// <summary>

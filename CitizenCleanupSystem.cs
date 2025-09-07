@@ -79,7 +79,6 @@ namespace CitizenEntityCleaner
 
             // Start new cleanup run: requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
             m_shouldRunCleanup = false;
-            s_log.Info("Starting citizen entity cleanup...");
             StartChunkedCleanup();
         }
 
@@ -119,6 +118,20 @@ namespace CitizenEntityCleaner
                 return (0, 0);
             }
         }
+
+        public bool HasAnyCitizenData()
+        {
+            try
+            {
+                // Cheap test for City Loaded: check for any HouseholdMember entity
+                return m_householdMemberQuery.CalculateEntityCount() > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region Selection Logic (build deletion set)
@@ -277,11 +290,10 @@ namespace CitizenEntityCleaner
             // immediately finish when nothing to do
             if (m_entitiesToCleanup.Length == 0)
             {
-                s_log.Info("Cleanup requested, but there is nothing to clean.");
+                s_log.Info("Cleanup requested, but nothing matched the selected filters.");
                 if (m_entitiesToCleanup.IsCreated) m_entitiesToCleanup.Dispose();
                 m_isChunkedCleanupInProgress = false;
 
-                OnCleanupProgress?.Invoke(1f);  // send final progress 100%
                 OnCleanupNoWork?.Invoke();
                 return;
             }

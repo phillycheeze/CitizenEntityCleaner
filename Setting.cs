@@ -178,7 +178,25 @@ namespace CitizenEntityCleaner
                 // Must have a system to run
                 if (Mod.CleanupSystem == null)
                 {
-                    Mod.log.Warn("CleanupSystem not available, check if city is loaded");
+                    Mod.log.Error("CleanupSystem not initialized (mod load failure).");
+                    return;
+                }
+
+                // Don't trigger if no city data present ('no city loaded' scenario)
+                if (!Mod.CleanupSystem.HasAnyCitizenData())
+                {
+                    Mod.log.Info("No city loaded (no citizen data). Load a city first, then run Cleanup.");
+                    return;
+                }
+
+                // Bail early if nothing is selected
+                bool anySelected = _includeCorrupt || _includeMovingAwayNoPR || _includeCommuters || _includeHomeless;
+                if (!anySelected)
+                {
+                    Mod.log.Info("No checkboxes selected; nothing to clean.");
+                    _cleanupStatus = "Nothing to clean";
+                    _needsRefresh = false;
+                    Apply(); // update UI
                     return;
                 }
 

@@ -86,7 +86,7 @@ namespace CitizenEntityCleaner
             var lm = GameManager.instance?.localizationManager;
             if (lm != null)
             {
-                Mod.log.Info($"[Locale] Active at load: {lm.activeLocaleId}");  // One-time info at load
+                Mod.log.Info($"[Locale] ACTIVE at LOAD: {lm.activeLocaleId}");  // One-time info at load
 #if DEBUG
             // Debug-only: track locale changes for testing
             lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");

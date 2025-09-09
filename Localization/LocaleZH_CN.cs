@@ -28,6 +28,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "清理目标" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "操作" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "信息" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup), "调试" },
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "▪ 损坏的市民" },
@@ -51,13 +52,14 @@ namespace CitizenEntityCleaner
                   "启用后，将统计并清理**无家可归者**。\n\n" +
                   "<注意>：删除无家可归者可能产生未知的副作用。" },
 
-                // Buttons (Main group)
+                // Buttons
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "清理市民" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "<请先加载存档。>\n从不再拥有 PropertyRenter 组件的家庭中移除市民。\n" +
                   "清理同时包含你勾选的可选项 [ ✓ ]。\n\n" +
                   "**请注意**：这是权宜之计，可能损坏其他数据。请先备份你的存档！" },
 
+                // Warning (confirmation)
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "将永久删除在选项中勾选的项目。\n\n<请先备份你的存档！>\n是否继续？" },
 
@@ -66,6 +68,19 @@ namespace CitizenEntityCleaner
                   "<要获取数据，请先加载存档。>\n" +
                   "更新所有实体计数以显示当前城市统计。\n" +
                   "清理后请让游戏继续运行一段时间。" },
+
+                // Debug preview (add missing)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "调试：记录损坏市民的 ID（前 10 个）" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
+                  "— 将前 10 个损坏市民的 ID **（Index:Version）** 写入日志，便于在 Scene Explorer 中核对。\n\n" +
+                  "— **仅预览**，不会删除任何内容。要删除，请使用 **[清理市民]**\n\n" +
+                  "— 日志文件：%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
+                // Sentence UNDER the button (multiline)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
+                  "仅用于调试：只预览，不删除。\n" +
+                  "将前 10 个损坏实体的 ID 写入日志。" },
+
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "状态" },
@@ -88,6 +103,12 @@ namespace CitizenEntityCleaner
 
                 // Prompts (used by Setting.cs for placeholder text)
                 { "CitizenEntityCleaner/Prompt/RefreshCounts", "点击 [刷新计数]" },
+                { "CitizenEntityCleaner/Prompt/NoCity", "未加载城市" },
+                { "CitizenEntityCleaner/Prompt/Error",  "错误" },
+                { "CitizenEntityCleaner/Status/Progress", "正在清理… {0}" },
+                { "CitizenEntityCleaner/Status/Cleaning", "清理中… {0}" },
+
+
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "模组名称" },
@@ -117,7 +138,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <请先备份你的存档！>\n" +
                   "2. <点击 [刷新计数] 查看当前统计。>\n" +
-                  "3. <使用复选框勾选 [ ✓ ] 要包含的项目>\n" +
+                  "3. <使用复选框勾选> [ ✓ ] <要包含的项目>\n" +
                   "4. <点击 [清理市民] 执行清理。>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 

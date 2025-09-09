@@ -28,6 +28,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Zu bereinigende Gruppen" }, // or clearer: "Zu entfernende Gruppen"
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Aktionen" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup), "Debug" },
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Korrupte Bürger" },
@@ -51,13 +52,14 @@ namespace CitizenEntityCleaner
                   "Wenn aktiviert, zählt und entfernt **Obdachlose**.\n\n" +
                   "**VORSICHT:** Das Entfernen von Obdachlosen kann zu unerwarteten Nebenwirkungen führen." },
 
-                // Buttons (Main group)
+                // Buttons
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Bürger bereinigen" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "<Zuerst einen Spielstand laden.>\nEntfernt Bürger aus Haushalten, die keine PropertyRenter-Komponente mehr haben.\n" +
                   "Die Bereinigung umfasst auch alle optional markierten Elemente [✓].\n\n" +
                   "**VORSICHT:** Dies ist ein Workaround und kann andere Daten beschädigen. Erstelle zuerst ein Backup deines Spielstands!" },
 
+                // Warning (confirmation)
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Ausgewählte Elemente in den Optionen werden dauerhaft gelöscht.\n\n<Bitte zuerst ein Backup erstellen!>\nFortfahren?" },
 
@@ -66,6 +68,18 @@ namespace CitizenEntityCleaner
                   "<Lade zuerst einen Spielstand, um Zahlen zu erhalten.>\n" +
                   "Aktualisiert alle Zähler, um die aktuellen Stadtstatistiken anzuzeigen.\n" +
                   "Lasse das Spiel nach dem Bereinigen eine Minute lang unpausiert laufen." },
+
+                // Debug preview
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug: Korrupte IDs protokollieren (erste 10)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
+                  "- Schreibt die ersten 10 IDs korrupter Bürger **(Index:Version)** ins Log zur Kontrolle im Scene Explorer.\n\n" +
+                  "- **Nur Vorschau** — es wird nichts gelöscht. Zum Entfernen **[Bürger bereinigen]** verwenden.\n\n" +
+                  "- Log-Datei: %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
+                // Sentence UNDER the button (multiline)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
+                  "Nur zum Debuggen: reine Vorschau — es wird nichts gelöscht.\n" +
+                  "Schreibt die ersten 10 IDs korrupter Entitäten ins Log." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
@@ -88,6 +102,11 @@ namespace CitizenEntityCleaner
 
                 // Prompts (used by Setting.cs for placeholder text)
                 { "CitizenEntityCleaner/Prompt/RefreshCounts", "Klicke auf [Aktualisieren]" },
+                { "CitizenEntityCleaner/Prompt/NoCity", "Keine Stadt geladen" },
+                { "CitizenEntityCleaner/Prompt/Error",  "Fehler" },
+                { "CitizenEntityCleaner/Status/Progress", "Bereinigung läuft… {0}" },
+                { "CitizenEntityCleaner/Status/Cleaning", "Bereinige… {0}" },
+
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod-Name" },
@@ -117,8 +136,8 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Sichere zuerst deinen Spielstand!>\n" +
                   "2. <Klicke [Aktualisieren], um die aktuellen Statistiken zu sehen.>\n" +
-                  "3. <[ ✓ ] Wähle die gewünschten Elemente über die Kästchen>\n" +
-                  "4. <Klicke [Bürger Bereinigen], um die Bereinigung zu starten.>" },
+                  "3. [ ✓ ] <Wähle die gewünschten Elemente über die Kästchen>\n" +
+                  "4. <Klicke [Bürger bereinigen], um die Bereinigung zu starten.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 
                 // Notes block

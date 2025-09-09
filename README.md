@@ -68,4 +68,5 @@ Not sure. It could be another mod or something introduced in a more recent patch
 - yenyang - feedback, coop development
 - Konsi - feedback
 - krzychu124 - feedback, code sharing
-- Honu - testing, feedback, logo, PR/coop development
+- Honu - testing, Github PR, coop development, locales
+- Noel - ZH_CN locale review

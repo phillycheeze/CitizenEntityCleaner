@@ -28,6 +28,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Cibles à nettoyer" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Infos" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup), "Débogage" },
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "Citoyens corrompus" },
@@ -51,13 +52,14 @@ namespace CitizenEntityCleaner
                   "Lorsque cette option est activée, compte et nettoie les **Sans-Abri**.\n\n" +
                   "<ATTENTION>: supprimer des sans-abri peut entraîner des effets secondaires imprévus." },
 
-                // Buttons (Main group)
+                // Buttons
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Nettoyer les citoyens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "<Chargez d’abord une partie enregistrée.>\nSupprime les citoyens des ménages qui n’ont plus le composant PropertyRenter.\n" +
                   "Le nettoyage inclut aussi les éléments optionnels cochés [ ✓ ].\n\n" +
                   "**ATTENTION** : solution de contournement pouvant corrompre d’autres données. Faites d’abord une sauvegarde de votre partie !" },
                 
+                // Warning (confirmation)
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
                   "Supprime définitivement les éléments cochés dans les options.\n\n<Merci de sauvegarder d’abord !>\nContinuer ?" },
 
@@ -66,6 +68,18 @@ namespace CitizenEntityCleaner
                   "<Chargez d’abord une partie pour obtenir des chiffres.>\n" +
                   "Actualise tous les compteurs pour afficher les statistiques actuelles de la ville.\n" +
                   "Après le nettoyage, laissez le jeu tourner une minute sans pause." },
+
+                // Debug preview
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug : consigner les ID corrompues (10 premières)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
+                  "- Ajoute au journal les 10 premières ID de citoyens corrompus **(Index:Version)** pour vérification dans Scene Explorer.\n\n" +
+                  "- **Aperçu uniquement** — rien n’est supprimé. Pour supprimer, utilisez **[Nettoyer les citoyens]**\n\n" +
+                  "- Fichier journal : %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
+                // Sentence UNDER the button (multiline)
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
+                  "Pour le débogage : aperçu uniquement — rien n’est supprimé.\n" +
+                  "Écrit les 10 premières ID d’entités corrompues dans le journal." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Statut" },
@@ -88,6 +102,11 @@ namespace CitizenEntityCleaner
 
                 // Prompts (used by Setting.cs for placeholder text)
                 { "CitizenEntityCleaner/Prompt/RefreshCounts", "Cliquez sur [Actualiser]" },
+                { "CitizenEntityCleaner/Prompt/NoCity", "Aucune ville chargée" },
+                { "CitizenEntityCleaner/Prompt/Error",  "Erreur" },
+                { "CitizenEntityCleaner/Status/Progress", "Nettoyage en cours… {0}" },
+                { "CitizenEntityCleaner/Status/Cleaning", "Nettoyage… {0}" },
+
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Nom du mod" },
@@ -117,7 +136,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Sauvegardez d’abord votre partie !>\n" +
                   "2. <Cliquez sur [Actualiser] pour voir les stats.>\n" +
-                  "3. <[ ✓ ] Sélectionnez les éléments à inclure via les cases>\n" +
+                  "3. [ ✓ ] <Sélectionnez les éléments à inclure via les cases>\n" +
                   "4. <Cliquez sur [Nettoyer les citoyens] pour lancer le nettoyage.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 

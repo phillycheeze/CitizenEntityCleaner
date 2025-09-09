@@ -28,6 +28,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Cleanup Targets" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Actions" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
+                { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup), "Debug" },
 
                 // Filter toggles
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCorrupt)), "▪ Corrupt Citizens" },
@@ -51,21 +52,35 @@ namespace CitizenEntityCleaner
                   "When enabled, counts and cleans up **homeless** citizens.\n\n" +
                   "<BE CAREFUL>: deleting homeless can cause unknown side effects." },
 
-                // Buttons (Main group)
+                // Buttons
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Citizens" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component.\n" +
+                  "Load a saved city first.\nRemoves citizens from households that no longer have a PropertyRenter component.\n" +
                   "Cleanup also includes any optional items selected [ ✓ ].\n\n" +
                   "**BE CAREFUL**: this is a workaround and may corrupt other data. Create a backup of your save first!" },
 
+                // Warning (confirmation)
                 { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)),
-                  "Permanently delete items selected in options.\n\n<Please backup your save first!>\n Continue?" },
+                  "Permanently delete items selected in options.\n\nPlease backup your save first!\n Continue?" },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)),
                   "<Load a saved city first to get numbers.>\n" +
                   "Updates all entity counts to show current city statistics.\n" +
                   "After cleaning, let the game run unpaused for a minute." },
+
+                // Debug preview - logs a sample list of corrupt citizens
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug: Log Corrupt IDs (first 10)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
+                  "- Adds a list of the first 10 Corrupt citizen IDs to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
+                  "- **Preview only** — does not delete anything. To remove entities, use **[Cleanup Citizens]**\n\n" +
+                  "- Log file at: %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
+                // Sentence UNDER the button (multiline text row)
+                // LabelLocale = inline body under the button
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
+                  "For Debugging: log preview only — nothing is deleted.\n" +
+                  "Writes to the log the first 10 IDs of corrupt entities." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
@@ -88,6 +103,11 @@ namespace CitizenEntityCleaner
 
                 // Prompts (used by Setting.cs for placeholder text)
                 { "CitizenEntityCleaner/Prompt/RefreshCounts", "Click [Refresh Counts]" },
+                { "CitizenEntityCleaner/Prompt/NoCity", "No city loaded" },
+                { "CitizenEntityCleaner/Prompt/Error",  "Error" },
+                { "CitizenEntityCleaner/Status/Progress", "Cleanup in progress… {0}" },
+                { "CitizenEntityCleaner/Status/Cleaning", "Cleaning… {0}" },
+
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
@@ -117,7 +137,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
                   "1. <Backup your save file first!>\n" +
                   "2. <Click [Refresh Counts] to see current statistics.>\n" +
-                  "3. <[ ✓ ] Select the items to include using the checkboxes>\n" +
+                  "3. [ ✓ ] <Select the items to include using the checkboxes>\n" +
                   "4. <Click [Cleanup Citizens] to clean up entities.>" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" },
 

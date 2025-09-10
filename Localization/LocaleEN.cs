@@ -70,17 +70,18 @@ namespace CitizenEntityCleaner
                   "After cleaning, let the game run unpaused for a minute." },
 
                 // Debug preview - logs a sample list of corrupt citizens
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug: Log Corrupt IDs (first 10)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - Corrupt IDs (first 10)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "- Adds a list of the first 10 Corrupt citizen IDs to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
-                  "- **Preview only** — does not delete anything. To remove entities, use **[Cleanup Citizens]**\n\n" +
-                  "- Log file at: %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "- Adds a list of the first **10 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
+                  "- **Preview only** — does not delete anything.\n\n" +
+                  "- Log file at:\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "For Debugging: log preview only — nothing is deleted.\n" +
-                  "Writes to the log the first 10 IDs of corrupt entities." },
+                  "Debug use: log sample list — nothing is deleted.\n" +
+                  "List the first 10 IDs of corrupt entities in the log." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },

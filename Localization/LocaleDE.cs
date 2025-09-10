@@ -25,7 +25,7 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "Über" },
 
                 // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Zu bereinigende Gruppen" }, // or clearer: "Zu entfernende Gruppen"
+                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Aufräumziele" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Aktionen" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
                 { m_Setting.GetOptionGroupLocaleID(Setting.DebugGroup), "Debug" },
@@ -70,15 +70,17 @@ namespace CitizenEntityCleaner
                   "Lasse das Spiel nach dem Bereinigen eine Minute lang unpausiert laufen." },
 
                 // Debug preview
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug: Korrupte IDs protokollieren (erste 10)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - Korrupte IDs (erste 10)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
                   "- Schreibt die ersten 10 IDs korrupter Bürger **(Index:Version)** ins Log zur Kontrolle im Scene Explorer.\n\n" +
-                  "- **Nur Vorschau** — es wird nichts gelöscht. Zum Entfernen **[Bürger bereinigen]** verwenden.\n\n" +
-                  "- Log-Datei: %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "- **Nur Vorschau** — es wird nichts gelöscht.\n\n" +
+                  "- Log-Datei:\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
 
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "Nur zum Debuggen: reine Vorschau — es wird nichts gelöscht.\n" +
+                  "Debug: Log-Beispielliste — es wird nichts gelöscht.\n" +
                   "Schreibt die ersten 10 IDs korrupter Entitäten ins Log." },
 
                 // Displays

@@ -70,16 +70,17 @@ namespace CitizenEntityCleaner
                   "Après le nettoyage, laissez le jeu tourner une minute sans pause." },
 
                 // Debug preview
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Debug : consigner les ID corrompues (10 premières)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - ID corrompues (10 premières)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
                   "- Ajoute au journal les 10 premières ID de citoyens corrompus **(Index:Version)** pour vérification dans Scene Explorer.\n\n" +
-                  "- **Aperçu uniquement** — rien n’est supprimé. Pour supprimer, utilisez **[Nettoyer les citoyens]**\n\n" +
-                  "- Fichier journal : %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "- **Aperçu uniquement** — rien n’est supprimé.\n\n" +
+                  "- Fichier journal :\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
 
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "Pour le débogage : aperçu uniquement — rien n’est supprimé.\n" +
-                  "Écrit les 10 premières ID d’entités corrompues dans le journal." },
+                  "Débogage : liste d’exemple — rien n’est supprimé.\n" +
+                  "Écrit dans le journal les 10 premières ID d’entités corrompues." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Statut" },

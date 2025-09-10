@@ -1,5 +1,6 @@
 // LocaleZH_CN.cs
 using Colossal;                    // IDictionarySource
+using Colossal.IO.AssetDatabase.Internal;
 using System.Collections.Generic;  // Dictionary
 
 namespace CitizenEntityCleaner
@@ -70,16 +71,18 @@ namespace CitizenEntityCleaner
                   "清理后请让游戏继续运行一段时间。" },
 
                 // Debug preview (add missing)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "调试：记录损坏市民的 ID（前 10 个）" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "日志 - 损坏 ID（前 10 个）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
                   "— 将前 10 个损坏市民的 ID **（Index:Version）** 写入日志，便于在 Scene Explorer 中核对。\n\n" +
-                  "— **仅预览**，不会删除任何内容。要删除，请使用 **[清理市民]**\n\n" +
-                  "— 日志文件：%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "- **仅预览** — 不会删除任何内容。\n\n" +
+                  "- 日志文件：\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
 
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "仅用于调试：只预览，不删除。\n" +
-                  "将前 10 个损坏实体的 ID 写入日志。" },
+                  "调试用：日志示例列表 — 不删除任何内容。\n" +
+                  "把前 10 个损坏实体的 ID 写入日志。" },
 
 
                 // Displays

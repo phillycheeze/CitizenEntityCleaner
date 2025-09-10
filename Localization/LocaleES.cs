@@ -70,16 +70,17 @@ namespace CitizenEntityCleaner
                   "Después de limpiar, deja el juego sin pausa durante un minuto." },
 
                 // Debug preview
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "Depuración: registrar IDs corruptas (primeras 10)" },
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - IDs corruptas (primeras 10)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
                   "- Añade al registro las primeras 10 IDs de ciudadanos corruptos **(Index:Version)** para verificar en Scene Explorer.\n\n" +
-                  "- **Solo vista previa** — no elimina nada. Para eliminar, usa **[Limpiar ciudadanos]**\n\n" +
-                  "- Archivo de registro: %USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "- **Solo vista previa** — no elimina nada.\n\n" +
+                  "- Archivo de registro:\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
 
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "Para depuración: solo vista previa del registro — no se elimina nada.\n" +
-                  "Escribe en el log las 10 primeras ID de corruptos." },
+                  "Uso de depuración: lista de muestra — no se elimina nada.\n" +
+                  "Escribe en el registro las 10 primeras ID de entidades corruptas." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Estado" },

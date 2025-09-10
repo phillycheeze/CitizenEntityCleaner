@@ -19,8 +19,8 @@ namespace CitizenEntityCleaner
     /// </summary>
     [FileLocation(ModKeys.SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup, DebugGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup, DebugGroup)]  // InfoGroup header omitted on purpose.
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup )]
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
 
     public class Setting : ModSetting
     {

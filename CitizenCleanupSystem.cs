@@ -1,4 +1,5 @@
 using Colossal.Logging;
+<<<<<<< HEAD
 using Game.Buildings;       // for PropertyRenter
 using Game.Citizens;        // for Citizen, HouseholdMember, TravelPurpose
 using Game.Common;          // for Deleted
@@ -7,9 +8,18 @@ using Unity.Entities;       // Entity, SystemBase, ComponentType, EntityQuery, e
 using Unity.Mathematics;    // for math
 using Game.Agents;          // for MovingAway
 using System.Text;
+=======
+
+using Game.Common;
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
+
+using Unity.Collections;
+using Unity.Entities;
+
 
 namespace CitizenEntityCleaner
 {
+    // PART: System — system loop (OnCreate/OnUpdate/OnDestroy), public API, shared fields/events
     /// <summary>
     /// ECS System for cleanup of citizen entities triggered via UI
     /// </summary>
@@ -17,6 +27,7 @@ namespace CitizenEntityCleaner
     {
         private static readonly ILog s_log = Mod.log;
 
+<<<<<<< HEAD
         // For selection bookkeeping (category + tallies)
         private enum CleanupType { None, Corrupt, Homeless, Commuters, MovingAway }
 
@@ -47,6 +58,18 @@ namespace CitizenEntityCleaner
         // ---- state, queries ----
         private float m_lastProgressNotified = -1f;   // UI progress throttle (~5% steps)
         private bool m_shouldRunCleanup = false;    // Flag to trigger cleanup operation
+=======
+        // ---- constants ----
+        private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
+        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // explicit enum (was a magic number)
+        private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
+
+        // ---- fields ----
+        private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
+        private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
+
+        private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
 
         // Chunked cleanup state
         private NativeList<Entity> m_entitiesToCleanup;
@@ -55,6 +78,12 @@ namespace CitizenEntityCleaner
 
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
+<<<<<<< HEAD
+=======
+
+
+        private Setting? m_settings; // nullable. Store setting passed from Mod.Onload
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
 
         // settings
         private Setting? m_settings;
@@ -65,14 +94,18 @@ namespace CitizenEntityCleaner
         public event System.Action<float>? OnCleanupProgress;
         public event System.Action? OnCleanupCompleted;
         public event System.Action? OnCleanupNoWork;
+<<<<<<< HEAD
         #endregion
 
 
         /// <summary>
         /// Setup queries and log creation
         /// </summary>
+=======
+
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
         protected override void OnCreate()
-        {   
+        {
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[] { ComponentType.ReadOnly<HouseholdMember>() },
@@ -87,10 +120,10 @@ namespace CitizenEntityCleaner
         // Non-blocking: process one chunk if run is active, otherwise start a run if requested
         protected override void OnUpdate()
         {
-         // If nothing active & nothing requested, do nothing this frame
-         if (!m_isChunkedCleanupInProgress && !m_shouldRunCleanup)
-            return;
-            
+            // If nothing active & nothing requested, do nothing this frame
+            if (!m_isChunkedCleanupInProgress && !m_shouldRunCleanup)
+                return;
+
             // Handle chunked cleanup if in progress, otherwise fallback to boolean flag
             if (m_isChunkedCleanupInProgress)
             {
@@ -131,9 +164,15 @@ namespace CitizenEntityCleaner
             try
             {
                 int totalCitizens = m_householdMemberQuery.CalculateEntityCount();
+<<<<<<< HEAD
                 int citizensToClean = GetCitizensToCleanCount();
 
                 return (totalCitizens, citizensToClean);
+=======
+                int corruptedCitizens = GetCorruptedCitizenCount();
+
+                return (totalCitizens, corruptedCitizens);
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
             }
             catch (System.Exception ex)
             {
@@ -142,6 +181,7 @@ namespace CitizenEntityCleaner
             }
         }
 
+<<<<<<< HEAD
         public bool HasAnyCitizenData()
         {
             try
@@ -471,6 +511,8 @@ namespace CitizenEntityCleaner
 
         #endregion
 
+=======
+>>>>>>> ebe24aa (Refactor: split CitizenCleanupSystem into Scan (read-only) and Apply (write-side); no behavior change)
         protected override void OnDestroy()
         {
             if (m_entitiesToCleanup.IsCreated)
@@ -482,4 +524,4 @@ namespace CitizenEntityCleaner
             base.OnDestroy();
         }
     }
-} 
+}

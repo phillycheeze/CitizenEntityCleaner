@@ -1,10 +1,10 @@
-using Colossal;
-using Colossal.IO.AssetDatabase;
-using Game.Modding;
-using Game.Settings;
-using System.Collections.Generic;
-using UnityEngine;      // for About tab Application.OpenURL
-using Game.UI.Widgets; // for SettingsUIMultilineText, SettingsUIDisplayName
+using Colossal.IO.AssetDatabase;    // [FileLocation]
+using Game.Modding;     // IMod
+using Game.SceneFlow;   // GameManager
+using Game.Settings;    // ModSetting, [SettingsUI*]
+using UnityEngine;      // Application.OpenURL
+using System.Collections; // IEnumerator (for NextFrame)
+
 
 
 namespace CitizenEntityCleaner
@@ -14,45 +14,123 @@ namespace CitizenEntityCleaner
         public const string SettingsKey = "CitizenEntityCleaner";
     }
 
+    /// <summary>
+    /// Settings UI and State
+    /// </summary>
     [FileLocation(ModKeys.SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, UsageGroup)]    // Note: InfoGroup header omitted on purpose for About tab.
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup )]
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
+
     public class Setting : ModSetting
     {
+        // ---- UI structure ----
         public const string kSection = "Main";
         public const string MainTab = "Main";
         public const string AboutTab = "About";
         public const string InfoGroup = "Info";
         public const string UsageGroup = "Usage";    //About tab section for usage instructions
-
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
+        public const string DebugGroup = "Debug";
 
+        // ---- UI text defaults ----
+        private const string DefaultCountPrompt = "Click [Refresh Counts]";
+
+        // ---- Localization (i18n) keys ----
+        private const string RefreshPromptKey = "CitizenEntityCleaner/Prompt/RefreshCounts";
+        private const string NoCityKey = "CitizenEntityCleaner/Prompt/NoCity";
+        private const string ErrorKey = "CitizenEntityCleaner/Prompt/Error";
+        private const string StatusProgressKey = "CitizenEntityCleaner/Status/Progress"; // "{0}" = P0 percent
+        private const string StatusCleaningKey = "CitizenEntityCleaner/Status/Cleaning"; // "{0}" = P0 percent
+
+        private static string L(string key, string fallback)
+        {
+            var dict = GameManager.instance?.localizationManager?.activeDictionary;
+            return (dict != null && dict.TryGetValue(key, out var s) && !string.IsNullOrWhiteSpace(s))
+                ? s
+                : fallback;
+        }
+
+        // ---- External links ----
+        private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
+        private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
+        private const string UrlDiscord = "https://discord.com/channels/1024242828114673724/1402078697120469064";
+
+        // ---- Backing fields for UI ----
+        private bool _includeCorrupt = true; // defaults ON
+        private bool _includeMovingAwayNoPR = false;
         private bool _includeHomeless = false;
         private bool _includeCommuters = false;
 
-        private string _totalCitizens = "Click Refresh to load";
-        private string _corruptedCitizens = "Click Refresh to load";
+        private string _totalCitizens = DefaultCountPrompt;
+        private string _corruptedCitizens = DefaultCountPrompt;
+        private bool _showRefreshPrompt = true;  // whether "Citizens to Clean" should show the prompt
+
+
         private string _cleanupStatus = "Idle";
 
-        internal bool _isCleanupInProgress = false;
+        private bool _isCleanupInProgress = false;
 
+
+        /// <summary>
+        /// Create settings object for this mod
+        ///</summary>
         public Setting(IMod mod) : base(mod) { }
 
-        // -------------------------
-        // Filter toggles (static labels)
-        // -------------------------
-        [SettingsUISection(kSection, kFiltersGroup)]
-        public bool IncludeHomeless
+        // ---- Helpers ----
+        private void ResetStatusIfNotRunning()
         {
-            get => _includeHomeless;
+            if (!_isCleanupInProgress)
+                _cleanupStatus = "Idle";
+        }
+
+        // Mark 'Citizens to Clean' count as stale so the getter shows localized prompt until refreshed.
+        private void ShowRefreshPrompt()
+        {
+            _showRefreshPrompt = true;   // show localized prompt until refreshed
+            ApplyAndSave();
+        }
+
+        // Defer an action to next frame (lets confirmation modal finish opening/closing)
+        private void NextFrame(System.Action action)
+        {
+            var gm = GameManager.instance;
+            if (gm != null) gm.StartCoroutine(NextFrameCo(action));
+            else action?.Invoke(); // fallback if GM missing (unlikely in Options UI)
+        }
+
+        private IEnumerator NextFrameCo(System.Action action)
+        {
+            yield return null; // wait one frame
+            action?.Invoke();
+        }
+
+
+        // ---- Filter & order of toggles ----
+        [SettingsUISection(kSection, kFiltersGroup)]
+        public bool IncludeCorrupt
+        {
+            get => _includeCorrupt;
             set
             {
-                if (_includeHomeless == value) return;  // <-- remember if user checks box.
-                _includeHomeless = value;
-                ApplyAndSave();          // <-- persist the checkbox value.
-                RefreshEntityCounts();   // optional live update
+                if (_includeCorrupt == value) return;
+                _includeCorrupt = value;
+                ResetStatusIfNotRunning();
+                ShowRefreshPrompt();
+            }
+        }
+
+        [SettingsUISection(kSection, kFiltersGroup)]
+        public bool IncludeMovingAwayNoPR
+        {
+            get => _includeMovingAwayNoPR;
+            set
+            {
+                if (_includeMovingAwayNoPR == value) return;
+                _includeMovingAwayNoPR = value;
+                ResetStatusIfNotRunning();
+                ShowRefreshPrompt();
             }
         }
 
@@ -64,40 +142,25 @@ namespace CitizenEntityCleaner
             {
                 if (_includeCommuters == value) return;
                 _includeCommuters = value;
-                ApplyAndSave();            // <-- persist the checkbox value.
-                RefreshEntityCounts();    // optional live update
+                ResetStatusIfNotRunning();
+                ShowRefreshPrompt();
             }
         }
 
-        // -------------------------
-        // Buttons (static labels)
-        // -------------------------
-        [SettingsUIButton]
-        [SettingsUIConfirmation]
-        [SettingsUISection(kSection, kButtonGroup)]
-        public bool CleanupEntitiesButton
+        [SettingsUISection(kSection, kFiltersGroup)]
+        public bool IncludeHomeless
         {
+            get => _includeHomeless;
             set
             {
-                if (_isCleanupInProgress)
-                {
-                    Mod.log.Info("Cleanup already in progress, ignoring button click");
-                    return;
-                }
-
-                Mod.log.Info("Cleanup entities button clicked");
-                if (Mod.CleanupSystem != null)
-                {
-                    StartCleanupProgress();
-           
-                    Mod.CleanupSystem.TriggerCleanup();
-                }
-                else
-                {
-                    Mod.log.Warn("CleanupSystem is not available");
-                }
+                if (_includeHomeless == value) return;
+                _includeHomeless = value;
+                ResetStatusIfNotRunning();
+                ShowRefreshPrompt();
             }
         }
+
+        // ---- Actions (buttons) ----
 
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
@@ -111,44 +174,167 @@ namespace CitizenEntityCleaner
                     return;
                 }
 
-                Mod.log.Info("Refresh counts button clicked");
+                Mod.log.Info("Refresh Counts button clicked");
                 RefreshEntityCounts();
             }
         }
 
-        // -------------------------
-        // Read-only displays (dynamic VALUES; labels are static via locale)
-        // -------------------------
+        /// <summary>
+        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly 
+        /// Avoids focus conflict errors in UI.log
+        /// </summary>
+        [SettingsUIButton]
+        [SettingsUIConfirmation]    // Yes/No modal
         [SettingsUISection(kSection, kButtonGroup)]
-        public string CleanupStatusDisplay => _cleanupStatus;
+        public bool CleanupEntitiesButton
+        {
+
+            set
+            {
+                // If user clicks "No", value = false — bail early
+                if (!value)
+                {
+#if DEBUG
+        Mod.log.Debug("[Cleanup] Confirmation declined (No).");
+#endif
+                    return;
+                }
+
+                // Defer one frame so the confirmation modal can fully close before we change states.
+                NextFrame(() =>
+                {
+                    try
+                    {
+                        if (_isCleanupInProgress)
+                        {
+                            Mod.log.Info("Cleanup already in progress, ignoring button click");
+                            return;
+                        }
+                      
+                        if (Mod.CleanupSystem == null)  // If Init error, bail early
+                        {
+                            Mod.log.Error("CleanupSystem not initialized (mod load failure).");
+                            return;
+                        }
+
+                        if (!Mod.CleanupSystem.HasAnyCitizenData())     // No data
+                        {
+                            Mod.log.Info("No city loaded (no citizen data). Load a city first");
+                            return;
+                        }
+
+                        bool anySelected = _includeCorrupt || _includeMovingAwayNoPR || _includeCommuters || _includeHomeless;
+                        if (!anySelected)
+                        {
+                            Mod.log.Info("No checkboxes selected; nothing to clean.");
+                            _cleanupStatus = "Nothing to clean";
+                            _corruptedCitizens = "0";
+                            _showRefreshPrompt = false;
+                            Apply();
+                            return;
+                        }
+
+                        _isCleanupInProgress = true;
+                        _showRefreshPrompt = false;
+
+                        Mod.log.Info("Cleanup Citizens confirmed YES; triggering cleanup (deferred)");
+                        Mod.CleanupSystem.TriggerCleanup();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Mod.log.Error($"[Cleanup] Deferred start failed: {ex.GetType().Name}: {ex.Message}");
+#if DEBUG
+            Mod.log.Debug(ex.ToString());
+#endif
+                    }
+                });
+            }
+
+        }
+
+
+        // ---- Debug button ----
+        [SettingsUIButton]
+        [SettingsUISection(kSection, DebugGroup)]
+        public bool LogCorruptPreviewButton
+        {
+            set
+            {
+                // Guard before work
+                if (Mod.CleanupSystem == null)
+                {
+                    Mod.log.Error("CleanupSystem not initialized (mod load failure).");
+                    return;
+                }
+
+                if (!Mod.CleanupSystem.HasAnyCitizenData())
+                {
+                    Mod.log.Info("[Preview] No city loaded (no citizen data). Load a city first.");
+                    return;
+                }
+
+                // Preview: logs up to 10 Corrupt citizen IDs (Index:Version)
+                // Method logs exactly one line:
+                //  - "[Preview] Corrupt …" when there are matches
+                //  - "[Preview] No Corrupt citizens found with current city data." when none
+                Mod.CleanupSystem.LogCorruptPreviewToLog(10);
+
+
+            }
+        }
+
+        [SettingsUIMultilineText]
+        [SettingsUISection(kSection, DebugGroup)]
+        public string DebugCorruptNote => string.Empty;
+
+
+        // ---- Read-only displays ----
+        [SettingsUISection(kSection, kButtonGroup)]
+        public string CleanupStatusDisplay => string.IsNullOrEmpty(_cleanupStatus) ? "Idle" : _cleanupStatus;
 
         [SettingsUISection(kSection, kButtonGroup)]
         public string TotalCitizensDisplay => _totalCitizens;
 
+        // If a language change occurs while UI is open, this getter re-reads the localized prompt.
+        // Then, "Click [Refresh Counts]" reflects in current language without storing a stale string.
         [SettingsUISection(kSection, kButtonGroup)]
-        public string CorruptedCitizensDisplay => _corruptedCitizens;
+        public string CorruptedCitizensDisplay =>
+            _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt) : _corruptedCitizens;
 
 
-        // -------------------------
-        // About Tab info
-        // -------------------------
+        // ---- About tab: info ----
         [SettingsUISection(AboutTab, InfoGroup)]
         public string NameText => Mod.Name;
 
         [SettingsUISection(AboutTab, InfoGroup)]
-        public string VersionText => Mod.Version;
+        public string VersionText => Mod.VersionShort;
 
-        // -------------------------
-        // About Tab links
-        // -------------------------
-        [SettingsUIButtonGroup("SocialLinks")]    // Group to get Github & Discord buttons on the same line
+#if DEBUG
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public string InformationalVersionText => Mod.VersionInformational;
+#endif
+
+        // ---- About tab links: order below determines button order ----
+        [SettingsUIButtonGroup("SocialLinks")]
+        [SettingsUIButton]
+        [SettingsUISection(AboutTab, InfoGroup)]
+        public bool OpenParadoxModsButton
+        {
+            set
+            {
+                try { Application.OpenURL(UrlParadoxMods); }
+                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
+            }
+        }
+
+        [SettingsUIButtonGroup("SocialLinks")]
         [SettingsUIButton]
         [SettingsUISection(AboutTab, InfoGroup)]
         public bool OpenGithubButton
         {
             set
             {
-                try { Application.OpenURL("https://github.com/phillycheeze/CitizenEntityCleaner"); }
+                try { Application.OpenURL(UrlGitHub); }
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
             }
         }
@@ -160,208 +346,141 @@ namespace CitizenEntityCleaner
         {
             set
             {
-                try { Application.OpenURL("https://discord.com/channels/1024242828114673724/1402078697120469064"); }
+                try { Application.OpenURL(UrlDiscord); }
                 catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
             }
         }
 
-        // Paradox Mods link on its own row (no group)
-        [SettingsUIButton]
-        [SettingsUISection(AboutTab, InfoGroup)]
-        public bool OpenParadoxModsButton
-        {
-            set
-            {
-                try { Application.OpenURL("https://mods.paradoxplaza.com/mods/117161/Windows"); }
-                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
-            }
-        }
-
-       
-        // --- About tab: USAGE ---
+        // ---- About tab: USAGE ----
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
-        public string UsageSteps => string.Empty;   // Note: UsageSteps is a static label.
-        
+        public string UsageSteps => string.Empty;
+
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageNotes => string.Empty;
 
-           
+        /// <summary>
+        /// Initialize checkbox defaults and display text
+        /// </summary>
         public override void SetDefaults()
         {
-            // Explicit defaults for checkboxes for clarity
-            _includeHomeless  = false;
+            // Checkbox defaults
+            _includeCorrupt = true;
+            _includeMovingAwayNoPR = false;
+            _includeHomeless = false;
             _includeCommuters = false;
 
             // Display strings
-            _totalCitizens = "Click Refresh to load";
-            _corruptedCitizens = "Click Refresh to load";
+            _totalCitizens = L(RefreshPromptKey, DefaultCountPrompt);
+            _corruptedCitizens = L(RefreshPromptKey, DefaultCountPrompt);
             _cleanupStatus = "Idle";
+            _showRefreshPrompt = true;   // show prompt until refreshed
         }
 
-        // -------------------------
-        // Logic
-        // -------------------------
+        /// <summary>
+        /// Update display values; handles errors
+        /// </summary>
         public void RefreshEntityCounts()
         {
             try
             {
-                if (Mod.CleanupSystem != null)
+                // Treat missing system OR empty citizen data as “No city loaded”.
+                if (Mod.CleanupSystem == null || !Mod.CleanupSystem.HasAnyCitizenData())
                 {
-                    var (totalCitizens, corruptedCitizens) = Mod.CleanupSystem.GetCitizenStatistics();
+                    _totalCitizens = L(NoCityKey, "No city loaded");
+                    _corruptedCitizens = L(NoCityKey, "No city loaded");
 
-                    _totalCitizens = $"{totalCitizens:N0}";
-                    _corruptedCitizens = $"{corruptedCitizens:N0}";
+                    // No city data. Sticky “Complete”, otherwise stay idle. 
+                    if (!_isCleanupInProgress && _cleanupStatus != "Complete")
+                        _cleanupStatus = "Idle";
+
+                    _showRefreshPrompt = false; // show error message, not the Refresh prompt
+                    Apply();    // early return, nothing to do
+                    return;
                 }
-                else
+
+                // Data exists
+                var (totalCitizens, citizensToClean) = Mod.CleanupSystem.GetCitizenStatistics();
+
+                _totalCitizens = $"{totalCitizens:N0}";
+                _corruptedCitizens = $"{citizensToClean:N0}";
+
+                // Don’t overwrite "Complete" immediately after a cleanup; keep it until filters change or a new cleanup runs.
+                if (!_isCleanupInProgress && _cleanupStatus != "Complete")
                 {
-                    _totalCitizens = "System not available";
-                    _corruptedCitizens = "System not available";
+                    _cleanupStatus = citizensToClean > 0 ? "Idle" : "Nothing to clean";
                 }
+                _showRefreshPrompt = false; // display counts, not Refresh prompt
+
             }
             catch (System.Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
-                _totalCitizens = "Error";
-                _corruptedCitizens = "Error";
+                _totalCitizens = L(ErrorKey, "Error");
+                _corruptedCitizens = L(ErrorKey, "Error");
+                _showRefreshPrompt = false; // show error, not Refresh prompt
             }
 
-            // Nudge the UI to re-read values (labels remain static)
-            ApplyAndSave();
+            Apply();
         }
 
-        /// <summary>Starts progress tracking for cleanup operation</summary>
-        public void StartCleanupProgress()
-        {
-            _isCleanupInProgress = true;
-            _cleanupStatus = "Cleanup in progress… 0%";
-            _corruptedCitizens = "Cleaning... 0%";
-            ApplyAndSave();
-        }
-
-        /// <summary>Updates cleanup progress display</summary>
+        /// <summary>
+        /// Updates cleanup progress display
+        /// </summary>
         public void UpdateCleanupProgress(float progress)
         {
-            if (_isCleanupInProgress)
+            if (!_isCleanupInProgress)
             {
-                _cleanupStatus = $"Cleanup in progress… {progress:P0}";
-                _corruptedCitizens = $"Cleaning... {progress:P0}";
-                ApplyAndSave();
+#if DEBUG
+                Mod.log.Debug("Ignoring progress update because no cleanup is active.");
+#endif
+                return;
             }
+
+            _showRefreshPrompt = false;
+            var pct = progress.ToString("P0");
+            _cleanupStatus = string.Format(L(StatusProgressKey, "Cleanup in progress… {0}"), pct);
+            _corruptedCitizens = string.Format(L(StatusCleaningKey, "Cleaning… {0}"), pct);
+            Apply();
+
         }
 
-        /// <summary>Finishes progress tracking and refreshes final counts</summary>
+        /// <summary>
+        /// Finishes progress tracking and refreshes final counts
+        /// </summary>
         public void FinishCleanupProgress()
         {
+            if (!_isCleanupInProgress)
+            {
+#if DEBUG
+                Mod.log.Debug("FinishCleanupProgress called while not in progress; ignoring.");
+#endif
+                return;
+            }
+
             _isCleanupInProgress = false;
-            _cleanupStatus = "Complete";
-            RefreshEntityCounts();    // updates values & calls ApplyAndSave()
+            _cleanupStatus = "Complete";    // set first so Refresh won't change it
+            RefreshEntityCounts();
         }
-        
+
         /// <summary>
         /// Finishes progress when there was nothing to clean.
         /// </summary>
         public void FinishCleanupNoWork()
         {
+            if (!_isCleanupInProgress)
+            {
+#if DEBUG
+                Mod.log.Debug("FinishCleanupNoWork called while not in progress; ignoring.");
+#endif
+                return;
+            }
+
             _isCleanupInProgress = false;
             _cleanupStatus = "Nothing to clean";
-            RefreshEntityCounts();    // updates values and calls ApplyAndSave()
+            RefreshEntityCounts();
         }
-    }
-
-    
-    // -------------------------
-    // Locale (ALL labels are static now)
-    // -------------------------
-    public class LocaleEN : IDictionarySource
-    {
-        private readonly Setting m_Setting;
-        public LocaleEN(Setting setting) { m_Setting = setting; }
-
-        public IEnumerable<KeyValuePair<string, string>> ReadEntries(
-            IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
-        {
-            return new Dictionary<string, string>
-            {
-                { m_Setting.GetSettingsLocaleID(), Mod.Name }, //Mod name display in game Options Menu
-
-                // Tabs
-                { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
-                { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
-
-                // Groups
-                { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Filters" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Main" },
-                { m_Setting.GetOptionGroupLocaleID(Setting.InfoGroup), "Info" },
-
-                // Filter toggles
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeHomeless)), "Include Homeless" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeHomeless)), "When enabled, also counts and cleans up citizens that the game officially flags as Homeless." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.IncludeCommuters)), "Include Commuters" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.IncludeCommuters)), "When enabled, also counts and cleans up commuter citizens. Commuters include citizens that don't live in your city but travel to your city for work.\n\nSometimes, commuters previously lived in your city but moved out due to homelessness (feature added in game version 1.2.5)." },
-
-                // Buttons (STATIC labels)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupEntitiesButton)), "Cleanup Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupEntitiesButton)), "<Load a saved city first.>\nRemoves citizens from households that no longer have a PropertyRenter component. This also includes filtered citizens.\n\nBE CAREFUL: this is a hacky workaround and may corrupt other data. Create a backup of your save first!" },
-                { m_Setting.GetOptionWarningLocaleID(nameof(Setting.CleanupEntitiesButton)), "This will permanently delete citizens from corrupted households and those you have filtered out.\n\nPlease backup your save first! Continue?" },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.RefreshCountsButton)), "Refresh Counts" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.RefreshCountsButton)), "<Load a saved city first to get numbers.>\nUpdates all entity counts to show current city statistics.\nAfter cleaning, let the game run unpaused for a minute." },
-
-                // Displays
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)), "Shows the current cleanup status. Updates live while the settings screen is open." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total Citizens" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.TotalCitizensDisplay)), "Total number of citizen entities currently in the simulation." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Corrupted Citizens (including filters above)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.CorruptedCitizensDisplay)), "Number of citizens in households without PropertyRenter components that will be cleaned up and deleted." },
-
-                // About tab fields
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod Name" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "Display name of this mod." },
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.VersionText)), "Version" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.VersionText)), "Current mod version." },
-
-                // About tab links
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenGithubButton)),  "GitHub" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenGithubButton)),   "GitHub repository for the mod; opens in browser." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenDiscordButton)), "Discord" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenDiscordButton)),  "Discord chat for feedback on the mod; opens in browser." },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenParadoxModsButton)), "Paradox Mods" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenParadoxModsButton)),  "Paradox Mods website; opens in browser." },
-
-
-                // About tab --> Usage section header
-                { m_Setting.GetOptionGroupLocaleID(Setting.UsageGroup), "USAGE" },
-
-                // Steps block (normal spacing)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageSteps)),
-                  "1. <Backup your save file first!>\n" +
-                  "2. <Click [Refresh Counts] to see current statistics.>\n" +
-                  "3. <[ ✓ ]  Use optional checkboxes to include homeless or commuters.>\n" +
-                  "4. <Click [Cleanup Citizens] to clean up entities.>"
-                },
-                {m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageSteps)), "" }, // no tooltip needed
-                
-                // Notes (separate block gives larger gap above)
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.UsageNotes)),
-                "Notes:\n" +
-                "• This mod does not run automatically; [Cleanup Citizens] must be used each time for removals.\n" +
-                "• Revert to original saved city if needed for unexpected behavior."
-                },
-                
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" }, // No tooltip needed
-
-
-            };
-        }
-
-        public void Unload() { }
     }
 }
+

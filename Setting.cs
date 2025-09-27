@@ -19,7 +19,7 @@ namespace CitizenEntityCleaner
     /// </summary>
     [FileLocation(ModKeys.SettingsKey)]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup )]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
 
     public class Setting : ModSetting
@@ -180,7 +180,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly 
+        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly
         /// Avoids focus conflict errors in UI.log
         /// </summary>
         [SettingsUIButton]
@@ -210,7 +210,7 @@ namespace CitizenEntityCleaner
                             Mod.log.Info("Cleanup already in progress, ignoring button click");
                             return;
                         }
-                      
+
                         if (Mod.CleanupSystem == null)  // If Init error, bail early
                         {
                             Mod.log.Error("CleanupSystem not initialized (mod load failure).");
@@ -391,7 +391,7 @@ namespace CitizenEntityCleaner
                     _totalCitizens = L(NoCityKey, "No city loaded");
                     _corruptedCitizens = L(NoCityKey, "No city loaded");
 
-                    // No city data. Sticky “Complete”, otherwise stay idle. 
+                    // No city data. Sticky “Complete”, otherwise stay idle.
                     if (!_isCleanupInProgress && _cleanupStatus != "Complete")
                         _cleanupStatus = "Idle";
 

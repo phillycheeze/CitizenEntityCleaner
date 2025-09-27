@@ -1,5 +1,4 @@
-﻿using Game.Common; // for Deleted
-
+﻿using Game.Common;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -57,7 +56,7 @@ namespace CitizenEntityCleaner
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting corrupted citizen entities: {ex.Message}");
+                s_log.Warn($"Error getting corrupted citizen entities: {ex}");
             }
 
             return corruptedCitizens;

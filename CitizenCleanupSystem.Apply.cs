@@ -1,5 +1,4 @@
 ﻿using Game.Common; // for Deleted
-
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;

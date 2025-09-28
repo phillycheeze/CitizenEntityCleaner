@@ -1,4 +1,4 @@
-using Colossal;         // IDictionarySource
+using Colossal;             // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;                 // UpdateSystem
@@ -88,8 +88,8 @@ namespace CitizenEntityCleaner
             {
                 Mod.log.Info($"[Locale] ACTIVE at LOAD: {lm.activeLocaleId}");  // One-time info at load
 #if DEBUG
-            // Debug-only: track locale changes for testing
-            lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");
+                // Debug-only: track locale changes for testing
+                lm.onActiveDictionaryChanged += () => Mod.log.Info($"[Locale] Active changed -> {lm.activeLocaleId}");
 #endif
             }
 

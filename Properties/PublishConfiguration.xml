@@ -102,7 +102,6 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<RequiredDLC Value="" />
 
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-
 <ChangeLog>
 - **New** language support: Japanese, Korean, Vietnamese added on top of other languages already supported
 - Backend refactor

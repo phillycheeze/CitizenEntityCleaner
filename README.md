@@ -24,10 +24,12 @@ This entity bloat causes several issues:
 - **General performance degradation** across querying systems
 
 ℹ️ **Mod Options:**
-- Include **corrupt citizens** in cleanup (optional ✅)
-- Include **moving-away** (that have no rent) in cleanup (optional ✅)
-- Include **commuters** in cleanup (optional ✅)
-- Include **homeless** in cleanup (optional ✅)
+
+Everything is Optional ✅
+- Include **corrupt citizens** in cleanup 
+- Include **moving-away** in cleanup (that have no rent)
+- Include **commuters** in cleanup
+- Include **homeless** in cleanup
   
 ℹ️ **This mod may also:**
 - Delete "Pending" citizens that may be buffered for relocation

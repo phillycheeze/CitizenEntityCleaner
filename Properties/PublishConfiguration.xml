@@ -106,15 +106,15 @@ Not sure. It could be another mod or something introduced in a more recent patch
 <ChangeLog>
 - Corrupt citizens are now "optional" checkbox to remove (not forced)
 - **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
+- **New** UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN, JA, KO, VI)
 - Option to remove Homeless or Commuters still available
 - More accurate homeless/commuter handling via Household level checks
 - **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
 - Tourists are now excluded explicitly
-- UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN, JA, KO, VI)
 </ChangeLog>
 
-	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
-	<ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />
-	<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1402078697120469064" />
+<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
+<ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />
+<ExternalLink Type="discord" Url="https://discord.com/channels/1024242828114673724/1402078697120469064" />
 </Publish>
 

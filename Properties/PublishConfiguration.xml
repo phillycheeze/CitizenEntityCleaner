@@ -103,6 +103,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 <ChangeLog>
 - **New** language support: Japanese, Korean, Vietnamese, and Português brasileiro added on top of other languages already supported
+- Fix: minor UI annoyance when switching languages, 
 - Backend refactor
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

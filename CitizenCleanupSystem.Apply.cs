@@ -1,5 +1,4 @@
-﻿using Colossal.Logging;
-using Game.Common;          // Deleted
+﻿using Game.Common;          // Deleted
 using Unity.Collections;    // Allocator
 using Unity.Entities;
 using Unity.Mathematics;    // math
@@ -39,7 +38,7 @@ namespace CitizenEntityCleaner
 
             m_isChunkedCleanupInProgress = true;
             OnCleanupProgress?.Invoke(0f);     // initial “0%” so UI updates next frame
-            s_Log.Info($"Start Chunked Cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");
+            s_Log.Info($"Scan complete: {m_entitiesToCleanup.Length} citizens. Marking in chunks of {CLEANUP_CHUNK_SIZE}");
         }
 
         /// <summary>

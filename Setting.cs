@@ -6,7 +6,6 @@ using UnityEngine;      // Application.OpenURL
 using System.Collections; // IEnumerator (for NextFrame)
 
 
-
 namespace CitizenEntityCleaner
 {
     internal static class ModKeys
@@ -17,7 +16,7 @@ namespace CitizenEntityCleaner
     /// <summary>
     /// Settings UI and State
     /// </summary>
-    [FileLocation("ModSettings/ModKeys.SettingsKey/ModKeys.SettingsKey")]
+    [FileLocation("ModsSettings/CitizenEntityCleaner/CitizenEntityCleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
     [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
@@ -180,7 +179,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly 
+        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly
         /// Avoids focus conflict errors in UI.log
         /// </summary>
         [SettingsUIButton]
@@ -391,7 +390,7 @@ namespace CitizenEntityCleaner
                     _totalCitizens = L(NoCityKey, "No city loaded");
                     _corruptedCitizens = L(NoCityKey, "No city loaded");
 
-                    // No city data. Sticky “Complete”, otherwise stay idle. 
+                    // No city data. Sticky “Complete”, otherwise stay idle.
                     if (!_isCleanupInProgress && _cleanupStatus != "Complete")
                         _cleanupStatus = "Idle";
 

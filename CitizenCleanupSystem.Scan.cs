@@ -147,6 +147,8 @@ namespace CitizenEntityCleaner
                 return;
             }
 
+            s_Log.Info($"[Preview] ==== Corrupt sample (up to {count}) ====");
+
             var sb = new StringBuilder();
             for (int i = 0; i < count; i++)
             {

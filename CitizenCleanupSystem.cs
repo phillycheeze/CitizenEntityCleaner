@@ -1,12 +1,9 @@
 using Colossal.Logging;
-using Game.Buildings;       // for PropertyRenter
 using Game.Citizens;        // for Citizen, HouseholdMember, TravelPurpose
 using Game.Common;          // for Deleted
 using Unity.Collections;    // for NativeList
 using Unity.Entities;       // Entity, SystemBase, ComponentType, EntityQuery, etc.
-using Unity.Mathematics;    // for math
-using Game.Agents;          // for MovingAway
-using System.Text;
+
 
 namespace CitizenEntityCleaner
 {
@@ -82,19 +79,6 @@ namespace CitizenEntityCleaner
             base.OnCreate();
 
             s_Log.Info("CitizenCleanupSystem created");
-
-#if DEBUG
-            try
-            {
-                var _ = m_householdMemberQuery.IsEmptyIgnoreFilter;
-                s_Log.Info("[Debug] IsEmptyIgnoreFilter is supported on this build.");
-            }
-            catch (System.Exception ex)
-            {
-                s_Log.Info("[Debug] IsEmptyIgnoreFilter NOT supported on this build; use CalculateEntityCount().");
-                s_Log.Debug(ex.ToString());
-            }
-#endif
         }
 
         // Non-blocking: process one chunk if run is active, otherwise start a run if requested
@@ -131,7 +115,7 @@ namespace CitizenEntityCleaner
         public void TriggerCleanup()
         {
 #if DEBUG
-            s_Log.Debug("[Cleanup] trigger requested (from Settings UI)");
+            s_Log.Debug("[Cleanup] trigger request (from Settings UI)");
 #endif
             m_shouldRunCleanup = true;
         }
@@ -159,8 +143,8 @@ namespace CitizenEntityCleaner
         {
             try
             {
-                // Cheap test for City Loaded: check for any HouseholdMember entity
-                return m_householdMemberQuery.CalculateEntityCount() > 0;
+                // Cheap test for City Loaded: true when there is at least one household member
+                return !m_householdMemberQuery.IsEmptyIgnoreFilter;
             }
             catch
             {
@@ -175,9 +159,10 @@ namespace CitizenEntityCleaner
             {
                 m_entitiesToCleanup.Dispose();
             }
+            base.OnDestroy();
 
             s_Log.Info("CitizenCleanupSystem destroyed");
-            base.OnDestroy();
+
         }
     }
 }

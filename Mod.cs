@@ -78,9 +78,6 @@ namespace CitizenEntityCleaner
 
             // Register ZH under several common ids so LocalizationManager can find matching one
             RegisterLocale("zh-HANS", zhCN);    // log shows this is used
-            RegisterLocale("zh-CN", zhCN);      // common Steam locale Simplified Chinese
-            RegisterLocale("zh-Hans", zhCN);    // common alias (case variant)
-            RegisterLocale("zh-Hans-CN", zhCN); // common alias (region variant)
 
             // Log language selected (guarded for null)
             var lm = GameManager.instance?.localizationManager;
@@ -180,10 +177,13 @@ namespace CitizenEntityCleaner
                 return;
             }
 
-            try {
+            try
+            {
                 lm.AddSource(localeId, source);
                 log.Info($"[Locale] Registered {localeId}");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
             }
         }

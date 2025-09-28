@@ -72,6 +72,7 @@ namespace CitizenEntityCleaner
             var ja = new LocaleJA(m_Setting);
             var ko = new LocaleKO(m_Setting);
             var vi = new LocaleVI(m_Setting);
+            var ptBR = new LocalePT_BR(m_Setting);
 
 
             RegisterLocale("en-US", en);
@@ -82,11 +83,14 @@ namespace CitizenEntityCleaner
             RegisterLocale("ja-JP", ja);
             RegisterLocale("ko-KR", ko);
             RegisterLocale("vi-VN", vi);
+            RegisterLocale("pt-BR", ptBR);
+            RegisterLocale("zh-HANS", zhCN);    // log shows this is used
 
             // Register ZH under several common ids so LocalizationManager can find matching one
-            RegisterLocale("zh-HANS", zhCN);    // log shows this is used
             RegisterLocale("zh-CN", zhCN);      // fallback
             RegisterLocale("zh", zhCN);         // fallback
+
+            RegisterLocale("pt", ptBR); // fallback if the game reports just "pt"
 
             // Log language selected (guarded for null)
             var lm = GameManager.instance?.localizationManager;

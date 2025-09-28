@@ -71,7 +71,8 @@ Not sure. It could be another mod or something introduced in a more recent patch
 ## Credits
 - phillycheeze - mod author
 - yenyang - feedback, coop development
+- Honu - testing, PR/coop development 
+  - locale support (EN, DE,ES,FR,IT,JA,KO,PT,VI,ZH_CN)
 - Konsi - feedback
 - krzychu124 - feedback, code sharing
-- Honu - testing, Github PR, coop development, locales
 - Noel - ZH_CN locale review

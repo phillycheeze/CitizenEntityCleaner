@@ -3,156 +3,189 @@ using Game.Common;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Game.Buildings;     // PropertyRenter
+using Game.Citizens;      // HouseholdMember, HouseholdCitizen, HomelessHousehold, CommuterHousehold, TouristHousehold, TravelPurpose
+using Game.Agents;        // MovingAway
 
 namespace CitizenEntityCleaner
 {
     // PART: Scan (read-only) — candidate lists, classify & filter, read-only counts, preview-only logs
     public partial class CitizenCleanupSystem
     {
+
         /// <summary>
-        /// Gets all corrupted citizen entities (those in households with no PropertyRenter)
-        /// Applies added filters based on settings for homeless and commuters
+        /// selector: builds candidate list based on toggles (or overrides for preview).
+        /// Corrupt = !PropertyRenter && !Homeless && !Commuter && !Tourist; skip Moving-Away for Corrupt.
         /// </summary>
-        private NativeList<Entity> GetCorruptedCitizenEntities(Allocator allocator)
+        private NativeList<Entity> GetDeletionCandidates(
+            Allocator allocator,
+            bool tally = true,
+            bool? overrideWantCorrupt = null,
+            bool? overrideWantHomeless = null,
+            bool? overrideWantCommuters = null,
+            bool? overrideWantMovingAwayNoPR = null)
         {
-            var corruptedCitizens = new NativeList<Entity>(allocator);
+            using var householdMembers = m_householdMemberQuery.ToComponentDataArray<HouseholdMember>(Allocator.TempJob);
+            var candidates = new NativeList<Entity>(math.max(1, householdMembers.Length), allocator);
+
+            // Defaults: Corrupt ON; others OFF (override → setting → fallback)
+            bool wantCorrupt = ResolveToggle(overrideWantCorrupt, m_settings?.IncludeCorrupt, fallback: true);
+            bool wantHomeless = ResolveToggle(overrideWantHomeless, m_settings?.IncludeHomeless, fallback: false);
+            bool wantCommuters = ResolveToggle(overrideWantCommuters, m_settings?.IncludeCommuters, fallback: false);
+            bool wantMovingAwayNoPR = ResolveToggle(overrideWantMovingAwayNoPR, m_settings?.IncludeMovingAwayNoPR, fallback: false);
+
+            if (!wantCorrupt && !wantHomeless && !wantCommuters && !wantMovingAwayNoPR)
+                return candidates;
 
             try
             {
-                using var householdMembers = m_householdMemberQuery.ToComponentDataArray<Game.Citizens.HouseholdMember>(Allocator.TempJob);
-                // Create a hash set with capacity equal to number of household members, but never less than 1
                 using var processedHouseholds =
                     new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
 
                 foreach (var householdMember in householdMembers)
                 {
-                    Entity householdEntity = householdMember.m_Household;
+                    var householdEntity = householdMember.m_Household;
 
-                    // Skip if already processed or doesn't exist
-                    if (processedHouseholds.Contains(householdEntity) || !EntityManager.Exists(householdEntity))
+                    if (!EntityManager.Exists(householdEntity)) continue;
+                    if (!processedHouseholds.Add(householdEntity)) continue;
+                    if (!EntityManager.HasBuffer<HouseholdCitizen>(householdEntity)) continue;
+
+                    bool hasPR = EntityManager.HasComponent<PropertyRenter>(householdEntity);
+                    bool isHomelessHH = EntityManager.HasComponent<HomelessHousehold>(householdEntity);
+                    bool isCommuterHH = EntityManager.HasComponent<CommuterHousehold>(householdEntity);
+                    bool isTouristHH = EntityManager.HasComponent<TouristHousehold>(householdEntity);
+
+                    bool isResidentCorrupt = !hasPR && !isHomelessHH && !isCommuterHH && !isTouristHH;
+                    bool householdMatchesAny =
+                        (wantHomeless && isHomelessHH) ||
+                        (wantCommuters && isCommuterHH) ||
+                        (wantCorrupt && isResidentCorrupt);
+
+                    if (!householdMatchesAny && !wantMovingAwayNoPR)
                         continue;
 
-                    processedHouseholds.Add(householdEntity);
-
-                    // Check if household is corrupted (no PropertyRenter component)
-                    if (!EntityManager.HasComponent<Game.Buildings.PropertyRenter>(householdEntity) &&
-                        EntityManager.HasBuffer<Game.Citizens.HouseholdCitizen>(householdEntity))
+                    var householdCitizens = EntityManager.GetBuffer<HouseholdCitizen>(householdEntity);
+                    for (int j = 0; j < householdCitizens.Length; j++)
                     {
-                        var householdCitizens = SystemAPI.GetBuffer<Game.Citizens.HouseholdCitizen>(householdEntity);
+                        var citizenEntity = householdCitizens[j].m_Citizen;
+                        if (!EntityManager.Exists(citizenEntity)) continue;
+                        if (EntityManager.HasComponent<Deleted>(citizenEntity)) continue;
 
-                        foreach (var householdCitizen in householdCitizens)
+                        var reason = ClassifyCitizenForDeletion(
+                            wantCorrupt, wantHomeless, wantCommuters, wantMovingAwayNoPR,
+                            isHomelessHH, isCommuterHH, isTouristHH, hasPR,
+                            citizenEntity);
+
+                        if (reason != CleanupType.None)
                         {
-                            Entity citizenEntity = householdCitizen.m_Citizen;
-
-                            if (EntityManager.Exists(citizenEntity) && !EntityManager.HasComponent<Deleted>(citizenEntity))
-                            {
-                                if (ShouldIncludeCitizen(citizenEntity))
-                                {
-                                    corruptedCitizens.Add(citizenEntity);
-                                }
-                            }
+                            candidates.Add(citizenEntity);
+                            if (tally) m_lastCounts.BumpCount(reason);
                         }
                     }
                 }
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting corrupted citizen entities: {ex}");
+                s_Log.Warn($"Error building deletion candidates list: {ex.Message}");
             }
 
-            return corruptedCitizens;
+            return candidates;
         }
 
         /// <summary>
-        /// Gets count of corrupted citizens
+        /// Count citizens to clean based on toggles: IncludeCorrupt, IncludeHomeless, IncludeCommuters, IncludeMovingAwayNoPR.
         /// </summary>
-        private int GetCorruptedCitizenCount()
+        private int GetCitizensToCleanCount()
         {
-            using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
-            return corruptedCitizens.Length;
+            using var candidates = GetDeletionCandidates(Allocator.TempJob, tally: false);
+            return candidates.Length;
         }
+
+        // ---- HELPERS ----
 
         /// <summary>
         /// Debug Helper
         /// Logs preview list of corrupted citizens (non-delete)
-        /// Parameterless overload for Settings UI, sample 10 corrupt entities
-        /// </summary>
-        public void LogCorruptPreviewToLog() => LogCorruptPreviewToLog(10);
-
-        /// <summary>
-        /// Writes up to <paramref name="max"/> truly Corrupt citizens to the log for Scene Explorer checks.
-        /// Corrupt (PR1): household has NO PropertyRenter and is NOT homeless/commuter/tourist; skip citizens who are Moving-Away.
         /// </summary>
         public void LogCorruptPreviewToLog(int max)
         {
             if (max <= 0) return;
 
-            try
+            // Reuse the same traversal, force Corrupt=true and others=false; no state changes.
+            using var candidates = GetDeletionCandidates(
+                Allocator.TempJob,
+                tally: false,
+                overrideWantCorrupt: true,
+                overrideWantHomeless: false,
+                overrideWantCommuters: false,
+                overrideWantMovingAwayNoPR: false);
+
+            int count = math.min(max, candidates.Length);
+            if (count <= 0)
             {
-                // Force Corrupt-only; others OFF. Non-destructive preview.
-                using var candidates = GetDeletionCandidates(
-                    Allocator.TempJob,
-                    tally: false,
-                    overrideWantCorrupt: true,
-                    overrideWantHomeless: false,
-                    overrideWantCommuters: false,
-                    overrideWantMovingAwayNoPR: false);
-
-                int count = math.min(max, candidates.Length);
-                if (count <= 0)
-                {
-                    s_log.Info("[Preview] No Corrupt citizens found with the current city data.");
-                    return;
-                }
-
-                var sb = new StringBuilder();
-                for (int i = 0; i < count; i++)
-                {
-                    if (i > 0) sb.Append(", ");
-                    sb.Append("Corrupt ").Append(FormatIndexVersion(candidates[i]));
-                }
-
-                s_log.Info($"[Preview] {sb}");
+                s_Log.Info("[Preview] No Corrupt citizens found with the current city data.");
+                return;
             }
-            catch (System.Exception ex)
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < count; i++)
             {
-                s_log.Warn($"[Preview] Failed: {ex}");
+                if (i > 0) sb.Append(", ");
+                sb.Append("Corrupt ").Append(FormatIndexVersion(candidates[i]));
             }
+
+            s_Log.Info($"[Preview] {sb}");
         }
 
+        // Resolves boolean: precedence override → setting → fallback default.
+        private static bool ResolveToggle(bool? overrideValue, bool? settingValue, bool fallback)
+            => overrideValue ?? (settingValue ?? fallback);
 
-        /// <summary>
-        /// Determines whether a citizen should be included in cleanup based on filter settings
-        /// </summary>
-        private bool ShouldIncludeCitizen(Entity citizenEntity)
+        // Formats & logs an Entity as "Index:Version" for Scene Explorer cross-checks.
+        private static string FormatIndexVersion(Entity e) => $"{e.Index}:{e.Version}";
+
+        // Returns true if the citizen is Moving-Away
+        private bool IsMovingAway(Entity citizenEntity)
         {
-            var settings = m_settings;
-            if (settings == null) return true;
+            if (EntityManager.HasComponent<MovingAway>(citizenEntity))  // Checks tag component first
+                return true;
 
-            // Check commuter (exclude if commuter and IncludeCommuters is false)
-            if (EntityManager.HasComponent<Game.Citizens.Citizen>(citizenEntity))
+            if (EntityManager.HasComponent<TravelPurpose>(citizenEntity))   // Fallback - TravelPurpose
             {
-                var citizen = EntityManager.GetComponentData<Game.Citizens.Citizen>(citizenEntity);
-                if ((citizen.m_State & Game.Citizens.CitizenFlags.Commuter) != 0 && !settings.IncludeCommuters)
-                    return false;
+                var tp = EntityManager.GetComponentData<TravelPurpose>(citizenEntity);
+                if (tp.m_Purpose == Purpose.MovingAway)
+                    return true;
             }
-
-            // Check homeless (exclude if homeless and IncludeHomeless is false)
-            if (EntityManager.HasComponent<Game.Citizens.CurrentTransport>(citizenEntity))
-            {
-                var transport = EntityManager.GetComponentData<Game.Citizens.CurrentTransport>(citizenEntity);
-                var human = transport.m_CurrentTransport;
-
-                // Guard: ensure Human exists and has the component before reading it
-                if (EntityManager.Exists(human) && EntityManager.HasComponent<Game.Creatures.Human>(human))
-                {
-                    var humanData = EntityManager.GetComponentData<Game.Creatures.Human>(human);
-                    if ((humanData.m_Flags & HomelessFlag) != 0 && !settings.IncludeHomeless)
-                        return false;
-                }
-            }
-
-            return true;
+            return false;
         }
+
+        private CleanupType ClassifyCitizenForDeletion(
+            bool wantCorrupt,
+            bool wantHomeless,
+            bool wantCommuters,
+            bool wantMovingAwayNoPR,
+            bool isHomelessHH,
+            bool isCommuterHH,
+            bool isTouristHH,
+            bool hasPropertyRenter,
+            Entity citizenEntity)
+        {
+            bool movingAway = IsMovingAway(citizenEntity);
+
+            // Precedence: Homeless → Commuters → Corrupt, then independent Moving-Away (no PR)
+            if (wantHomeless && isHomelessHH) return CleanupType.Homeless;
+            if (wantCommuters && isCommuterHH) return CleanupType.Commuters;
+
+            if (wantCorrupt && !hasPropertyRenter && !isHomelessHH && !isCommuterHH && !isTouristHH)
+            {
+                // Skip corrupt if the person is Moving-Away
+                if (!movingAway) return CleanupType.Corrupt;
+            }
+
+            if (wantMovingAwayNoPR && movingAway && !hasPropertyRenter) return CleanupType.MovingAway;
+
+            return CleanupType.None;
+        }
+
     }
 }

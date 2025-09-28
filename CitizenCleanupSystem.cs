@@ -12,17 +12,33 @@ namespace CitizenEntityCleaner
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
-        private static readonly ILog s_log = Mod.log;
+        private static readonly ILog s_Log = Mod.log;
 
-        // ---- constants ----
-        private const int CLEANUP_CHUNK_SIZE = 2000;    // how many entities to mark per frame
-        private const Game.Creatures.HumanFlags HomelessFlag = Game.Creatures.HumanFlags.Homeless;  // explicit enum (was a magic number)
-        private const int LOG_BUCKET_PERCENT = 10;    // log once per N% (change to 5 for more frequent 5% logs)
+        // For selection bookkeeping (category + tallies)
+        private enum CleanupType { None, Corrupt, Homeless, Commuters, MovingAway }
+
+        private struct DeletionCounts
+        {
+            public int Corrupt, Homeless, Commuters, MovingAway;
+
+            public void BumpCount(CleanupType type)
+            {
+                switch (type)
+                {
+                    case CleanupType.Corrupt: Corrupt++; break;
+                    case CleanupType.Homeless: Homeless++; break;
+                    case CleanupType.Commuters: Commuters++; break;
+                    case CleanupType.MovingAway: MovingAway++; break;
+                    case CleanupType.None: /* no-op */         break;
+                }
+            }
+        }
+
+
 
         // ---- fields ----
+        private DeletionCounts m_lastCounts;
         private float m_lastProgressNotified = -1f;    // UI progress throttle (~5% steps)
-        private int m_lastLoggedBucket = -1;   // -1 means "nothing logged yet" for log throttle state
-
         private bool m_shouldRunCleanup = false;    // Flag to trigger the cleanup operation
 
         // Chunked cleanup state
@@ -42,6 +58,8 @@ namespace CitizenEntityCleaner
         public event System.Action? OnCleanupCompleted;
         public event System.Action? OnCleanupNoWork;
 
+
+
         protected override void OnCreate()
         {
             m_householdMemberQuery = GetEntityQuery(new EntityQueryDesc
@@ -52,7 +70,7 @@ namespace CitizenEntityCleaner
 
             base.OnCreate();
 
-            s_log.Info("CitizenCleanupSystem created");
+            s_Log.Info("CitizenCleanupSystem created");
         }
 
         // Non-blocking: process one chunk if run is active, otherwise start a run if requested
@@ -71,7 +89,7 @@ namespace CitizenEntityCleaner
 
             // Start new cleanup run: a run requested via TriggerCleanup. Clear request flag, log it, initialize chunked workflow.
             m_shouldRunCleanup = false;
-            s_log.Info("Starting citizen entity cleanup...");
+            s_Log.Info("Starting citizen entity cleanup...");
             StartChunkedCleanup();
         }
 
@@ -85,7 +103,7 @@ namespace CitizenEntityCleaner
         /// </summary>
         public void TriggerCleanup()
         {
-            s_log.Info("Cleanup operation triggered from settings");
+            s_Log.Info("Cleanup operation triggered from settings");
             m_shouldRunCleanup = true;
         }
 
@@ -97,9 +115,8 @@ namespace CitizenEntityCleaner
                 // Quick HH>0 check; query created in OnCreate
                 return !m_householdMemberQuery.IsEmptyIgnoreFilter;
             }
-            catch (System.Exception ex)
+            catch
             {
-                s_log.Warn($"HasAnyCitizenData() failed: {ex}");
                 return false;
             }
         }
@@ -107,21 +124,21 @@ namespace CitizenEntityCleaner
         /// <summary>
         /// Gets citizen statistics for display
         /// </summary>
-        public (int totalCitizens, int corruptedCitizens) GetCitizenStatistics()
+        public (int totalCitizens, int citizensToClean) GetCitizenStatistics()
         {
             try
             {
                 int totalCitizens = m_householdMemberQuery.CalculateEntityCount();
-                int corruptedCitizens = GetCorruptedCitizenCount();
-
-                return (totalCitizens, corruptedCitizens);
+                int citizensToClean = GetCitizensToCleanCount();
+                return (totalCitizens, citizensToClean);
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting citizen statistics: {ex}");
+                s_Log.Warn($"Error getting citizen statistics: {ex.Message}");
                 return (0, 0);
             }
         }
+
 
         protected override void OnDestroy()
         {
@@ -130,7 +147,7 @@ namespace CitizenEntityCleaner
                 m_entitiesToCleanup.Dispose();
             }
 
-            s_log.Info("CitizenCleanupSystem destroyed");
+            s_Log.Info("CitizenCleanupSystem destroyed");
             base.OnDestroy();
         }
     }

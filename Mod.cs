@@ -12,16 +12,16 @@ namespace CitizenEntityCleaner
     public class Mod : IMod
     {
         // ---- Mod metadata ----
-        private static readonly Assembly s_asm = Assembly.GetExecutingAssembly();
+        private static readonly Assembly s_Asm = Assembly.GetExecutingAssembly();
         public static readonly string Name =
-                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
+                s_Asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
 
         // Versions (short + full)
-        private static readonly string s_versionInformationalRaw =
-            s_asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
+        private static readonly string s_VersionInformationalRaw =
+            s_Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
 
-        public static readonly string VersionShort = s_versionInformationalRaw.Split(' ', '+')[0];
-        public static readonly string VersionInformational = s_versionInformationalRaw;
+        public static readonly string VersionShort = s_VersionInformationalRaw.Split(' ', '+')[0];
+        public static readonly string VersionInformational = s_VersionInformationalRaw;
 
         // ---- Logging ----
         public static readonly ILog log = LogManager
@@ -29,25 +29,25 @@ namespace CitizenEntityCleaner
             .SetShowsErrorsInUI(false);
 
         // ---- State ----
-        private static bool s_bannerLogged;    // static guard to avoid duplicates
+        private static bool s_BannerLogged;    // static guard to avoid duplicates
 
         private Setting? m_Setting;     // nullable; assigned in OnLoad
         public static CitizenCleanupSystem? CleanupSystem { get; private set; } // nullable; assigned in OnLoad
 
         // Keep same delegate instances and use for both += and -= so -= works (ensures unsubscribe works).
-        private Action<float>? _onProgress;
-        private Action? _onCompleted;
-        private Action? _onNoWork;   // for event if nothing to clean, nullable
+        private Action<float>? m_onProgress;
+        private Action? m_onCompleted;
+        private Action? m_onNoWork;   // for event if nothing to clean, nullable
 
         public void OnLoad(UpdateSystem updateSystem)
         {
             log.Info(nameof(OnLoad));
 
             // One time banner static guard (avoid duplicates on hot reload)
-            if (!s_bannerLogged)
+            if (!s_BannerLogged)
             {
                 log.Info($"Mod: {Name} | Version: {VersionShort} | Info: {VersionInformational}");  // add info banner at the top of log
-                s_bannerLogged = true;
+                s_BannerLogged = true;
             }
             // Asset path for diagnostics
             if (GameManager.instance?.modManager != null &&
@@ -105,14 +105,14 @@ namespace CitizenEntityCleaner
             CleanupSystem.SetSettings(m_Setting);
 
             // Progress / completion callbacks
-            _onProgress = m_Setting.UpdateCleanupProgress;
-            _onCompleted = m_Setting.FinishCleanupProgress;
-            _onNoWork = m_Setting.FinishCleanupNoWork;
+            m_onProgress = m_Setting.UpdateCleanupProgress;
+            m_onCompleted = m_Setting.FinishCleanupProgress;
+            m_onNoWork = m_Setting.FinishCleanupNoWork;
 
             // Set up callbacks for Cleanup progress, completion, or no work.
-            CleanupSystem.OnCleanupProgress += _onProgress;
-            CleanupSystem.OnCleanupCompleted += _onCompleted;
-            CleanupSystem.OnCleanupNoWork += _onNoWork;
+            CleanupSystem.OnCleanupProgress += m_onProgress;
+            CleanupSystem.OnCleanupCompleted += m_onCompleted;
+            CleanupSystem.OnCleanupNoWork += m_onNoWork;
 
             log.Info("CitizenCleanupSystem registered");
         }
@@ -134,13 +134,13 @@ namespace CitizenEntityCleaner
                 var cs = CleanupSystem;
                 if (cs != null)
                 {
-                    try { if (_onProgress != null) cs.OnCleanupProgress -= _onProgress; }
+                    try { if (m_onProgress != null) cs.OnCleanupProgress -= m_onProgress; }
                     catch (Exception ex) { log.Warn($"[Events] OnCleanupProgress -= failed: {ex.GetType().Name}: {ex.Message}"); }
 
-                    try { if (_onCompleted != null) cs.OnCleanupCompleted -= _onCompleted; }
+                    try { if (m_onCompleted != null) cs.OnCleanupCompleted -= m_onCompleted; }
                     catch (Exception ex) { log.Warn($"[Events] OnCleanupCompleted -= failed: {ex.GetType().Name}: {ex.Message}"); }
 
-                    try { if (_onNoWork != null) cs.OnCleanupNoWork -= _onNoWork; }
+                    try { if (m_onNoWork != null) cs.OnCleanupNoWork -= m_onNoWork; }
                     catch (Exception ex) { log.Warn($"[Events] OnCleanupNoWork -= failed: {ex.GetType().Name}: {ex.Message}"); }
                 }
 
@@ -156,9 +156,9 @@ namespace CitizenEntityCleaner
             finally
             {
                 // Clear references
-                _onProgress = null;
-                _onCompleted = null;
-                _onNoWork = null;
+                m_onProgress = null;
+                m_onCompleted = null;
+                m_onNoWork = null;
 
                 CleanupSystem = null;
                 m_Setting = null;
@@ -180,10 +180,13 @@ namespace CitizenEntityCleaner
                 return;
             }
 
-            try {
+            try
+            {
                 lm.AddSource(localeId, source);
                 log.Info($"[Locale] Registered {localeId}");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
             }
         }

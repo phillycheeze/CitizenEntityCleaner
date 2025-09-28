@@ -17,9 +17,9 @@ namespace CitizenEntityCleaner
     /// <summary>
     /// Settings UI and State
     /// </summary>
-    [FileLocation(ModKeys.SettingsKey)]
+    [FileLocation("ModSettings/ModKeys.SettingsKey/ModKeys.SettingsKey")]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup )]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
 
     public class Setting : ModSetting
@@ -210,7 +210,7 @@ namespace CitizenEntityCleaner
                             Mod.log.Info("Cleanup already in progress, ignoring button click");
                             return;
                         }
-                      
+
                         if (Mod.CleanupSystem == null)  // If Init error, bail early
                         {
                             Mod.log.Error("CleanupSystem not initialized (mod load failure).");

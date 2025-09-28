@@ -82,6 +82,19 @@ namespace CitizenEntityCleaner
             base.OnCreate();
 
             s_Log.Info("CitizenCleanupSystem created");
+
+#if DEBUG
+            try
+            {
+                var _ = m_householdMemberQuery.IsEmptyIgnoreFilter;
+                s_Log.Info("[Debug] IsEmptyIgnoreFilter is supported on this build.");
+            }
+            catch (System.Exception ex)
+            {
+                s_Log.Info("[Debug] IsEmptyIgnoreFilter NOT supported on this build; use CalculateEntityCount().");
+                s_Log.Debug(ex.ToString());
+            }
+#endif
         }
 
         // Non-blocking: process one chunk if run is active, otherwise start a run if requested

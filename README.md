@@ -37,7 +37,7 @@ This entity bloat causes several issues:
 
 ℹ️ **Localization Support**
 - English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano
-- 日本語, 한국어, Tiếng Việt.
+- 日本語, 한국어, Tiếng Việt, Português brasileiro.
 
 
 ## Usage

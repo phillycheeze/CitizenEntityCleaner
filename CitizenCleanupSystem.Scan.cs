@@ -1,4 +1,5 @@
-﻿using Game.Common;
+﻿using System.Text;
+using Game.Common;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -70,6 +71,55 @@ namespace CitizenEntityCleaner
             using var corruptedCitizens = GetCorruptedCitizenEntities(Allocator.TempJob);
             return corruptedCitizens.Length;
         }
+
+        /// <summary>
+        /// Debug Helper
+        /// Logs preview list of corrupted citizens (non-delete)
+        /// Parameterless overload for Settings UI, sample 10 corrupt entities
+        /// </summary>
+        public void LogCorruptPreviewToLog() => LogCorruptPreviewToLog(10);
+
+        /// <summary>
+        /// Writes up to <paramref name="max"/> truly Corrupt citizens to the log for Scene Explorer checks.
+        /// Corrupt (PR1): household has NO PropertyRenter and is NOT homeless/commuter/tourist; skip citizens who are Moving-Away.
+        /// </summary>
+        public void LogCorruptPreviewToLog(int max)
+        {
+            if (max <= 0) return;
+
+            try
+            {
+                // Force Corrupt-only; others OFF. Non-destructive preview.
+                using var candidates = GetDeletionCandidates(
+                    Allocator.TempJob,
+                    tally: false,
+                    overrideWantCorrupt: true,
+                    overrideWantHomeless: false,
+                    overrideWantCommuters: false,
+                    overrideWantMovingAwayNoPR: false);
+
+                int count = math.min(max, candidates.Length);
+                if (count <= 0)
+                {
+                    s_log.Info("[Preview] No Corrupt citizens found with the current city data.");
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                for (int i = 0; i < count; i++)
+                {
+                    if (i > 0) sb.Append(", ");
+                    sb.Append("Corrupt ").Append(FormatIndexVersion(candidates[i]));
+                }
+
+                s_log.Info($"[Preview] {sb}");
+            }
+            catch (System.Exception ex)
+            {
+                s_log.Warn($"[Preview] Failed: {ex}");
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a citizen should be included in cleanup based on filter settings

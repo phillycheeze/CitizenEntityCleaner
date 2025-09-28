@@ -89,6 +89,21 @@ namespace CitizenEntityCleaner
             m_shouldRunCleanup = true;
         }
 
+        // Returns true if there is at least one HouseholdMember in the world
+        public bool HasAnyCitizenData()
+        {
+            try
+            {
+                // Quick HH>0 check; query created in OnCreate
+                return !m_householdMemberQuery.IsEmptyIgnoreFilter;
+            }
+            catch (System.Exception ex)
+            {
+                s_log.Warn($"HasAnyCitizenData() failed: {ex}");
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets citizen statistics for display
         /// </summary>

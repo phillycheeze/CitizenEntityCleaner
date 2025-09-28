@@ -5,6 +5,7 @@ using Game.Citizens;
 using Game.Common;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace CitizenEntityCleaner
 {

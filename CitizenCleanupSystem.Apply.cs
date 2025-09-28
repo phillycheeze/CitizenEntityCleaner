@@ -26,7 +26,7 @@ namespace CitizenEntityCleaner
             m_lastProgressNotified = -1f;    // UI throttle
             m_cleanupIndex = 0;
 
-            // immediately finish when nothing to do
+            // nothing to do, finish
             if (m_entitiesToCleanup.Length == 0)
             {
                 s_Log.Info("Cleanup requested, but nothing matched the selected filters.");

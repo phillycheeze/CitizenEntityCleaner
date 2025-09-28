@@ -15,7 +15,7 @@ namespace CitizenEntityCleaner
     /// </summary>
     public partial class CitizenCleanupSystem : SystemBase
     {
-        private static readonly ILog s_log = Mod.log;
+        private static readonly ILog s_Log = Mod.log;
 
         // For selection bookkeeping (category + tallies)
         private enum CleanupType { None, Corrupt, Homeless, Commuters, MovingAway }
@@ -81,7 +81,7 @@ namespace CitizenEntityCleaner
 
             base.OnCreate();
 
-            s_log.Info("CitizenCleanupSystem created");
+            s_Log.Info("CitizenCleanupSystem created");
         }
 
         // Non-blocking: process one chunk if run is active, otherwise start a run if requested
@@ -118,7 +118,7 @@ namespace CitizenEntityCleaner
         public void TriggerCleanup()
         {
 #if DEBUG
-            s_log.Debug("[Cleanup] trigger requested (from Settings UI)");
+            s_Log.Debug("[Cleanup] trigger requested (from Settings UI)");
 #endif
             m_shouldRunCleanup = true;
         }
@@ -137,7 +137,7 @@ namespace CitizenEntityCleaner
             }
             catch (System.Exception ex)
             {
-                s_log.Warn($"Error getting citizen statistics: {ex.Message}");
+                s_Log.Warn($"Error getting citizen statistics: {ex.Message}");
                 return (0, 0);
             }
         }
@@ -163,7 +163,7 @@ namespace CitizenEntityCleaner
                 m_entitiesToCleanup.Dispose();
             }
 
-            s_log.Info("CitizenCleanupSystem destroyed");
+            s_Log.Info("CitizenCleanupSystem destroyed");
             base.OnDestroy();
         }
     }

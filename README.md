@@ -4,7 +4,7 @@
 
 ---
 
-**DO THIS FIRST: BACK UP YOUR SAVE.**  
+### DO THIS FIRST: BACK UP YOUR SAVE  
 This mod touches sensitive game components and is a work-around. Use at your own risk.
 
 ---
@@ -34,6 +34,11 @@ This entity bloat causes several issues:
 - Cause momentary drops in population demand
 - Have other long-term consequences not fully understood
 - Safe to remove anytime
+
+ℹ️ **Localization Support**
+- English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano
+- 日本語, 한국어, Tiếng Việt.
+
 
 ## Usage
 

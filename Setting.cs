@@ -1,9 +1,9 @@
-using System.Collections; // IEnumerator (for NextFrame)
+using System.Collections;   // IEnumerator (for NextFrame)
 using Colossal.IO.AssetDatabase;    // [FileLocation]
-using Game.Modding;     // IMod
-using Game.SceneFlow;   // GameManager
-using Game.Settings;    // ModSetting, [SettingsUI*]
-using UnityEngine;      // Application.OpenURL
+using Game.Modding;         // IMod
+using Game.SceneFlow;       // GameManager
+using Game.Settings;        // ModSetting, [SettingsUI*]
+using UnityEngine;          // Application.OpenURL
 
 
 namespace CitizenEntityCleaner

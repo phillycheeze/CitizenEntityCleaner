@@ -1,0 +1,63 @@
+#### Naming styles ####
+
+# ----- Naming STYLES -----
+# private instance fields: m_camel
+dotnet_naming_style.m_camel.capitalization = camel_case
+dotnet_naming_style.m_camel.required_prefix = m_
+dotnet_naming_style.m_camel.required_suffix =
+dotnet_naming_style.m_camel.word_separator = _
+
+# private static fields: s_Pascal
+dotnet_naming_style.s_pascal.capitalization = pascal_case
+dotnet_naming_style.s_pascal.required_prefix = s_
+dotnet_naming_style.s_pascal.required_suffix =
+dotnet_naming_style.s_pascal.word_separator = _
+
+# PascalCase (default for methods/properties/types/constants unless otherwise specified)
+dotnet_naming_style.PascalCase.capitalization = pascal_case
+
+# optional: ALL_CAPS for specific constants you choose (we'll not bind a rule to all consts)
+
+
+# ----- SYMBOL SPECS -----
+# private instance fields (non-static, any readonly)
+dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
+dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_instance_fields.required_modifiers =
+
+# private static fields (exclude consts)
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+# private constants (const)
+dotnet_naming_symbols.private_constants.applicable_kinds = field
+dotnet_naming_symbols.private_constants.applicable_accessibilities = private, internal
+dotnet_naming_symbols.private_constants.required_modifiers = const
+
+# methods/properties/events keep PascalCase by default
+dotnet_naming_symbols.non_field_members.applicable_kinds = method, property, event
+dotnet_naming_symbols.non_field_members.applicable_accessibilities = *
+dotnet_naming_symbols.non_field_members.required_modifiers =
+
+
+# ----- RULES -----
+# m_ for private instance fields
+dotnet_naming_rule.private_instance_fields_m_.severity = suggestion
+dotnet_naming_rule.private_instance_fields_m_.symbols = private_instance_fields
+dotnet_naming_rule.private_instance_fields_m_.style = m_camel
+
+# s_ for private static fields (NOT const)
+dotnet_naming_rule.private_static_fields_s_.severity = suggestion
+dotnet_naming_rule.private_static_fields_s_.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_s_.style = s_pascal
+
+# constants: PascalCase (no s_ rule will hit them)
+dotnet_naming_rule.private_constants_pascal.severity = suggestion
+dotnet_naming_rule.private_constants_pascal.symbols = private_constants
+dotnet_naming_rule.private_constants_pascal.style = PascalCase
+
+# methods/properties/events: PascalCase
+dotnet_naming_rule.non_field_members_pascal.severity = suggestion
+dotnet_naming_rule.non_field_members_pascal.symbols = non_field_members
+dotnet_naming_rule.non_field_members_pascal.style = PascalCase

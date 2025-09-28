@@ -12,7 +12,6 @@
 ## Citizen Entity Cleaner
 ℹ️ Language support: English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano, 日本語, 한국어, Tiếng Việt.
 
->>>>>>> fb68136 (- add JA, KO, and VI files for localization)
 
 ## ⚠️ **[WARNING]** ⚠️
 **DO THIS FIRST: BACK UP YOUR SAVE.**
@@ -82,7 +81,6 @@ Not sure. It could be another mod or something introduced in a more recent patch
 		- krzychu124 - testing, feedback
 		- Honu - testing, PR/coop development, locales
 		- Noel - ZH_CN locale review
->>>>>>> fb68136 (- add JA, KO, and VI files for localization)
 
 ## Feedback / Bug Report:
 * Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
@@ -119,14 +117,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<RequiredDLC Value="" />
 
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-<<<<<<< HEAD
-<ChangeLog>* Corrupt citizens are now "optional" checkbox to remove (not forced)
-* **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
-* More accurate homeless/commuter handling via Household level checks
-* **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
-* Tourists are now excluded
-* UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN)
-=======
+
 <ChangeLog>
 - Corrupt citizens are now "optional" checkbox to remove (not forced)
 - **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
@@ -135,7 +126,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 - **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
 - Tourists are now excluded explicitly
 - UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN, JA, KO, VI)
->>>>>>> fb68136 (- add JA, KO, and VI files for localization)
+
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

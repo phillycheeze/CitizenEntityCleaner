@@ -8,6 +8,9 @@ namespace CitizenEntityCleaner
     // PART: Apply (write-side) — starts chunked runs, mark chunks, throttle progress, signal completion
     public partial class CitizenCleanupSystem : SystemBase
     {
+        // ---- constants ----
+        private const int CLEANUP_CHUNK_SIZE = 2000;   // entities to mark per frame
+
         #region Chunked Cleanup Workflow
         /// <summary>
         /// Starts the chunked cleanup process

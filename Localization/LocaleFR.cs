@@ -1,6 +1,6 @@
 // LocaleFR.cs
-using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
+using Colossal;                    // IDictionarySource
 
 namespace CitizenEntityCleaner
 {

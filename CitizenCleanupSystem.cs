@@ -14,9 +14,9 @@ namespace CitizenEntityCleaner
     {
         private static readonly ILog s_Log = Mod.log;
 
-        // For selection bookkeeping (category + tallies)
+        #region Types / Bookkeeping
+        // Selection bookkeeping (category + tallies)
         private enum CleanupType { None, Corrupt, Homeless, Commuters, MovingAway }
-
         private struct DeletionCounts
         {
             public int Corrupt, Homeless, Commuters, MovingAway;
@@ -33,15 +33,11 @@ namespace CitizenEntityCleaner
                 }
             }
         }
-
-        private DeletionCounts m_lastCounts;
-
-        #region Constants
-        private const int CLEANUP_CHUNK_SIZE = 2000;   // entities to mark per frame
         #endregion
 
         #region Fields
-        // ---- state, queries ----
+        // ---- State, queries ----
+        private DeletionCounts m_lastCounts;
         private float m_lastProgressNotified = -1f;   // UI progress throttle (~5% steps)
         private bool m_shouldRunCleanup = false;    // Flag to trigger cleanup operation
 
@@ -53,7 +49,7 @@ namespace CitizenEntityCleaner
         // Cached query for reuse
         private EntityQuery m_householdMemberQuery;
 
-        // settings
+        // Settings
         private Setting? m_settings;
         #endregion
 
@@ -148,7 +144,7 @@ namespace CitizenEntityCleaner
             }
             catch
             {
-                return false;
+                return false;   // if city not loaded
             }
         }
         #endregion
@@ -159,9 +155,8 @@ namespace CitizenEntityCleaner
             {
                 m_entitiesToCleanup.Dispose();
             }
-            base.OnDestroy();
-
             s_Log.Info("CitizenCleanupSystem destroyed");
+            base.OnDestroy();
 
         }
     }

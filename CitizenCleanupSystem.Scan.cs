@@ -12,7 +12,7 @@ namespace CitizenEntityCleaner
     // PART: Scan (read-only) — selectors, counts, debug preview, helpers
     public partial class CitizenCleanupSystem : SystemBase
     {
-        #region Selection Logic (build deletion set)
+        #region Selection Logic
         /// <summary>
         /// Builds deletion set based on toggles (or overrides for debug preview):
         /// - Corrupt households (no PropertyRenter & not homeless/commuter/tourist) - excludes members who are Moving-Away
@@ -125,8 +125,8 @@ namespace CitizenEntityCleaner
         }
         #endregion
 
-        #region Debug helpers
-        // ---- Debug: preview only, no delete ----
+        #region Debug Helpers
+        // ---- Debug Log: preview only, no delete ----
         public void LogCorruptPreviewToLog(int max)
         {
             if (max <= 0) return;
@@ -162,8 +162,7 @@ namespace CitizenEntityCleaner
         #endregion
 
         #region Helpers
-
-        // Resolves boolean: precedence: override → UI setting → fallback default.
+        // Resolve boolean: precedence: override → UI setting → fallback default.
         // Example: ResolveToggle(forced:true,  setting:false, fallback:false) => true
         //          ResolveToggle(forced:null,  setting:true,  fallback:false) => true
         //          ResolveToggle(forced:null,  setting:null,  fallback:true)  => true

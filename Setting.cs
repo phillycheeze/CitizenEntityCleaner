@@ -1,9 +1,9 @@
+using System.Collections; // IEnumerator (for NextFrame)
 using Colossal.IO.AssetDatabase;    // [FileLocation]
 using Game.Modding;     // IMod
 using Game.SceneFlow;   // GameManager
 using Game.Settings;    // ModSetting, [SettingsUI*]
 using UnityEngine;      // Application.OpenURL
-using System.Collections; // IEnumerator (for NextFrame)
 
 
 namespace CitizenEntityCleaner
@@ -160,7 +160,6 @@ namespace CitizenEntityCleaner
         }
 
         // ---- Actions (buttons) ----
-
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
         public bool RefreshCountsButton

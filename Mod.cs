@@ -1,11 +1,11 @@
+using System;
+using System.Reflection;    // Assembly attributes
 using Colossal;         // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;                 // UpdateSystem
 using Game.Modding;
 using Game.SceneFlow;       // GameManager
-using System;
-using System.Reflection;    // Assembly attributes
 
 namespace CitizenEntityCleaner
 {

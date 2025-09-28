@@ -112,7 +112,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<ForumLink Value="" />
 
 	<!--Version of the mod-->
-	<ModVersion Value="1.5.0" />
+	<ModVersion Value="1.6.0" />
 
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.3.*" />

@@ -36,7 +36,7 @@ namespace CitizenEntityCleaner
                 OnCleanupNoWork?.Invoke();
                 return;
             }
-
+            //
             m_isChunkedCleanupInProgress = true;
             OnCleanupProgress?.Invoke(0f);     // initial “0%” so UI updates next frame
             s_Log.Info($"Starting chunked cleanup of {m_entitiesToCleanup.Length} citizens in chunks of {CLEANUP_CHUNK_SIZE}");

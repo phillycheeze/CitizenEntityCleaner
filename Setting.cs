@@ -73,6 +73,10 @@ namespace CitizenEntityCleaner
 
         private string _cleanupStatus = "Idle";
         private bool _isCleanupInProgress = false;
+
+        // runtime state flags to localize at read-time (avoid caching old language)
+        private bool _showNoCity = false;
+        private bool _showError = false;
         #endregion
 
         /// <summary>
@@ -299,13 +303,19 @@ namespace CitizenEntityCleaner
         public string CleanupStatusDisplay => string.IsNullOrEmpty(_cleanupStatus) ? "Idle" : _cleanupStatus;
 
         [SettingsUISection(kSection, kButtonGroup)]
-        public string TotalCitizensDisplay => _totalCitizens;
+        public string TotalCitizensDisplay =>
+            _showNoCity ? L(NoCityKey, "No city loaded")
+            : _showError ? L(ErrorKey, "Error")
+            : _totalCitizens;
 
         // If a language change occurs while UI is open, this getter re-reads the localized prompt.
         // Then, "Click [Refresh Counts]" reflects in current language without storing a stale string.
         [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay =>
-            _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt) : _corruptedCitizens;
+            _showNoCity ? L(NoCityKey, "No city loaded")
+            : _showError ? L(ErrorKey, "Error")
+            : _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt)
+            : _corruptedCitizens;
         #endregion
 
         #region About Tab
@@ -385,6 +395,8 @@ namespace CitizenEntityCleaner
             _corruptedCitizens = L(RefreshPromptKey, DefaultCountPrompt);
             _cleanupStatus = "Idle";
             _showRefreshPrompt = true;   // show prompt until refreshed
+            _showNoCity = false;
+            _showError = false;
         }
         #endregion
 
@@ -399,14 +411,16 @@ namespace CitizenEntityCleaner
                 // Treat missing system OR empty citizen data as “No city loaded”.
                 if (Mod.CleanupSystem == null || !Mod.CleanupSystem.HasAnyCitizenData())
                 {
-                    _totalCitizens = L(NoCityKey, "No city loaded");
-                    _corruptedCitizens = L(NoCityKey, "No city loaded");
+                    _showNoCity = true;
+                    _showError = false;
+                    _totalCitizens = string.Empty;      // do not cache translated text
+                    _corruptedCitizens = string.Empty;  // do not cache translated text
 
                     // No city data. Sticky “Complete”, otherwise stay idle.
                     if (!_isCleanupInProgress && _cleanupStatus != "Complete")
                         _cleanupStatus = "Idle";
 
-                    _showRefreshPrompt = false; // show error message, not the Refresh prompt
+                    _showRefreshPrompt = false; // show "No city" message, not the Refresh prompt
                     Apply();    // early return, nothing to do
                     return;
                 }
@@ -428,10 +442,14 @@ namespace CitizenEntityCleaner
             catch (System.Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
-                _totalCitizens = L(ErrorKey, "Error");
-                _corruptedCitizens = L(ErrorKey, "Error");
-                _showRefreshPrompt = false; // show error, not Refresh prompt
+                _showError = true;
+                _showNoCity = false;
+
+                _totalCitizens = string.Empty;      // do not cache translated text
+                _corruptedCitizens = string.Empty;  // do not cache translated text
+                _showRefreshPrompt = false;         // show error, not Refresh prompt
             }
+
 
             Apply();
         }

@@ -1,5 +1,5 @@
 using System;
-using System.Reflection;    // Assembly attributes
+using System.Reflection;    // only for Assembly metadata
 using Colossal;             // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;

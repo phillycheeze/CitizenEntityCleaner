@@ -110,8 +110,6 @@ namespace CitizenEntityCleaner
                 { "CitizenEntityCleaner/Status/Progress", "正在清理… {0}" },
                 { "CitizenEntityCleaner/Status/Cleaning", "清理中… {0}" },
 
-
-
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "模组名称" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.NameText)), "本模组的显示名称。" },

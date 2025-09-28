@@ -8,8 +8,14 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Some saves might have many abandoned Citizen entities leaving behind households, vehicles, and other entities while also decreasing performance. This mod provides a hack to manually clean those up." /-->
 	<LongDescription>
+<<<<<<< HEAD
 ## Citizen Entity Cleaner
 _Basic language support: 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano._
+=======
+		## Citizen Entity Cleaner
+		_Language support: English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano, 日本語, 한국어, Tiếng Việt._
+
+>>>>>>> fb68136 (- add JA, KO, and VI files for localization)
 
 ## ⚠️ **[WARNING]** ⚠️
 **DO THIS FIRST: BACK UP YOUR SAVE.**
@@ -60,9 +66,26 @@ Revert to the original saved city if you see unexpected behavior.
 - The base game then naturally cleans up remaining references (households, vehicles, student/patient references, and anything else afterwards).
 - This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
+<<<<<<< HEAD
 ## What is causing the issue?
 
 Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
+=======
+		## What is causing the issue?
+		Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
+
+		## Feedback / Bug Report:
+		* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
+		* https://discord.com/channels/1024242828114673724/1402078697120469064
+
+		## Credits
+		- phillycheese - mod author
+		- yenyang - feedback, coop development
+		- Konsi - feedback
+		- krzychu124 - testing, feedback
+		- Honu - testing, PR/coop development, locales
+		- Noel - ZH_CN locale review
+>>>>>>> fb68136 (- add JA, KO, and VI files for localization)
 
 ## Feedback / Bug Report:
 * Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
@@ -82,29 +105,40 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<Screenshot Value="Properties/Screenshots/10-CEC-thumbnail.jpg" />
 	<Screenshot Value="Properties/Screenshots/20-Before.jpg" />
 	<Screenshot Value="Properties/Screenshots/30-After.jpg" />
-	
+
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
-	 
+
 	<!--Version of the mod-->
 	<ModVersion Value="1.5.0" />
-	 
+
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.3.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
-	 
+
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
+<<<<<<< HEAD
 <ChangeLog>* Corrupt citizens are now "optional" checkbox to remove (not forced)
 * **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
 * More accurate homeless/commuter handling via Household level checks
 * **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
 * Tourists are now excluded
 * UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN)
+=======
+<ChangeLog>
+- Corrupt citizens are now "optional" checkbox to remove (not forced)
+- **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
+- Option to remove Homeless or Commuters still available
+- More accurate homeless/commuter handling via Household level checks
+- **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
+- Tourists are now excluded explicitly
+- UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN, JA, KO, VI)
+>>>>>>> fb68136 (- add JA, KO, and VI files for localization)
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

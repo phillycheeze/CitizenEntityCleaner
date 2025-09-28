@@ -1,6 +1,6 @@
 using System;
 using System.Reflection;    // Assembly attributes
-using Colossal;         // IDictionarySource
+using Colossal;             // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;                 // UpdateSystem
@@ -69,15 +69,24 @@ namespace CitizenEntityCleaner
             var de = new LocaleDE(m_Setting);
             var it = new LocaleIT(m_Setting);
             var zhCN = new LocaleZH_CN(m_Setting); // Simplified Chinese, not fully translated
+            var ja = new LocaleJA(m_Setting);
+            var ko = new LocaleKO(m_Setting);
+            var vi = new LocaleVI(m_Setting);
+
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
             RegisterLocale("de-DE", de);
             RegisterLocale("it-IT", it);
+            RegisterLocale("ja-JP", ja);
+            RegisterLocale("ko-KR", ko);
+            RegisterLocale("vi-VN", vi);
 
             // Register ZH under several common ids so LocalizationManager can find matching one
             RegisterLocale("zh-HANS", zhCN);    // log shows this is used
+            RegisterLocale("zh-CN", zhCN);      // fallback
+            RegisterLocale("zh", zhCN);         // fallback
 
             // Log language selected (guarded for null)
             var lm = GameManager.instance?.localizationManager;

@@ -23,6 +23,7 @@ namespace CitizenEntityCleaner
 
     public class Setting : ModSetting
     {
+        #region UI Structure
         // ---- UI structure ----
         public const string kSection = "Main";
         public const string MainTab = "Main";
@@ -32,7 +33,9 @@ namespace CitizenEntityCleaner
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
         public const string DebugGroup = "Debug";
+        #endregion
 
+        #region Defaults & Localization Keys
         // ---- UI text defaults ----
         private const string DefaultCountPrompt = "Click [Refresh Counts]";
 
@@ -50,7 +53,9 @@ namespace CitizenEntityCleaner
                 ? s
                 : fallback;
         }
+        #endregion
 
+        #region Backing Fields and External Links
         // ---- External links ----
         private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
         private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
@@ -66,17 +71,16 @@ namespace CitizenEntityCleaner
         private string _corruptedCitizens = DefaultCountPrompt;
         private bool _showRefreshPrompt = true;  // whether "Citizens to Clean" should show the prompt
 
-
         private string _cleanupStatus = "Idle";
-
         private bool _isCleanupInProgress = false;
-
+        #endregion
 
         /// <summary>
         /// Create settings object for this mod
         ///</summary>
         public Setting(IMod mod) : base(mod) { }
 
+        #region Private Helpers
         // ---- Helpers ----
         private void ResetStatusIfNotRunning()
         {
@@ -104,8 +108,9 @@ namespace CitizenEntityCleaner
             yield return null; // wait one frame
             action?.Invoke();
         }
+        #endregion
 
-
+        #region Filter Toggles
         // ---- Filter & order of toggles ----
         [SettingsUISection(kSection, kFiltersGroup)]
         public bool IncludeCorrupt
@@ -158,8 +163,10 @@ namespace CitizenEntityCleaner
                 ShowRefreshPrompt();
             }
         }
+        #endregion
 
-        // ---- Actions (buttons) ----
+        #region Action Buttons
+        // ---- Action Buttons ----
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
         public bool RefreshCountsButton
@@ -249,8 +256,9 @@ namespace CitizenEntityCleaner
             }
 
         }
+        #endregion
 
-
+        #region Debug Button & Note
         // ---- Debug button ----
         [SettingsUIButton]
         [SettingsUISection(kSection, DebugGroup)]
@@ -277,15 +285,15 @@ namespace CitizenEntityCleaner
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
                 Mod.CleanupSystem.LogCorruptPreviewToLog(10);
 
-
             }
         }
 
         [SettingsUIMultilineText]
         [SettingsUISection(kSection, DebugGroup)]
         public string DebugCorruptNote => string.Empty;
+        #endregion
 
-
+        #region Displays (Read-only)
         // ---- Read-only displays ----
         [SettingsUISection(kSection, kButtonGroup)]
         public string CleanupStatusDisplay => string.IsNullOrEmpty(_cleanupStatus) ? "Idle" : _cleanupStatus;
@@ -298,8 +306,9 @@ namespace CitizenEntityCleaner
         [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay =>
             _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt) : _corruptedCitizens;
+        #endregion
 
-
+        #region About Tab
         // ---- About tab: info ----
         [SettingsUISection(AboutTab, InfoGroup)]
         public string NameText => Mod.Name;
@@ -357,7 +366,9 @@ namespace CitizenEntityCleaner
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageNotes => string.Empty;
+        #endregion
 
+        #region Defaults
         /// <summary>
         /// Initialize checkbox defaults and display text
         /// </summary>
@@ -375,7 +386,9 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Idle";
             _showRefreshPrompt = true;   // show prompt until refreshed
         }
+        #endregion
 
+        #region Counts & Status Logic
         /// <summary>
         /// Update display values; handles errors
         /// </summary>
@@ -422,7 +435,9 @@ namespace CitizenEntityCleaner
 
             Apply();
         }
+        #endregion
 
+        #region Cleanup Progress & Completion
         /// <summary>
         /// Updates cleanup progress display
         /// </summary>
@@ -479,6 +494,7 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Nothing to clean";
             RefreshEntityCounts();
         }
+        #endregion
     }
 }
 

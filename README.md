@@ -64,7 +64,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 * Go to Discord channel for Citizen Entity Cleaner on **[Cities: Skylines Modding Discord](https://discord.com/channels/1024242828114673724/1402078697120469064)**
   
 ## Credits
-- phillycheese - mod author
+- phillycheeze - mod author
 - yenyang - feedback, coop development
 - Konsi - feedback
 - krzychu124 - feedback, code sharing

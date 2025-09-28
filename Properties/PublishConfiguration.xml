@@ -8,80 +8,78 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Some saves might have many abandoned Citizen entities leaving behind households, vehicles, and other entities while also decreasing performance. This mod provides a hack to manually clean those up." /-->
 	<LongDescription>
-		## Citizen Entity Cleaner
-		_Basic language support: 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano._
+## Citizen Entity Cleaner
+_Basic language support: 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano._
 
-		## ⚠️ **[WARNING]** ⚠️
-		**DO THIS FIRST: BACK UP YOUR SAVE.**
-		**This mod touches sensitive game components and is a work-around. Use at your own risk.**
+## ⚠️ **[WARNING]** ⚠️
+**DO THIS FIRST: BACK UP YOUR SAVE.**
+**This mod touches sensitive game components and is a work-around. Use at your own risk.**
 
-		## Problem
+## Problem
 
-		Over time in some saves, Citizen and Household entities accumulate to extremely large numbers in Cities Skylines 2, far exceeding your actual population. Some users don't have this bug, but others could have millions of corrupted entities.
+Over time in some saves, Citizen and Household entities accumulate to extremely large numbers in Cities Skylines 2, far exceeding your actual population. Some users don't have this bug, but others could have millions of corrupted entities.
 
-		## Performance Impact
+## Performance Impact
 
-		This entity bloat causes several issues:
+This entity bloat causes several issues:
 
-		- **Significant performance drops** due to massive numbers of HouseholdFindSystem pathfinding queries
-		- **Citizens stuck** at leisure or shopping destinations, never leaving under any circumstance
-		- **Abandoned Cars** permanently occupying parking spots, never being used again
-		- **General performance degradation** across querying systems
+- **Significant performance drops** due to massive numbers of HouseholdFindSystem pathfinding queries
+- **Citizens stuck** at leisure or shopping destinations, never leaving under any circumstance
+- **Abandoned Cars** permanently occupying parking spots, never being used again
+- **General performance degradation** across querying systems
 
-		ℹ️ **Mod Options**
-		- Include **corrupt citizens** in cleanup (optional ✅)
-		- Include **moving-away** (that have no rent) in cleanup (optional ✅)
-		- Include **commuters** in cleanup (optional ✅)
-		- Include **homeless** in cleanup (optional ✅)
-
-
-		ℹ️ **This Mod may also:**
-		- Delete "Pending" citizens that may be buffered for relocation
-		- Cause momentary drops in population demand
-		- Have other long-term consequences not fully understood
-		- Safe to remove anytime
-
-		ℹ️ **Usage**
-		1. **\[Backup] your save file first!**
-		2. Load the city, then open **Options → Citizen Entity Cleaner**.
-		3. Click \[Refresh Counts] to see current statistics.
-		4. Select checkbox ✅ options to include with the cleanup.
-		5. Click \[Cleanup Citizens] to clean up entities.
-
-		**Note**
-		This mod does **not** run automatically; it only runs when you click \[Cleanup Citizens].
-		Revert to the original saved city if you see unexpected behavior.
-
-		## What This Mod Does
-
-		- Everything is optional, pick and choose which items to remove (corrupt citizens, commuters, homeless).
-		- For Corrupt Citizens: the mod finds households missing "PropertyRenter" that still list members.
-		- Marks these citizen entities for deletion in chunked batches.
-		- The base game then naturally cleans up remaining references (households, vehicles, student/patient references, and anything else afterwards).
-		- This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
-
-		## What is causing the issue?
-
-		Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
-
-		## Feedback / Bug Report:
-		* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
-		* https://discord.com/channels/1024242828114673724/1402078697120469064
-
-		## Credits
-		- phillycheese - mod author
-		- yenyang - feedback, coop development
-		- Konsi - feedback
-		- krzychu124 - testing, feedback
-		- Honu - testing, PR/coop development, locales
-		- Noel - ZH_CN locale review
+ℹ️ **Mod Options**
+- Include **corrupt citizens** in cleanup (optional ✅)
+- Include **moving-away** (that have no rent) in cleanup (optional ✅)
+- Include **commuters** in cleanup (optional ✅)
+- Include **homeless** in cleanup (optional ✅)
 
 
+ℹ️ **This Mod may also:**
+- Delete "Pending" citizens that may be buffered for relocation
+- Cause momentary drops in population demand
+- Have other long-term consequences not fully understood
+- Safe to remove anytime
+
+ℹ️ **Usage**
+1. **\[Backup] your save file first!**
+2. Load the city, then open **Options → Citizen Entity Cleaner**.
+3. Click \[Refresh Counts] to see current statistics.
+4. Select checkbox ✅ options to include with the cleanup.
+5. Click \[Cleanup Citizens] to clean up entities.
+
+**Note**
+This mod does **not** run automatically; it only runs when you click \[Cleanup Citizens].
+Revert to the original saved city if you see unexpected behavior.
+
+## What This Mod Does
+
+- Everything is optional, pick and choose which items to remove (corrupt citizens, commuters, homeless).
+- For Corrupt Citizens: the mod finds households missing "PropertyRenter" that still list members.
+- Marks these citizen entities for deletion in chunked batches.
+- The base game then naturally cleans up remaining references (households, vehicles, student/patient references, and anything else afterwards).
+- This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
+
+## What is causing the issue?
+
+Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
+
+## Feedback / Bug Report:
+* Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
+* https://discord.com/channels/1024242828114673724/1402078697120469064
+
+## Credits
+- phillycheeze - mod author
+- yenyang - feedback, coop development
+- Konsi - feedback
+- krzychu124 - testing, feedback
+- Honu - testing, PR/coop development, locales
+- Noel - ZH_CN locale review
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/Thumbnail.png" />
+	<Thumbnail Value="Properties/Screenshots/10-CEC-thumbnail.jpg" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/Screenshots/10-CEC-thumbnail.png" />
+	<Screenshot Value="Properties/Screenshots/10-CEC-thumbnail.jpg" />
 	<Screenshot Value="Properties/Screenshots/20-Before.jpg" />
 	<Screenshot Value="Properties/Screenshots/30-After.jpg" />
 	
@@ -101,14 +99,12 @@
 	<RequiredDLC Value="" />
 	 
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-<ChangeLog>
-- Corrupt citizens are now "optional" checkbox to remove (not forced)
-- **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
-- Option to remove Homeless or Commuters still available
-- More accurate homeless/commuter handling via Household level checks
-- **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
-- Tourists are now excluded explicitly
-- UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN)
+<ChangeLog>* Corrupt citizens are now "optional" checkbox to remove (not forced)
+* **New:** Option to remove moving-away citizens (that have no PropertyRenter component)
+* More accurate homeless/commuter handling via Household level checks
+* **Fix:** Homeless detection now works even if they are in vehicles (transport-agnostic). previously only worked if they were walking.
+* Tourists are now excluded
+* UI updates and refactor: basic language support (EN, FR, ES, DE, IT, ZH-CN)
 </ChangeLog>
 
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->

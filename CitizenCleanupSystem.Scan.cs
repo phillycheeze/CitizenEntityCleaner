@@ -1,4 +1,5 @@
-﻿using System.Text;
+// CitizenCleanupSystem.Scan.cs
+using System.Text;
 using Game.Agents;
 using Game.Buildings;
 using Game.Citizens;

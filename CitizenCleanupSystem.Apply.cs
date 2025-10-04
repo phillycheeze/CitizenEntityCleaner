@@ -1,4 +1,5 @@
-﻿using Game.Common;          // Deleted
+// CitzenCleanupSystem.Apply.cs
+using Game.Common;          // Deleted
 using Unity.Collections;    // Allocator
 using Unity.Entities;
 using Unity.Mathematics;    // math

@@ -1,3 +1,4 @@
+// CitizenCleanupSystem.cs
 using Colossal.Logging;
 using Game.Citizens;        // for Citizen, HouseholdMember, TravelPurpose
 using Game.Common;          // for Deleted

@@ -1,11 +1,11 @@
-using Colossal;         // IDictionarySource
+using System;
+using System.Reflection;    // only for Assembly metadata
+using Colossal;             // IDictionarySource
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Game;                 // UpdateSystem
 using Game.Modding;
 using Game.SceneFlow;       // GameManager
-using System;
-using System.Reflection;    // Assembly attributes
 
 namespace CitizenEntityCleaner
 {
@@ -69,18 +69,28 @@ namespace CitizenEntityCleaner
             var de = new LocaleDE(m_Setting);
             var it = new LocaleIT(m_Setting);
             var zhCN = new LocaleZH_CN(m_Setting); // Simplified Chinese, not fully translated
+            var ja = new LocaleJA(m_Setting);
+            var ko = new LocaleKO(m_Setting);
+            var vi = new LocaleVI(m_Setting);
+            var ptBR = new LocalePT_BR(m_Setting);
+
 
             RegisterLocale("en-US", en);
             RegisterLocale("fr-FR", fr);
             RegisterLocale("es-ES", es);
             RegisterLocale("de-DE", de);
             RegisterLocale("it-IT", it);
+            RegisterLocale("ja-JP", ja);
+            RegisterLocale("ko-KR", ko);
+            RegisterLocale("vi-VN", vi);
+            RegisterLocale("pt-BR", ptBR);
+            RegisterLocale("zh-HANS", zhCN);    // log shows this is used
 
             // Register ZH under several common ids so LocalizationManager can find matching one
-            RegisterLocale("zh-HANS", zhCN);    // log shows this is used
-            RegisterLocale("zh-CN", zhCN);      // common Steam locale Simplified Chinese
-            RegisterLocale("zh-Hans", zhCN);    // common alias (case variant)
-            RegisterLocale("zh-Hans-CN", zhCN); // common alias (region variant)
+            RegisterLocale("zh-CN", zhCN);      // fallback
+            RegisterLocale("zh", zhCN);         // fallback
+
+            RegisterLocale("pt", ptBR); // fallback if the game reports just "pt"
 
             // Log language selected (guarded for null)
             var lm = GameManager.instance?.localizationManager;
@@ -180,10 +190,13 @@ namespace CitizenEntityCleaner
                 return;
             }
 
-            try {
+            try
+            {
                 lm.AddSource(localeId, source);
                 log.Info($"[Locale] Registered {localeId}");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 log.Warn($"[Locale] AddSource failed for {localeId}: {ex.GetType().Name}: {ex.Message}");
             }
         }

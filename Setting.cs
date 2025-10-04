@@ -1,10 +1,9 @@
+using System.Collections;   // IEnumerator (for NextFrame)
 using Colossal.IO.AssetDatabase;    // [FileLocation]
-using Game.Modding;     // IMod
-using Game.SceneFlow;   // GameManager
-using Game.Settings;    // ModSetting, [SettingsUI*]
-using UnityEngine;      // Application.OpenURL
-using System.Collections; // IEnumerator (for NextFrame)
-
+using Game.Modding;         // IMod
+using Game.SceneFlow;       // GameManager
+using Game.Settings;        // ModSetting, [SettingsUI*]
+using UnityEngine;          // Application.OpenURL
 
 
 namespace CitizenEntityCleaner
@@ -17,13 +16,14 @@ namespace CitizenEntityCleaner
     /// <summary>
     /// Settings UI and State
     /// </summary>
-    [FileLocation(ModKeys.SettingsKey)]
+    [FileLocation("ModsSettings/CitizenEntityCleaner/CitizenEntityCleaner")]
     [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup )]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup)]
     [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
 
     public class Setting : ModSetting
     {
+        #region UI Structure
         // ---- UI structure ----
         public const string kSection = "Main";
         public const string MainTab = "Main";
@@ -33,7 +33,9 @@ namespace CitizenEntityCleaner
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
         public const string DebugGroup = "Debug";
+        #endregion
 
+        #region Defaults & Localization Keys
         // ---- UI text defaults ----
         private const string DefaultCountPrompt = "Click [Refresh Counts]";
 
@@ -51,7 +53,9 @@ namespace CitizenEntityCleaner
                 ? s
                 : fallback;
         }
+        #endregion
 
+        #region Backing Fields and External Links
         // ---- External links ----
         private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
         private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
@@ -67,17 +71,20 @@ namespace CitizenEntityCleaner
         private string _corruptedCitizens = DefaultCountPrompt;
         private bool _showRefreshPrompt = true;  // whether "Citizens to Clean" should show the prompt
 
-
         private string _cleanupStatus = "Idle";
-
         private bool _isCleanupInProgress = false;
 
+        // runtime state flags to localize at read-time (avoid caching old language)
+        private bool _showNoCity = false;
+        private bool _showError = false;
+        #endregion
 
         /// <summary>
         /// Create settings object for this mod
         ///</summary>
         public Setting(IMod mod) : base(mod) { }
 
+        #region Private Helpers
         // ---- Helpers ----
         private void ResetStatusIfNotRunning()
         {
@@ -105,8 +112,9 @@ namespace CitizenEntityCleaner
             yield return null; // wait one frame
             action?.Invoke();
         }
+        #endregion
 
-
+        #region Filter Toggles
         // ---- Filter & order of toggles ----
         [SettingsUISection(kSection, kFiltersGroup)]
         public bool IncludeCorrupt
@@ -159,9 +167,10 @@ namespace CitizenEntityCleaner
                 ShowRefreshPrompt();
             }
         }
+        #endregion
 
-        // ---- Actions (buttons) ----
-
+        #region Action Buttons
+        // ---- Action Buttons ----
         [SettingsUIButton]
         [SettingsUISection(kSection, kButtonGroup)]
         public bool RefreshCountsButton
@@ -180,7 +189,7 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly 
+        /// Show a Yes/No confirmation. If Yes, wait one frame for the dialog to close cleanly
         /// Avoids focus conflict errors in UI.log
         /// </summary>
         [SettingsUIButton]
@@ -210,7 +219,7 @@ namespace CitizenEntityCleaner
                             Mod.log.Info("Cleanup already in progress, ignoring button click");
                             return;
                         }
-                      
+
                         if (Mod.CleanupSystem == null)  // If Init error, bail early
                         {
                             Mod.log.Error("CleanupSystem not initialized (mod load failure).");
@@ -251,8 +260,9 @@ namespace CitizenEntityCleaner
             }
 
         }
+        #endregion
 
-
+        #region Debug Button & Note
         // ---- Debug button ----
         [SettingsUIButton]
         [SettingsUISection(kSection, DebugGroup)]
@@ -279,29 +289,36 @@ namespace CitizenEntityCleaner
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
                 Mod.CleanupSystem.LogCorruptPreviewToLog(10);
 
-
             }
         }
 
         [SettingsUIMultilineText]
         [SettingsUISection(kSection, DebugGroup)]
         public string DebugCorruptNote => string.Empty;
+        #endregion
 
-
+        #region Displays (Read-only)
         // ---- Read-only displays ----
         [SettingsUISection(kSection, kButtonGroup)]
         public string CleanupStatusDisplay => string.IsNullOrEmpty(_cleanupStatus) ? "Idle" : _cleanupStatus;
 
         [SettingsUISection(kSection, kButtonGroup)]
-        public string TotalCitizensDisplay => _totalCitizens;
+        public string TotalCitizensDisplay =>
+            _showNoCity ? L(NoCityKey, "No city loaded")
+            : _showError ? L(ErrorKey, "Error")
+            : _totalCitizens;
 
         // If a language change occurs while UI is open, this getter re-reads the localized prompt.
         // Then, "Click [Refresh Counts]" reflects in current language without storing a stale string.
         [SettingsUISection(kSection, kButtonGroup)]
         public string CorruptedCitizensDisplay =>
-            _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt) : _corruptedCitizens;
+            _showNoCity ? L(NoCityKey, "No city loaded")
+            : _showError ? L(ErrorKey, "Error")
+            : _showRefreshPrompt ? L(RefreshPromptKey, DefaultCountPrompt)
+            : _corruptedCitizens;
+        #endregion
 
-
+        #region About Tab
         // ---- About tab: info ----
         [SettingsUISection(AboutTab, InfoGroup)]
         public string NameText => Mod.Name;
@@ -359,7 +376,9 @@ namespace CitizenEntityCleaner
         [SettingsUIMultilineText]
         [SettingsUISection(AboutTab, UsageGroup)]
         public string UsageNotes => string.Empty;
+        #endregion
 
+        #region Defaults
         /// <summary>
         /// Initialize checkbox defaults and display text
         /// </summary>
@@ -376,8 +395,12 @@ namespace CitizenEntityCleaner
             _corruptedCitizens = L(RefreshPromptKey, DefaultCountPrompt);
             _cleanupStatus = "Idle";
             _showRefreshPrompt = true;   // show prompt until refreshed
+            _showNoCity = false;
+            _showError = false;
         }
+        #endregion
 
+        #region Counts & Status Logic
         /// <summary>
         /// Update display values; handles errors
         /// </summary>
@@ -388,14 +411,16 @@ namespace CitizenEntityCleaner
                 // Treat missing system OR empty citizen data as “No city loaded”.
                 if (Mod.CleanupSystem == null || !Mod.CleanupSystem.HasAnyCitizenData())
                 {
-                    _totalCitizens = L(NoCityKey, "No city loaded");
-                    _corruptedCitizens = L(NoCityKey, "No city loaded");
+                    _showNoCity = true;
+                    _showError = false;
+                    _totalCitizens = string.Empty;      // do not cache translated text
+                    _corruptedCitizens = string.Empty;  // do not cache translated text
 
-                    // No city data. Sticky “Complete”, otherwise stay idle. 
+                    // No city data. Sticky “Complete”, otherwise stay idle.
                     if (!_isCleanupInProgress && _cleanupStatus != "Complete")
                         _cleanupStatus = "Idle";
 
-                    _showRefreshPrompt = false; // show error message, not the Refresh prompt
+                    _showRefreshPrompt = false; // show "No city" message, not the Refresh prompt
                     Apply();    // early return, nothing to do
                     return;
                 }
@@ -417,14 +442,20 @@ namespace CitizenEntityCleaner
             catch (System.Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
-                _totalCitizens = L(ErrorKey, "Error");
-                _corruptedCitizens = L(ErrorKey, "Error");
-                _showRefreshPrompt = false; // show error, not Refresh prompt
+                _showError = true;
+                _showNoCity = false;
+
+                _totalCitizens = string.Empty;      // do not cache translated text
+                _corruptedCitizens = string.Empty;  // do not cache translated text
+                _showRefreshPrompt = false;         // show error, not Refresh prompt
             }
+
 
             Apply();
         }
+        #endregion
 
+        #region Cleanup Progress & Completion
         /// <summary>
         /// Updates cleanup progress display
         /// </summary>
@@ -481,6 +512,7 @@ namespace CitizenEntityCleaner
             _cleanupStatus = "Nothing to clean";
             RefreshEntityCounts();
         }
+        #endregion
     }
 }
 

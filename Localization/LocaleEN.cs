@@ -1,11 +1,11 @@
 // LocaleEN.cs
-using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
+using Colossal;                    // IDictionarySource
 
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// English locale entries
+    /// English locale entries (en-US)
     /// </summary>
     public class LocaleEN : IDictionarySource
     {
@@ -150,7 +150,6 @@ namespace CitizenEntityCleaner
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" },
             };
         }
-
         public void Unload() { }
     }
 }

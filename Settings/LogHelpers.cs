@@ -191,7 +191,7 @@ namespace CitizenEntityCleaner
                     return true;
                 }
 
-                // Nothing to open: both the file and the folder are missing
+                // Nothing to open: both the file and folder are missing
                 logger?.Info("[Log] No log file yet, and Logs folder not found.");
             }
             catch (Exception ex)

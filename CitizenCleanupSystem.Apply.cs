@@ -57,16 +57,16 @@ namespace CitizenEntityCleaner
             }
 
             // Mark a chunk this frame
-            int remainingEntities = m_entitiesToCleanup.Length - m_cleanupIndex;
-            int chunkSize = math.min(CLEANUP_CHUNK_SIZE, remainingEntities);
+            var remainingEntities = m_entitiesToCleanup.Length - m_cleanupIndex;
+            var chunkSize = math.min(CLEANUP_CHUNK_SIZE, remainingEntities);
 
-            var chunk = m_entitiesToCleanup.AsArray().GetSubArray(m_cleanupIndex, chunkSize);
+            NativeArray<Entity> chunk = m_entitiesToCleanup.AsArray().GetSubArray(m_cleanupIndex, chunkSize);
             EntityManager.AddComponent<Deleted>(chunk);
 
             m_cleanupIndex += chunkSize;
 
             // --- UI progress throttled ~5% ---
-            float progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
+            var progress = (float)m_cleanupIndex / m_entitiesToCleanup.Length;
             if (progress >= 0.999f || progress - m_lastProgressNotified >= 0.05f)
             {
                 m_lastProgressNotified = progress;
@@ -80,7 +80,7 @@ namespace CitizenEntityCleaner
         private void FinishChunkedCleanup()
         {
             // Capture count before disposing
-            int totalMarked = 0;
+            var totalMarked = 0;
             if (m_entitiesToCleanup.IsCreated)
             {
                 totalMarked = m_entitiesToCleanup.Length;

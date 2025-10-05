@@ -34,16 +34,16 @@ namespace CitizenEntityCleaner
             bool? overrideWantCommuters = null,
             bool? overrideWantMovingAwayNoPR = null)
         {
-            using var householdMembers = m_householdMemberQuery.ToComponentDataArray<HouseholdMember>(Allocator.TempJob);
+            using NativeArray<HouseholdMember> householdMembers = m_householdMemberQuery.ToComponentDataArray<HouseholdMember>(Allocator.TempJob);
             var candidates = new NativeList<Entity>(math.max(1, householdMembers.Length), allocator);
 
 
             // Mirror UI defaults: Corrupt defaults ON; others default OFF
             // Order: override → UI settings → fallback
-            bool wantCorrupt = ResolveToggle(overrideWantCorrupt, m_settings?.IncludeCorrupt, fallback: true);
-            bool wantHomeless = ResolveToggle(overrideWantHomeless, m_settings?.IncludeHomeless, fallback: false);
-            bool wantCommuters = ResolveToggle(overrideWantCommuters, m_settings?.IncludeCommuters, fallback: false);
-            bool wantMovingAwayNoPR = ResolveToggle(overrideWantMovingAwayNoPR, m_settings?.IncludeMovingAwayNoPR, fallback: false);
+            var wantCorrupt = ResolveToggle(overrideWantCorrupt, m_settings?.IncludeCorrupt, fallback: true);
+            var wantHomeless = ResolveToggle(overrideWantHomeless, m_settings?.IncludeHomeless, fallback: false);
+            var wantCommuters = ResolveToggle(overrideWantCommuters, m_settings?.IncludeCommuters, fallback: false);
+            var wantMovingAwayNoPR = ResolveToggle(overrideWantMovingAwayNoPR, m_settings?.IncludeMovingAwayNoPR, fallback: false);
 
 
             // Early-out: nothing selected
@@ -56,7 +56,7 @@ namespace CitizenEntityCleaner
                 using var processedHouseholds =
                     new NativeHashSet<Entity>(math.max(1, householdMembers.Length), Allocator.TempJob);
 
-                foreach (var householdMember in householdMembers)
+                foreach (HouseholdMember householdMember in householdMembers)
                 {
                     Entity householdEntity = householdMember.m_Household;
 
@@ -68,15 +68,15 @@ namespace CitizenEntityCleaner
                     if (!EntityManager.HasBuffer<HouseholdCitizen>(householdEntity)) continue;
 
                     // Household category flags
-                    bool hasPropertyRenter = EntityManager.HasComponent<PropertyRenter>(householdEntity);
-                    bool isHomelessHH = EntityManager.HasComponent<HomelessHousehold>(householdEntity);
-                    bool isCommuterHH = EntityManager.HasComponent<CommuterHousehold>(householdEntity);
-                    bool isTouristHH = EntityManager.HasComponent<TouristHousehold>(householdEntity);
+                    var hasPropertyRenter = EntityManager.HasComponent<PropertyRenter>(householdEntity);
+                    var isHomelessHH = EntityManager.HasComponent<HomelessHousehold>(householdEntity);
+                    var isCommuterHH = EntityManager.HasComponent<CommuterHousehold>(householdEntity);
+                    var isTouristHH = EntityManager.HasComponent<TouristHousehold>(householdEntity);
 
                     // Quick HH-level skip optimization: if nothing in this HH could match
                     // and the independent Moving-Away rule is OFF, skip members.
-                    bool isResidentCorrupt = !hasPropertyRenter && !isHomelessHH && !isCommuterHH && !isTouristHH;
-                    bool householdMatchesAny =
+                    var isResidentCorrupt = !hasPropertyRenter && !isHomelessHH && !isCommuterHH && !isTouristHH;
+                    var householdMatchesAny =
                         (wantHomeless && isHomelessHH) ||
                         (wantCommuters && isCommuterHH) ||
                         (wantCorrupt && isResidentCorrupt);
@@ -85,14 +85,14 @@ namespace CitizenEntityCleaner
                         continue;
 
                     // Iterate members and apply per-citizen rules (via shared classifier)
-                    var householdCitizens = EntityManager.GetBuffer<HouseholdCitizen>(householdEntity);
-                    for (int j = 0; j < householdCitizens.Length; j++)
+                    DynamicBuffer<HouseholdCitizen> householdCitizens = EntityManager.GetBuffer<HouseholdCitizen>(householdEntity);
+                    for (var j = 0; j < householdCitizens.Length; j++)
                     {
-                        var citizenEntity = householdCitizens[j].m_Citizen;
+                        Entity citizenEntity = householdCitizens[j].m_Citizen;
                         if (!EntityManager.Exists(citizenEntity)) continue;
                         if (EntityManager.HasComponent<Deleted>(citizenEntity)) continue;
 
-                        var reason = ClassifyCitizenForDeletion(
+                        CleanupType reason = ClassifyCitizenForDeletion(
                             wantCorrupt, wantHomeless, wantCommuters, wantMovingAwayNoPR,
                             isHomelessHH, isCommuterHH, isTouristHH, hasPropertyRenter,
                             citizenEntity);
@@ -121,7 +121,7 @@ namespace CitizenEntityCleaner
         /// </summary>
         private int GetCitizensToCleanCount()
         {
-            using var candidates = GetDeletionCandidates(Allocator.TempJob, tally: false);
+            using NativeList<Entity> candidates = GetDeletionCandidates(Allocator.TempJob, tally: false);
             return candidates.Length;
         }
         #endregion
@@ -133,7 +133,7 @@ namespace CitizenEntityCleaner
             if (max <= 0) return;
 
             // Reuse the same traversal, force Corrupt=true and others=false; no state changes.
-            using var candidates = GetDeletionCandidates(
+            using NativeList<Entity> candidates = GetDeletionCandidates(
                 Allocator.TempJob,
                 tally: false,
                 overrideWantCorrupt: true,
@@ -141,7 +141,7 @@ namespace CitizenEntityCleaner
                 overrideWantCommuters: false,
                 overrideWantMovingAwayNoPR: false);
 
-            int count = math.min(max, candidates.Length);
+            var count = math.min(max, candidates.Length);
             if (count <= 0)
             {
                 s_Log.Info("[Preview] No Corrupt citizens found with the current city data.");
@@ -151,7 +151,7 @@ namespace CitizenEntityCleaner
             s_Log.Info($"[Preview] ==== Corrupt sample (up to {count}) ====");
 
             var sb = new StringBuilder();
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 if (i > 0) sb.Append(", ");
                 sb.Append("Corrupt ").Append(FormatIndexVersion(candidates[i]));
@@ -187,7 +187,7 @@ namespace CitizenEntityCleaner
             // Fallback
             if (EntityManager.HasComponent<TravelPurpose>(citizenEntity))
             {
-                var tp = EntityManager.GetComponentData<TravelPurpose>(citizenEntity);
+                TravelPurpose tp = EntityManager.GetComponentData<TravelPurpose>(citizenEntity);
                 if (tp.m_Purpose == Purpose.MovingAway)
                     return true;
             }
@@ -206,7 +206,7 @@ namespace CitizenEntityCleaner
             bool hasPropertyRenter,
             Entity citizenEntity)
         {
-            bool movingAway = IsMovingAway(citizenEntity);
+            var movingAway = IsMovingAway(citizenEntity);
 
             // Precedence: Homeless → Commuters → Corrupt, then independent Moving-Away (no PR)
             if (wantHomeless && isHomelessHH) return CleanupType.Homeless;

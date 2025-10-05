@@ -1,9 +1,12 @@
-using System.Collections;   // IEnumerator (for NextFrame)
+// Setting.cs
+using System;                   // Exception, Action
+using System.Collections;       // IEnumerator (for NextFrame)
 using Colossal.IO.AssetDatabase;    // [FileLocation]
-using Game.Modding;         // IMod
-using Game.SceneFlow;       // GameManager
-using Game.Settings;        // ModSetting, [SettingsUI*]
-using UnityEngine;          // Application.OpenURL
+using Colossal.Localization;
+using Game.Modding;             // IMod
+using Game.SceneFlow;           // GameManager
+using Game.Settings;            // ModSetting, [SettingsUI*]
+using UnityEngine;              // Application.OpenURL
 
 
 namespace CitizenEntityCleaner
@@ -13,13 +16,14 @@ namespace CitizenEntityCleaner
         public const string SettingsKey = "CitizenEntityCleaner";
     }
 
-    /// <summary>
-    /// Settings UI and State
-    /// </summary>
     [FileLocation("ModsSettings/CitizenEntityCleaner/CitizenEntityCleaner")]
-    [SettingsUITabOrder(MainTab, AboutTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, DebugGroup, InfoGroup, UsageGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
+
+    /// <summary>
+    /// Settings UI attributes and backing fields
+    /// </summary>
+    [SettingsUITabOrder(MainTab, AboutTab, DebugTab)]
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup, DebugGroup, LogGroup)]
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup + LogGroup header omitted on purpose.
 
     public class Setting : ModSetting
     {
@@ -28,11 +32,13 @@ namespace CitizenEntityCleaner
         public const string kSection = "Main";
         public const string MainTab = "Main";
         public const string AboutTab = "About";
+        public const string DebugTab = "Debug";
         public const string InfoGroup = "Info";
         public const string UsageGroup = "Usage";    //About tab section for usage instructions
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
         public const string DebugGroup = "Debug";
+        public const string LogGroup = "Log";
         #endregion
 
         #region Defaults & Localization Keys
@@ -48,7 +54,7 @@ namespace CitizenEntityCleaner
 
         private static string L(string key, string fallback)
         {
-            var dict = GameManager.instance?.localizationManager?.activeDictionary;
+            LocalizationDictionary? dict = GameManager.instance?.localizationManager?.activeDictionary;
             return (dict != null && dict.TryGetValue(key, out var s) && !string.IsNullOrWhiteSpace(s))
                 ? s
                 : fallback;
@@ -100,14 +106,14 @@ namespace CitizenEntityCleaner
         }
 
         // Defer an action to next frame (lets confirmation modal finish opening/closing)
-        private void NextFrame(System.Action action)
+        private void NextFrame(Action action)
         {
-            var gm = GameManager.instance;
+            GameManager gm = GameManager.instance;
             if (gm != null) gm.StartCoroutine(NextFrameCo(action));
             else action?.Invoke(); // fallback if GM missing (unlikely in Options UI)
         }
 
-        private IEnumerator NextFrameCo(System.Action action)
+        private IEnumerator NextFrameCo(Action action)
         {
             yield return null; // wait one frame
             action?.Invoke();
@@ -232,7 +238,7 @@ namespace CitizenEntityCleaner
                             return;
                         }
 
-                        bool anySelected = _includeCorrupt || _includeMovingAwayNoPR || _includeCommuters || _includeHomeless;
+                        var anySelected = _includeCorrupt || _includeMovingAwayNoPR || _includeCommuters || _includeHomeless;
                         if (!anySelected)
                         {
                             Mod.log.Info("No checkboxes selected; nothing to clean.");
@@ -249,7 +255,7 @@ namespace CitizenEntityCleaner
                         Mod.log.Info("Cleanup Citizens confirmed YES; triggering cleanup (deferred)");
                         Mod.CleanupSystem.TriggerCleanup();
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         Mod.log.Error($"[Cleanup] Deferred start failed: {ex.GetType().Name}: {ex.Message}");
 #if DEBUG
@@ -265,7 +271,7 @@ namespace CitizenEntityCleaner
         #region Debug Button & Note
         // ---- Debug button ----
         [SettingsUIButton]
-        [SettingsUISection(kSection, DebugGroup)]
+        [SettingsUISection(DebugTab, DebugGroup)]
         public bool LogCorruptPreviewButton
         {
             set
@@ -289,13 +295,40 @@ namespace CitizenEntityCleaner
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
                 Mod.CleanupSystem.LogCorruptPreviewToLog(10);
 
+                // Defer one frame so the logger has time to flush to disk before it's read back.
+                NextFrame(() =>
+                {
+                    // Push fresh text into the localization dictionary, then nudge the UI to rebind.
+                    LogHelpers.RefreshLiveTextNow();  // make new text available to widget
+                    Apply();                          // repaint Options UI
+                });
             }
         }
 
         [SettingsUIMultilineText]
-        [SettingsUISection(kSection, DebugGroup)]
+        [SettingsUISection(DebugTab, DebugGroup)]
         public string DebugCorruptNote => string.Empty;
         #endregion
+
+        // --- Live log viewer: uses dynamic display text provider in LogHelpers ---
+        // trick to get large text area that updates live
+        [SettingsUIMultilineText]
+        [SettingsUIDisplayName(typeof(LogHelpers), nameof(LogHelpers.LogText))]
+        [SettingsUISection(DebugTab, LogGroup)]
+        public string LogText => string.Empty;  // UI pulls text from LogHelpers.LogText
+
+        // OpenLog button
+        [SettingsUIButton]
+        [SettingsUISection(DebugTab, DebugGroup)]
+        public bool OpenLogButton
+        {
+            set
+            {
+                // Centralized in LogHelpers; safe if file is missing.
+                LogHelpers.TryOpenLogOrFolder(Mod.LogFilePath, Mod.log);
+            }
+        }
+
 
         #region Displays (Read-only)
         // ---- Read-only displays ----
@@ -340,7 +373,7 @@ namespace CitizenEntityCleaner
             set
             {
                 try { Application.OpenURL(UrlParadoxMods); }
-                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
+                catch (Exception ex) { Mod.log.Warn($"Failed to open Paradox Mods: {ex.Message}"); }
             }
         }
 
@@ -352,7 +385,7 @@ namespace CitizenEntityCleaner
             set
             {
                 try { Application.OpenURL(UrlGitHub); }
-                catch (System.Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
+                catch (Exception ex) { Mod.log.Warn($"Failed to open GitHub: {ex.Message}"); }
             }
         }
 
@@ -364,7 +397,7 @@ namespace CitizenEntityCleaner
             set
             {
                 try { Application.OpenURL(UrlDiscord); }
-                catch (System.Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
+                catch (Exception ex) { Mod.log.Warn($"Failed to open Discord: {ex.Message}"); }
             }
         }
 
@@ -425,8 +458,11 @@ namespace CitizenEntityCleaner
                     return;
                 }
 
+
                 // Data exists
-                var (totalCitizens, citizensToClean) = Mod.CleanupSystem.GetCitizenStatistics();
+                _showNoCity = false;
+                _showError = false;
+                (var totalCitizens, var citizensToClean) = Mod.CleanupSystem.GetCitizenStatistics();
 
                 _totalCitizens = $"{totalCitizens:N0}";
                 _corruptedCitizens = $"{citizensToClean:N0}";
@@ -439,11 +475,15 @@ namespace CitizenEntityCleaner
                 _showRefreshPrompt = false; // display counts, not Refresh prompt
 
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Mod.log.Warn($"Error refreshing entity counts: {ex.Message}");
                 _showError = true;
                 _showNoCity = false;
+
+                // keep UI from getting stuck in an old status if an error happens
+                if (!_isCleanupInProgress)
+                    _cleanupStatus = "Idle";
 
                 _totalCitizens = string.Empty;      // do not cache translated text
                 _corruptedCitizens = string.Empty;  // do not cache translated text
@@ -513,6 +553,7 @@ namespace CitizenEntityCleaner
             RefreshEntityCounts();
         }
         #endregion
+
     }
 }
 

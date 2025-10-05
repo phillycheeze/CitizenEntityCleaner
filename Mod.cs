@@ -1,11 +1,14 @@
+// Mod.cs
 using System;
 using System.Reflection;    // only for Assembly metadata
 using Colossal;             // IDictionarySource
 using Colossal.IO.AssetDatabase;
+using Colossal.Localization;    // LocalizationManager
 using Colossal.Logging;
-using Game;                 // UpdateSystem
+using Colossal.PSI.Environment;  // EnvPath.
+using Game;                     // UpdateSystem
 using Game.Modding;
-using Game.SceneFlow;       // GameManager
+using Game.SceneFlow;           // GameManager
 
 namespace CitizenEntityCleaner
 {
@@ -24,9 +27,14 @@ namespace CitizenEntityCleaner
         public static readonly string VersionInformational = s_versionInformationalRaw;
 
         // ---- Logging ----
+        private const string kLogId = "CitizenEntityCleaner"; // single source for logger + filename
         public static readonly ILog log = LogManager
-            .GetLogger("CitizenEntityCleaner") // log file located in ..\CitySkylines II\logs\CitizenEntityCleaner.log
+            .GetLogger(kLogId)              // log file in \CitySkylines II\logs\CitizenEntityCleaner.log
             .SetShowsErrorsInUI(false);
+
+        // Public helper for the absolute log path (used by Settings)
+        public static string LogFilePath => $"{EnvPath.kUserDataPath}/Logs/{kLogId}.log";
+
 
         // ---- State ----
         private static bool s_bannerLogged;    // static guard to avoid duplicates
@@ -51,10 +59,13 @@ namespace CitizenEntityCleaner
             }
             // Asset path for diagnostics
             if (GameManager.instance?.modManager != null &&
-                GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+                GameManager.instance.modManager.TryGetExecutableAsset(this, out ExecutableAsset? asset))
             {
+#if DEBUG
                 log.Info($"Current mod asset at {asset.path}");
+#endif
             }
+
 #if DEBUG
             log.Info("[DebugPing] OnLoad reached");
 #endif
@@ -93,7 +104,7 @@ namespace CitizenEntityCleaner
             RegisterLocale("pt", ptBR); // fallback if the game reports just "pt"
 
             // Log language selected (guarded for null)
-            var lm = GameManager.instance?.localizationManager;
+            LocalizationManager? lm = GameManager.instance?.localizationManager;
             if (lm != null)
             {
                 Mod.log.Info($"[Locale] ACTIVE at LOAD: {lm.activeLocaleId}");  // One-time info at load
@@ -141,7 +152,7 @@ namespace CitizenEntityCleaner
                 }
 
                 // Unsubscribe events
-                var cs = CleanupSystem;
+                CitizenCleanupSystem? cs = CleanupSystem;
                 if (cs != null)
                 {
                     try { if (_onProgress != null) cs.OnCleanupProgress -= _onProgress; }
@@ -178,22 +189,28 @@ namespace CitizenEntityCleaner
         // ---- Helpers ----
         private void RegisterLocale(string localeId, IDictionarySource source)
         {
-            var lm = GameManager.instance?.localizationManager;
+            LocalizationManager? lm = GameManager.instance?.localizationManager;
             if (lm == null)
             {
+#if DEBUG
                 log.Debug("[Locale] No localization manager; skip " + localeId);
+#endif
                 return;
             }
             if (source == null)
             {
+#if DEBUG
                 log.Debug("[Locale] Null source; skip " + localeId);
+#endif
                 return;
             }
 
             try
             {
                 lm.AddSource(localeId, source);
+#if DEBUG
                 log.Info($"[Locale] Registered {localeId}");
+#endif
             }
             catch (Exception ex)
             {

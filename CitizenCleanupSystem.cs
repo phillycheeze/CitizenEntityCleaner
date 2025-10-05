@@ -124,8 +124,8 @@ namespace CitizenEntityCleaner
         {
             try
             {
-                int totalCitizens = m_householdMemberQuery.CalculateEntityCount();
-                int citizensToClean = GetCitizensToCleanCount();
+                var totalCitizens = m_householdMemberQuery.CalculateEntityCount();
+                var citizensToClean = GetCitizensToCleanCount();
 
                 return (totalCitizens, citizensToClean);
             }
@@ -135,19 +135,26 @@ namespace CitizenEntityCleaner
                 return (0, 0);
             }
         }
-
         public bool HasAnyCitizenData()
         {
             try
             {
                 // Cheap test for City Loaded: true when there is at least one household member
-                return !m_householdMemberQuery.IsEmptyIgnoreFilter;
+                var hasAny = !m_householdMemberQuery.IsEmptyIgnoreFilter;
+#if DEBUG
+        s_Log.Debug($"[HasAnyCitizenData] any household members? {hasAny}");
+#endif
+                return hasAny;
             }
-            catch
+            catch (System.Exception ex)
             {
-                return false;   // if city not loaded
+#if DEBUG
+        s_Log.Debug($"[HasAnyCitizenData] Exception: {ex.GetType().Name}: {ex.Message}");
+#endif
+                return false; // if city not loaded or query not available yet
             }
         }
+
         #endregion
 
         protected override void OnDestroy()

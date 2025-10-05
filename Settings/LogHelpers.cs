@@ -22,8 +22,7 @@ namespace CitizenEntityCleaner
     /// </summary>
     internal static class LogHelpers
     {
-        // Manual bump that you can trigger (e.g., from a button) to force refresh.
-        // Also use file length which is usually enough on its own.
+        // Manual bump trigger to force refresh (e.g., from a button).
         private static int s_manualBump = 0;
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace CitizenEntityCleaner
         ///     "<trimmed log text>" + "<some invisible zero-width spaces>"
         ///
         /// The invisible suffix changes when the file length changes (and when
-        /// RefreshLiveTextNow() is called), which makes the Id different and forces
+        /// RefreshLiveTextNow() is called). This makes the Id different and forces
         /// the Settings widget to re-render, even if the visible text didn't change.
         /// </summary>
         public static LocalizedString LogText
@@ -58,7 +57,7 @@ namespace CitizenEntityCleaner
                 }
                 catch
                 {
-                    // If we can't stat the file, just leave zCount at 1.
+                    // default zCount to 1 if anything goes wrong
                 }
 
                 string invisibleSuffix = new string('\u200B', zCount); // U+200B ZERO WIDTH SPACE
@@ -71,13 +70,13 @@ namespace CitizenEntityCleaner
         }
 
         /// <summary>
-        /// Optional helper you can call when you *know* you just wrote to the log
+        /// Optional helper to call when you *know* you wrote to the log
         /// and want to force a refresh even before the file length changes.
         /// </summary>
         public static void RefreshLiveTextNow()
         {
             unchecked { s_manualBump++; }
-            // No other work needed; the next time the UI asks for LogText, the Id changes.
+            // No other work needed; next time the UI asks for LogText, the Id changes.
         }
 
         // ---- Tail reader (timestamp-only trimming; keep [INFO]/[WARN]) -----
@@ -184,7 +183,7 @@ namespace CitizenEntityCleaner
                     var p2 = Process.Start(psi2);
                     if (p2 == null)
                     {
-                        // Explorer may reuse an existing window and return null — that's okay.
+                        // Explorer may reuse an existing window and return null which is ok
                         logger?.Debug("[Log] Shell returned no process handle when opening the Logs folder (likely reused Explorer). Treating as success.");
                         return true;
                     }
@@ -196,7 +195,7 @@ namespace CitizenEntityCleaner
             }
             catch (Exception ex)
             {
-                // Single catch safely handles Win32Exception and any other surprises (no crash)
+                // Safely that handles Win32Exception and any other surprises (no crash)
                 logger?.Warn($"[Log] Failed to open path: {ex.GetType().Name}: {ex.Message}");
             }
 

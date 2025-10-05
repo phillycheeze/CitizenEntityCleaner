@@ -295,7 +295,7 @@ namespace CitizenEntityCleaner
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
                 Mod.CleanupSystem.LogCorruptPreviewToLog(10);
 
-                // Defer one frame so the logger has time to flush to disk before we read back.
+                // Defer one frame so the logger has time to flush to disk before it's read back.
                 NextFrame(() =>
                 {
                     // Push fresh text into the localization dictionary, then nudge the UI to rebind.

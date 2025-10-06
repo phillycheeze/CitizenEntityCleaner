@@ -4,7 +4,7 @@
 
 ---
 
-**DO THIS FIRST: BACK UP YOUR SAVE.**  
+### DO THIS FIRST: BACK UP YOUR SAVE  
 This mod touches sensitive game components and is a work-around. Use at your own risk.
 
 ---
@@ -24,16 +24,23 @@ This entity bloat causes several issues:
 - **General performance degradation** across querying systems
 
 ℹ️ **Mod Options:**
-- Include **corrupt citizens** in cleanup (optional ✅)
-- Include **moving-away** (that have no rent) in cleanup (optional ✅)
-- Include **commuters** in cleanup (optional ✅)
-- Include **homeless** in cleanup (optional ✅)
+
+Everything is Optional ✅
+- Include **corrupt citizens** in cleanup 
+- Include **moving-away** in cleanup (that have no rent)
+- Include **commuters** in cleanup
+- Include **homeless** in cleanup
   
 ℹ️ **This mod may also:**
 - Delete "Pending" citizens that may be buffered for relocation
 - Cause momentary drops in population demand
 - Have other long-term consequences not fully understood
 - Safe to remove anytime
+
+ℹ️ **Localization Support**
+- English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano
+- 日本語, 한국어, Tiếng Việt, Português brasileiro.
+
 
 ## Usage
 
@@ -66,7 +73,8 @@ Not sure. It could be another mod or something introduced in a more recent patch
 ## Credits
 - phillycheeze - mod author
 - yenyang - feedback, coop development
+- Honu - testing, PR/coop development 
+  - locale support (EN, DE,ES,FR,IT,JA,KO,PT,VI,ZH_CN)
 - Konsi - feedback
 - krzychu124 - feedback, code sharing
-- Honu - testing, Github PR, coop development, locales
 - Noel - ZH_CN locale review

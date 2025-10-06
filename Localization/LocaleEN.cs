@@ -1,11 +1,11 @@
 // LocaleEN.cs
-using Colossal;                    // IDictionarySource
 using System.Collections.Generic;  // Dictionary
+using Colossal;                    // IDictionarySource
 
 namespace CitizenEntityCleaner
 {
     /// <summary>
-    /// English locale entries
+    /// English locale entries (en-US)
     /// </summary>
     public class LocaleEN : IDictionarySource
     {
@@ -23,6 +23,7 @@ namespace CitizenEntityCleaner
                 // Tabs
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Actions" },
                 { m_Setting.GetOptionTabLocaleID(Setting.AboutTab), "About" },
+                { m_Setting.GetOptionTabLocaleID(Setting.DebugTab), "Debug" },
 
                 // Groups
                 { m_Setting.GetOptionGroupLocaleID(Setting.kFiltersGroup), "Cleanup Targets" },
@@ -69,21 +70,7 @@ namespace CitizenEntityCleaner
                   "Updates all entity counts to show current city statistics.\n" +
                   "After cleaning, let the game run unpaused for a minute." },
 
-                // Debug preview - logs a sample list of corrupt citizens
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - Corrupt IDs (first 10)" },
-                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "- Adds a list of the first **10 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
-                  "- **Preview only** — does not delete anything.\n\n" +
-                  "- Log file at:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
-
-                // Sentence UNDER the button (multiline text row)
-                // LabelLocale = inline body under the button
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
-                  "Debug use: log sample list — nothing is deleted.\n" +
-                  "List the first 10 IDs of corrupt entities in the log." },
-
-                // Displays
+                // Cleanup Status and Counts
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Status" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.CleanupStatusDisplay)),
                   "Shows the cleanup status. Updates live during an active cleanup; otherwise press [Refresh Counts] to recompute.\n\n" +
@@ -148,9 +135,27 @@ namespace CitizenEntityCleaner
                   "• This mod does **not** run automatically; use **[Cleanup Citizens]** each time for removals.\n" +
                   "• Revert to original saved city if needed for unexpected behavior." },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.UsageNotes)), "" },
+
+
+                 // Debug Tab preview - logs a sample list of corrupt citizens
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - Corrupt IDs (first 10)" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
+                  "- Adds a list of the first **10 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
+                  "- **Preview only** — does not delete anything.\n\n" +
+                  "- Log file at:\n" +
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+
+                // Sentence UNDER the button (multiline text row)
+                // LabelLocale = inline body under the button
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
+                  "Debug use: log sample list — nothing is deleted.\n" +
+                  "List the first 10 IDs of corrupt entities in the log." },
+
+                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLogButton)), "Open Log" },
+                { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLogButton)), "Open the log file in the default text editor." },
+
             };
         }
-
         public void Unload() { }
     }
 }

@@ -358,3 +358,10 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# --- Unity build artifacts ---
+Library/
+Temp/
+Logs/
+MemoryCaptures/
+*.pid           # includes Library/ilpp.pid

@@ -22,8 +22,8 @@ namespace CitizenEntityCleaner
     /// Settings UI attributes and backing fields
     /// </summary>
     [SettingsUITabOrder(MainTab, AboutTab, DebugTab)]
-    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup, DebugGroup, LogGroup)]
-    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup + LogGroup header omitted on purpose.
+    [SettingsUIGroupOrder(kFiltersGroup, kButtonGroup, InfoGroup, UsageGroup, DebugGroup)]
+    [SettingsUIShowGroupName(kFiltersGroup, kButtonGroup, DebugGroup)]  // InfoGroup + UsageGroup header omitted on purpose.
 
     public class Setting : ModSetting
     {
@@ -38,7 +38,6 @@ namespace CitizenEntityCleaner
         public const string kButtonGroup = "Button";
         public const string kFiltersGroup = "Filters";
         public const string DebugGroup = "Debug";
-        public const string LogGroup = "Log";
         #endregion
 
         #region Defaults & Localization Keys
@@ -294,14 +293,6 @@ namespace CitizenEntityCleaner
                 //  - "[Preview] Corrupt …" when there are matches
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
                 Mod.CleanupSystem.LogCorruptPreviewToLog(10);
-
-                // Defer one frame so the logger has time to flush to disk before it's read back.
-                NextFrame(() =>
-                {
-                    // Push fresh text into the localization dictionary, then nudge the UI to rebind.
-                    LogHelpers.RefreshLiveTextNow();  // make new text available to widget
-                    Apply();                          // repaint Options UI
-                });
             }
         }
 
@@ -310,13 +301,6 @@ namespace CitizenEntityCleaner
         public string DebugCorruptNote => string.Empty;
         #endregion
 
-        // --- Live log viewer: uses dynamic display text provider in LogHelpers ---
-        // trick to get large text area that updates live
-        [SettingsUIMultilineText]
-        [SettingsUIDisplayName(typeof(LogHelpers), nameof(LogHelpers.LogText))]
-        [SettingsUISection(DebugTab, LogGroup)]
-        public string LogText => string.Empty;  // UI pulls text from LogHelpers.LogText
-
         // OpenLog button
         [SettingsUIButton]
         [SettingsUISection(DebugTab, DebugGroup)]
@@ -324,11 +308,61 @@ namespace CitizenEntityCleaner
         {
             set
             {
-                // Centralized in LogHelpers; safe if file is missing.
-                LogHelpers.TryOpenLogOrFolder(Mod.LogFilePath, Mod.log);
+                // Open the mod log if present; otherwise open Logs folder.
+                // Safe: no crash if the file/folder are missing or the shell fails.
+                var logPath = Mod.LogFilePath;
+                var logsDir = System.IO.Path.GetDirectoryName(logPath);
+
+                try
+                {
+                    // If the log file exists, open it
+                    if (System.IO.File.Exists(logPath))
+                    {
+                        var psi = new System.Diagnostics.ProcessStartInfo(logPath)
+                        {
+                            UseShellExecute = true,   // open via default app
+                            ErrorDialog = false,      // avoid OS modal dialogs if anything goes wrong
+                            Verb = "open"
+                        };
+
+                        // Optional: handle rare case where Process.Start returns null
+                        var p = System.Diagnostics.Process.Start(psi);
+                        if (p == null)
+                        {
+                            Mod.log.Debug("[Log] Shell returned no process handle (likely reused existing app/Explorer). Treating as success.");
+                        }
+                        return;
+                    }
+
+                    // If the file doesn't exist yet, open the Logs folder instead
+                    if (!string.IsNullOrEmpty(logsDir) && System.IO.Directory.Exists(logsDir))
+                    {
+                        var psi2 = new System.Diagnostics.ProcessStartInfo(logsDir)
+                        {
+                            UseShellExecute = true,
+                            ErrorDialog = false,
+                            Verb = "open"
+                        };
+
+                        var p2 = System.Diagnostics.Process.Start(psi2);
+                        if (p2 == null)
+                        {
+                            // Explorer may reuse an existing window and return null — that's okay.
+                            Mod.log.Debug("[Log] Shell returned no process handle when opening the Logs folder (likely reused Explorer). Treating as success.");
+                        }
+                        return;
+                    }
+
+                    // Nothing to open
+                    Mod.log.Info("[Log] No log file yet, and Logs folder not found.");
+                }
+                catch (Exception ex)
+                {
+                    // Single catch covers Win32Exception and all others—no crash
+                    Mod.log.Warn($"[Log] Failed to open path: {ex.GetType().Name}: {ex.Message}");
+                }
             }
         }
-
 
         #region Displays (Read-only)
         // ---- Read-only displays ----

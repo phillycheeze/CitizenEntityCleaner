@@ -135,6 +135,7 @@ namespace CitizenEntityCleaner
                 return (0, 0);
             }
         }
+
         public bool HasAnyCitizenData()
         {
             try
@@ -150,10 +151,14 @@ namespace CitizenEntityCleaner
             {
 #if DEBUG
         s_Log.Debug($"[HasAnyCitizenData] Exception: {ex.GetType().Name}: {ex.Message}");
+#else
+                // In release, ex isn't used (no debug log). Assign to discard to avoid CS0168.
+                _ = ex; // intentionally unused
 #endif
                 return false; // if city not loaded or query not available yet
             }
         }
+
 
         #endregion
 

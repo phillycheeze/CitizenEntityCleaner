@@ -1,7 +1,6 @@
 // LocaleZH_CN.cs
-using Colossal;                    // IDictionarySource
-using Colossal.IO.AssetDatabase.Internal;
 using System.Collections.Generic;  // Dictionary
+using Colossal;                    // IDictionarySource
 
 namespace CitizenEntityCleaner
 {
@@ -110,8 +109,6 @@ namespace CitizenEntityCleaner
                 { "CitizenEntityCleaner/Prompt/Error",  "错误" },
                 { "CitizenEntityCleaner/Status/Progress", "正在清理… {0}" },
                 { "CitizenEntityCleaner/Status/Cleaning", "清理中… {0}" },
-
-
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "模组名称" },

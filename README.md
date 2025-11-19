@@ -38,8 +38,9 @@ Everything is Optional ✅
 - Safe to remove anytime
 
 ℹ️ **Localization Support**
-- English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano
-- 日本語, 한국어, Tiếng Việt, Português brasileiro, Türkçe.
+- English (en-US), Français (French), Deutsch (German), Español (Spanish), Italiano (Italian)
+- 한국어 (Korean), 日本語 (Japanese), Türkçe (Turkish), 简体中文 (Simplified Chinese)
+- Tiếng Việt (Vietnamese), Português brasileiro (Brazilian Portuguese)
 
 
 ## Usage

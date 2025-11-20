@@ -7,7 +7,7 @@
 		<TargetFramework>net48</TargetFramework>
 
 		<!--Single source for Version (note PublishConfiguration is separate) -->
-		<Version>1.6.1</Version>
+		<Version>1.6.2</Version>
 
 		<!-- For Windows file properties -->
 		<FileVersion>$(Version).0</FileVersion>

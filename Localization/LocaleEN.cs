@@ -2,7 +2,7 @@
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// English locale entries (en-US)
@@ -90,11 +90,11 @@ namespace CitizenEntityCleaner
                   "based on the selected boxes [ ✓ ]." },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Click [Refresh Counts]" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "No city loaded" },
-                { "CitizenEntityCleaner/Prompt/Error",  "Error" },
-                { "CitizenEntityCleaner/Status/Progress", "Cleanup in progress… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "Cleaning… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "Click [Refresh Counts]" },
+                { "CitizenCleaner/Prompt/NoCity", "No city loaded" },
+                { "CitizenCleaner/Prompt/Error",  "Error" },
+                { "CitizenCleaner/Status/Progress", "Cleanup in progress… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "Cleaning… {0}" },
 
 
                 // About tab fields
@@ -143,7 +143,7 @@ namespace CitizenEntityCleaner
                   "- Adds a list of the first **10 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
                   "- **Preview only** — does not delete anything.\n\n" +
                   "- Log file at:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button

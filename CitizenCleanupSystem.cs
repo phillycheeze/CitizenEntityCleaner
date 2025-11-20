@@ -6,7 +6,7 @@ using Unity.Collections;    // for NativeList
 using Unity.Entities;       // Entity, SystemBase, ComponentType, EntityQuery, etc.
 
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// ECS System for cleanup of citizen entities triggered via UI

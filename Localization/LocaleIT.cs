@@ -2,7 +2,7 @@
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Italian locale entries (it-IT)
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "- Aggiunge al log le prime 10 ID dei cittadini corrotti **(Index:Version)** per il controllo in Scene Explorer.\n\n" +
                   "- **Solo anteprima** — non elimina nulla.\n\n" +
                   "- File di log:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
@@ -102,11 +102,11 @@ namespace CitizenEntityCleaner
                   "in base alle caselle selezionate [ ✓ ]." },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Fai clic su [Aggiorna conteggi]" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "Nessuna città caricata" },
-                { "CitizenEntityCleaner/Prompt/Error",  "Errore" },
-                { "CitizenEntityCleaner/Status/Progress", "Pulizia in corso… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "Pulizia… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "Fai clic su [Aggiorna conteggi]" },
+                { "CitizenCleaner/Prompt/NoCity", "Nessuna città caricata" },
+                { "CitizenCleaner/Prompt/Error",  "Errore" },
+                { "CitizenCleaner/Status/Progress", "Pulizia in corso… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "Pulizia… {0}" },
 
 
                 // About tab fields

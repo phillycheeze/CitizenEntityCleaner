@@ -1,8 +1,8 @@
-﻿// LocaleKO.cs
+// LocaleKO.cs
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Korean locale entries (ko-KR)
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "- 첫 **10개 손상 시민 ID** 를 로그 파일에 **(Index:Version)** 형식으로 추가합니다( Scene Explorer 교차 확인용 ).\n\n" +
                   "- **미리보기 전용** — 아무것도 삭제하지 않습니다.\n\n" +
                   "- 로그 파일 위치:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button
@@ -103,11 +103,11 @@ namespace CitizenEntityCleaner
                   "선택한 체크박스 [ ✓ ] 에 따라 달라집니다." },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "[개수 새로고침] 클릭" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "도시가 로드되지 않음" },
-                { "CitizenEntityCleaner/Prompt/Error",  "오류" },
-                { "CitizenEntityCleaner/Status/Progress", "정리 진행 중… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "정리 중… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "[개수 새로고침] 클릭" },
+                { "CitizenCleaner/Prompt/NoCity", "도시가 로드되지 않음" },
+                { "CitizenCleaner/Prompt/Error",  "오류" },
+                { "CitizenCleaner/Status/Progress", "정리 진행 중… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "정리 중… {0}" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "모드 이름" },

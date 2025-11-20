@@ -1,8 +1,8 @@
-﻿// LocaleJA.cs
+// LocaleJA.cs
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Japanese locale entries (ja-JP)
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "- 最初の **10 件の破損した市民 ID** をログファイルに **(Index:Version)** 形式で追加します（Scene Explorer で照合）。\n\n" +
                   "- **プレビューのみ** — 何も削除しません。\n\n" +
                   "- ログファイルの場所:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button
@@ -103,11 +103,11 @@ namespace CitizenEntityCleaner
                   "選択したチェックボックス [ ✓ ] に基づきます。" },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "[カウントを更新] をクリック" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "都市が読み込まれていません" },
-                { "CitizenEntityCleaner/Prompt/Error",  "エラー" },
-                { "CitizenEntityCleaner/Status/Progress", "クリーンアップ進行中… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "クリーン中… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "[カウントを更新] をクリック" },
+                { "CitizenCleaner/Prompt/NoCity", "都市が読み込まれていません" },
+                { "CitizenCleaner/Prompt/Error",  "エラー" },
+                { "CitizenCleaner/Status/Progress", "クリーンアップ進行中… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "クリーン中… {0}" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Mod 名" },

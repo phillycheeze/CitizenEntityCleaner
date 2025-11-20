@@ -8,7 +8,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     // PART: Scan (read-only) — selectors, counts, debug preview, helpers
     public partial class CitizenCleanupSystem : SystemBase

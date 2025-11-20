@@ -10,7 +10,7 @@ using Game;                     // UpdateSystem
 using Game.Modding;
 using Game.SceneFlow;           // GameManager
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     public class Mod : IMod
     {
@@ -27,9 +27,9 @@ namespace CitizenEntityCleaner
         public static readonly string VersionInformational = s_versionInformationalRaw;
 
         // ---- Logging ----
-        private const string kLogId = "CitizenEntityCleaner"; // single source for logger + filename
+        private const string kLogId = "CitizenCleaner"; // single source for logger + filename
         public static readonly ILog log = LogManager
-            .GetLogger(kLogId)              // log file in \CitySkylines II\logs\CitizenEntityCleaner.log
+            .GetLogger(kLogId)              // log file in \CitySkylines II\logs\CitizenCleaner.log
             .SetShowsErrorsInUI(false);
 
         // Public helper for the absolute log path (used by Settings)

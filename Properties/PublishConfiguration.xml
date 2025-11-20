@@ -96,7 +96,7 @@ It could also be caused by unreachable, manually plopped buildings.
 	<ForumLink Value="" />
 
 	<!--Version of the mod-->
-	<ModVersion Value="1.6.1" />
+	<ModVersion Value="1.6.2" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->

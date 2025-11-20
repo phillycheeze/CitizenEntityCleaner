@@ -1,8 +1,8 @@
-﻿// LocalePT_BR.cs
+// LocalePT_BR.cs
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Portuguese (Brazil) locale entries (pt-BR)
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "- Adiciona a lista dos **10 primeiros IDs de cidadãos corrompidos** ao arquivo de log **(Index:Version)** para conferência no Scene Explorer.\n\n" +
                   "- **Somente prévia** — nada é excluído.\n\n" +
                   "- Arquivo de log em:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button
@@ -103,11 +103,11 @@ namespace CitizenEntityCleaner
                   "com base nas caixas selecionadas [ ✓ ]." },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Clique em [Atualizar contagens]" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "Nenhuma cidade carregada" },
-                { "CitizenEntityCleaner/Prompt/Error",  "Erro" },
-                { "CitizenEntityCleaner/Status/Progress", "Limpeza em andamento… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "Limpando… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "Clique em [Atualizar contagens]" },
+                { "CitizenCleaner/Prompt/NoCity", "Nenhuma cidade carregada" },
+                { "CitizenCleaner/Prompt/Error",  "Erro" },
+                { "CitizenCleaner/Status/Progress", "Limpeza em andamento… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "Limpando… {0}" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Nome do mod" },

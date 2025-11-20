@@ -44,7 +44,7 @@ If your save has "corrupt" citizen entities in large numbers, you may find:
 
 ℹ️ **Usage**
 1. **\[Backup] your save file first!**
-2. Load the city, then open **Options → Citizen Entity Cleaner**.
+2. Load the city, then open **Options → Citizen Cleaner**.
 3. Click \[Refresh Counts] to see current statistics.
 4. Select checkbox ✅ options to include with the cleanup.
 5. Click \[Cleanup Citizens] to clean up entities.

@@ -17,9 +17,9 @@
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>
 		<!-- AssemblyTitle for About tab, AssemblyName for DLL & folder name, Product for Windows properties -->
-		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
-		<AssemblyName>CitizenEntityCleaner</AssemblyName>
-		<Product>Citizen Entity Cleaner</Product>
+		<AssemblyTitle>Citizen Cleaner</AssemblyTitle>
+		<AssemblyName>CitizenCleaner</AssemblyName>
+		<Product>Citizen Cleaner</Product>
 
 		<!-- Compile warnings to prevent NullReferenceExceptions -->
 		<Nullable>enable</Nullable>

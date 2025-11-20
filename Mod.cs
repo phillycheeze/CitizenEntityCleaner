@@ -17,7 +17,7 @@ namespace CitizenEntityCleaner
         // ---- Mod metadata ----
         private static readonly Assembly s_asm = Assembly.GetExecutingAssembly();
         public static readonly string Name =
-                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
+                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Cleaner";    // fallback title
 
         // Versions (short + full)
         private static readonly string s_versionInformationalRaw =

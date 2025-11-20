@@ -1,4 +1,4 @@
-# Citizen Entity Cleaner
+# Citizen Cleaner
 
 ## ⚠️ **WARNING** ⚠️
 

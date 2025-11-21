@@ -7,7 +7,7 @@
 		<TargetFramework>net48</TargetFramework>
 
 		<!--Single source for Version (note PublishConfiguration is separate) -->
-		<Version>1.6.1</Version>
+		<Version>1.6.2</Version>
 
 		<!-- For Windows file properties -->
 		<FileVersion>$(Version).0</FileVersion>
@@ -17,9 +17,9 @@
 		<!-- Company allows reflection of author property -->
 		<Company>$(Authors)</Company>
 		<!-- AssemblyTitle for About tab, AssemblyName for DLL & folder name, Product for Windows properties -->
-		<AssemblyTitle>Citizen Entity Cleaner</AssemblyTitle>
-		<AssemblyName>CitizenEntityCleaner</AssemblyName>
-		<Product>Citizen Entity Cleaner</Product>
+		<AssemblyTitle>Citizen Cleaner</AssemblyTitle>
+		<AssemblyName>CitizenCleaner</AssemblyName>
+		<Product>Citizen Cleaner</Product>
 
 		<!-- Compile warnings to prevent NullReferenceExceptions -->
 		<Nullable>enable</Nullable>

@@ -2,50 +2,49 @@
 	<!--Id must be set in order to update existing mod. it is not required for publishing mod for the first time-->
 	<ModId Value="117161" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Citizen Entity Cleaner" />
+	<DisplayName Value="Citizen Cleaner" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Cleans up abandoned Citizen entities to fix corrupted cities and reduce simulation bloat." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Some saves might have many abandoned Citizen entities leaving behind households, vehicles, and other entities while also decreasing performance. This mod provides a hack to manually clean those up." /-->
-	<LongDescription>## Citizen Entity Cleaner
-Language support: English, 简体中文 (Simplified Chinese), Français, Deutsch,
-Español, Italiano, 日本語, 한국어, Tiếng Việt, Português brasileiro.
+	<LongDescription>## Citizen Cleaner
 
-## ⚠️ [WARNING] ⚠️
+This mod allows you to instantly purge citizens that are:
 
-**DO THIS FIRST: BACK UP YOUR SAVE.**
+- Commuters
+- Homeless
+- Moving Away
+- Corrupt (more details below)
 
-**This mod touches sensitive game components and is a work-around. Use at your own risk.**
+## Performance Increase
 
-## Problem
+If your save has "corrupt" citizen entities in large numbers, you may find:
 
-Over time in some saves, Citizen and Household entities accumulate to extremely large numbers in Cities Skylines 2, far exceeding your actual population. Some users don't have this bug, but others could have millions of corrupted entities.
+- Significant performance drops due to massive numbers of HouseholdFindSystem pathfinding queries
+- Citizens stuck at leisure or shopping destinations, never leaving
+- Abandoned Cars permanently occupying parking spots, never being used again
+- General performance degradation across querying systems
 
-## Performance Impact
+ℹ️ ** Everything is Optional - select exactly which types you need**
+- **corrupt citizens** optional ✅
+- **moving-away** (that have no rent) optional ✅
+- **commuters** optional ✅
+- **homeless** optional ✅
 
-This entity bloat causes several issues:
-
-- **Significant performance drops** due to massive numbers of HouseholdFindSystem pathfinding queries
-- **Citizens stuck** at leisure or shopping destinations, never leaving under any circumstance
-- **Abandoned Cars** permanently occupying parking spots, never being used again
-- **General performance degradation** across querying systems
-
-ℹ️ **Mod Options**
-- Include **corrupt citizens** in cleanup (optional ✅)
-- Include **moving-away** (that have no rent) in cleanup (optional ✅)
-- Include **commuters** in cleanup (optional ✅)
-- Include **homeless** in cleanup (optional ✅)
-
+ℹ️ **10 Languages**
+- English, 简体中文 (Simplified Chinese), Français, Deutsch,
+- Español, Italiano, 日本語, 한국어, Tiếng Việt, Português brasileiro.
 
 ℹ️ **This Mod may also:**
 - Delete "Pending" citizens that may be buffered for relocation
 - Cause momentary drops in population demand
 - Have other long-term consequences not fully understood
-- Safe to remove anytime
+- This mod is a work-around until the game is fixed. Use at your own risk.
+- Safe to remove anytime.
 
 ℹ️ **Usage**
 1. **\[Backup] your save file first!**
-2. Load the city, then open **Options → Citizen Entity Cleaner**.
+2. Load the city, then open **Options → Citizen Cleaner**.
 3. Click \[Refresh Counts] to see current statistics.
 4. Select checkbox ✅ options to include with the cleanup.
 5. Click \[Cleanup Citizens] to clean up entities.
@@ -62,19 +61,22 @@ Revert to the original saved city if you see unexpected behavior.
 - The base game then naturally cleans up remaining references (households, vehicles, student/patient references, and anything else afterwards).
 - This is a simple mod that doesn't conflict with other mods or overwrite vanilla code/systems, so it is relatively safe in that regard.
 
-## What is causing the issue?
+## What is causing the corruption issue?
 
-Not sure. It could be another mod or something introduced in a more recent patch. It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. It could also be caused by unreachable, manually plopped buildings.
+Not sure. It could be another mod or something introduced in a more recent patch. 
+It seems somewhat related to the homeless and leisure bug fixes with the last two patches, so it may be an unintended bug introduced that only is really noticeable after long periods of simulation time. 
+It's possible using Better Bulldozer on any citizens that are homeless can also put them into this state, making the problem worse. 
+It could also be caused by unreachable, manually plopped buildings.
 
 ### Feedback / Bug Report:
 * Go to Citizen Entity Cleaner channel on **Cities: Skylines Modding Discord**
-* https://discord.com/channels/1024242828114673724/1402078697120469064
+* "https://discord.gg/HTav7ARPs2"
 
 ## Credits
 - phillycheeze - mod author
-- yenyang - feedback, coop development
 - Honu - testing, PR/coop development,
   locales (EN, DE,ES,FR,IT,JA,KO,PT,VI,ZH_CN)
+- yenyang - feedback, coop development
 - Konsi - feedback
 - krzychu124 - testing, feedback
 - Noel - ZH_CN locale review
@@ -94,16 +96,18 @@ Not sure. It could be another mod or something introduced in a more recent patch
 	<ForumLink Value="" />
 
 	<!--Version of the mod-->
-	<ModVersion Value="1.6.1" />
+	<ModVersion Value="1.6.2" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.3.*" />
+	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 
 <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-<ChangeLog>- Compatability for 1.3.6f1 patch
+<ChangeLog>
+- new Image for new name
+- updated version for 1.4* game patch
 </ChangeLog>
 <!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 <ExternalLink Type="github" Url="https://github.com/phillycheeze/CitizenEntityCleaner" />

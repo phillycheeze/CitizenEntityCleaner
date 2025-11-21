@@ -10,14 +10,14 @@ using Game;                     // UpdateSystem
 using Game.Modding;
 using Game.SceneFlow;           // GameManager
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     public class Mod : IMod
     {
         // ---- Mod metadata ----
         private static readonly Assembly s_asm = Assembly.GetExecutingAssembly();
         public static readonly string Name =
-                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Entity Cleaner";    // fallback title
+                s_asm.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Citizen Cleaner";    // fallback title
 
         // Versions (short + full)
         private static readonly string s_versionInformationalRaw =
@@ -27,9 +27,9 @@ namespace CitizenEntityCleaner
         public static readonly string VersionInformational = s_versionInformationalRaw;
 
         // ---- Logging ----
-        private const string kLogId = "CitizenEntityCleaner"; // single source for logger + filename
+        private const string kLogId = "CitizenCleaner"; // single source for logger + filename
         public static readonly ILog log = LogManager
-            .GetLogger(kLogId)              // log file in \CitySkylines II\logs\CitizenEntityCleaner.log
+            .GetLogger(kLogId)              // log file in \CitySkylines II\logs\CitizenCleaner.log
             .SetShowsErrorsInUI(false);
 
         // Public helper for the absolute log path (used by Settings)

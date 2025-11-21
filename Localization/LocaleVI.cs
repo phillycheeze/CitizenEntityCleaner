@@ -1,8 +1,8 @@
-﻿// LocaleVI.cs
+// LocaleVI.cs
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Vietnamese locale entries (vi-VN)
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "- Thêm danh sách **10 ID công dân lỗi đầu tiên** vào file log **(Index:Version)** để đối chiếu bằng Scene Explorer.\n\n" +
                   "- **Chỉ xem trước** — không xóa gì.\n\n" +
                   "- File log ở:\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
                 // Sentence UNDER the button (multiline text row)
                 // LabelLocale = inline body under the button
@@ -103,11 +103,11 @@ namespace CitizenEntityCleaner
                   "dựa trên các ô đã chọn [ ✓ ]." },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "Bấm [Làm mới số liệu]" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "Chưa mở thành phố" },
-                { "CitizenEntityCleaner/Prompt/Error",  "Lỗi" },
-                { "CitizenEntityCleaner/Status/Progress", "Đang dọn dẹp… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "Đang dọn… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "Bấm [Làm mới số liệu]" },
+                { "CitizenCleaner/Prompt/NoCity", "Chưa mở thành phố" },
+                { "CitizenCleaner/Prompt/Error",  "Lỗi" },
+                { "CitizenCleaner/Status/Progress", "Đang dọn dẹp… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "Đang dọn… {0}" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "Tên mod" },

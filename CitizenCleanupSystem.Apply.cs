@@ -4,7 +4,7 @@ using Unity.Collections;    // Allocator
 using Unity.Entities;
 using Unity.Mathematics;    // math
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     // PART: Apply (write-side) — starts chunked runs, mark chunks, throttle progress, signal completion
     public partial class CitizenCleanupSystem : SystemBase

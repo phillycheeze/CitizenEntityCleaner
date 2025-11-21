@@ -2,7 +2,7 @@
 using System.Collections.Generic;  // Dictionary
 using Colossal;                    // IDictionarySource
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     /// <summary>
     /// Simplified Chinese (zh-CN) locale entries
@@ -75,7 +75,7 @@ namespace CitizenEntityCleaner
                   "— 将前 10 个损坏市民的 ID **（Index:Version）** 写入日志，便于在 Scene Explorer 中核对。\n\n" +
                   "- **仅预览** — 不会删除任何内容。\n\n" +
                   "- 日志文件：\n" +
-                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenEntityCleaner.log" },
+                  "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
 
 
                 // Sentence UNDER the button (multiline)
@@ -104,11 +104,11 @@ namespace CitizenEntityCleaner
                   "基于你在上方勾选的选项 [ ✓ ]。" },
 
                 // Prompts (used by Setting.cs for placeholder text)
-                { "CitizenEntityCleaner/Prompt/RefreshCounts", "点击 [刷新计数]" },
-                { "CitizenEntityCleaner/Prompt/NoCity", "未加载城市" },
-                { "CitizenEntityCleaner/Prompt/Error",  "错误" },
-                { "CitizenEntityCleaner/Status/Progress", "正在清理… {0}" },
-                { "CitizenEntityCleaner/Status/Cleaning", "清理中… {0}" },
+                { "CitizenCleaner/Prompt/RefreshCounts", "点击 [刷新计数]" },
+                { "CitizenCleaner/Prompt/NoCity", "未加载城市" },
+                { "CitizenCleaner/Prompt/Error",  "错误" },
+                { "CitizenCleaner/Status/Progress", "正在清理… {0}" },
+                { "CitizenCleaner/Status/Cleaning", "清理中… {0}" },
 
                 // About tab fields
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.NameText)), "模组名称" },

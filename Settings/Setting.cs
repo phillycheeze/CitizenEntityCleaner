@@ -9,14 +9,14 @@ using Game.Settings;            // ModSetting, [SettingsUI*]
 using UnityEngine;              // Application.OpenURL
 
 
-namespace CitizenEntityCleaner
+namespace CitizenCleaner
 {
     internal static class ModKeys
     {
-        public const string SettingsKey = "CitizenEntityCleaner";
+        public const string SettingsKey = "CitizenCleaner";
     }
 
-    [FileLocation("ModsSettings/CitizenEntityCleaner/CitizenEntityCleaner")]
+    [FileLocation("ModsSettings/CitizenCleaner/CitizenCleaner")]
 
     /// <summary>
     /// Settings UI attributes and backing fields
@@ -45,11 +45,11 @@ namespace CitizenEntityCleaner
         private const string DefaultCountPrompt = "Click [Refresh Counts]";
 
         // ---- Localization (i18n) keys ----
-        private const string RefreshPromptKey = "CitizenEntityCleaner/Prompt/RefreshCounts";
-        private const string NoCityKey = "CitizenEntityCleaner/Prompt/NoCity";
-        private const string ErrorKey = "CitizenEntityCleaner/Prompt/Error";
-        private const string StatusProgressKey = "CitizenEntityCleaner/Status/Progress"; // "{0}" = P0 percent
-        private const string StatusCleaningKey = "CitizenEntityCleaner/Status/Cleaning"; // "{0}" = P0 percent
+        private const string RefreshPromptKey = "CitizenCleaner/Prompt/RefreshCounts";
+        private const string NoCityKey = "CitizenCleaner/Prompt/NoCity";
+        private const string ErrorKey = "CitizenCleaner/Prompt/Error";
+        private const string StatusProgressKey = "CitizenCleaner/Status/Progress"; // "{0}" = P0 percent
+        private const string StatusCleaningKey = "CitizenCleaner/Status/Cleaning"; // "{0}" = P0 percent
 
         private static string L(string key, string fallback)
         {
@@ -64,7 +64,7 @@ namespace CitizenEntityCleaner
         // ---- External links ----
         private const string UrlParadoxMods = "https://mods.paradoxplaza.com/mods/117161/Windows";
         private const string UrlGitHub = "https://github.com/phillycheeze/CitizenEntityCleaner";
-        private const string UrlDiscord = "https://discord.com/channels/1024242828114673724/1402078697120469064";
+        private const string UrlDiscord = "https://discord.gg/HTav7ARPs2";  // Changed to main discord channel as direct channel doesn't work for non-members.
 
         // ---- Backing fields for UI ----
         private bool _includeCorrupt = true; // defaults ON

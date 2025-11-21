@@ -72,7 +72,7 @@ namespace CitizenCleaner
                 // Debug preview (add missing)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "日志 - 损坏 ID（前 10 个）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "— 将前 10 个损坏市民的 ID **（Index:Version）** 写入日志，便于在 Scene Explorer 中核对。\n\n" +
+                  "— 将前 25 个损坏市民的 ID **（Index:Version）** 写入日志，便于在 Scene Explorer 中核对。\n\n" +
                   "- **仅预览** — 不会删除任何内容。\n\n" +
                   "- 日志文件：\n" +
                   "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
@@ -81,7 +81,7 @@ namespace CitizenCleaner
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
                   "调试用：日志示例列表 — 不删除任何内容。\n" +
-                  "把前 10 个损坏实体的 ID 写入日志。" },
+                  "把前 25 个损坏实体的 ID 写入日志。" },
 
 
                 // Displays

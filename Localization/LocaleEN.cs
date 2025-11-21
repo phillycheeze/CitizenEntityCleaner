@@ -140,7 +140,7 @@ namespace CitizenCleaner
                  // Debug Tab preview - logs a sample list of corrupt citizens
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - Corrupt IDs (first 10)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "- Adds a list of the first **10 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
+                  "- Adds a list of the first **25 Corrupt citizen IDs** to the log file **(Index:Version)** for Scene Explorer cross-check.\n\n" +
                   "- **Preview only** — does not delete anything.\n\n" +
                   "- Log file at:\n" +
                   "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
@@ -149,7 +149,7 @@ namespace CitizenCleaner
                 // LabelLocale = inline body under the button
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
                   "Debug use: log sample list — nothing is deleted.\n" +
-                  "List the first 10 IDs of corrupt entities in the log." },
+                  "List the first 25 IDs of corrupt entities in the log." },
 
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.OpenLogButton)), "Open Log" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.OpenLogButton)), "Open the log file in the default text editor." },

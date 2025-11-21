@@ -16,7 +16,7 @@ namespace CitizenCleaner
         public const string SettingsKey = "CitizenCleaner";
     }
 
-    [FileLocation("ModsSettings/CitizenCleaner/CitizenCleaner")]
+    [FileLocation("ModsSettings/CitizenEntityCleaner/CitizenEntityCleaner")]
 
     /// <summary>
     /// Settings UI attributes and backing fields
@@ -288,11 +288,11 @@ namespace CitizenCleaner
                     return;
                 }
 
-                // Preview: logs up to 10 Corrupt citizen IDs (Index:Version)
+                // Preview: logs up to 25 Corrupt citizen IDs (Index:Version)
                 // Method logs exactly one line:
                 //  - "[Preview] Corrupt …" when there are matches
                 //  - "[Preview] No Corrupt citizens found with current city data." when none
-                Mod.CleanupSystem.LogCorruptPreviewToLog(10);
+                Mod.CleanupSystem.LogCorruptPreviewToLog(25);
             }
         }
 

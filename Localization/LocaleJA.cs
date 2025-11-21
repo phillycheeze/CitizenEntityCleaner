@@ -72,7 +72,7 @@ namespace CitizenCleaner
                 // Debug preview - logs a sample list of corrupt citizens
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "ログ - 破損ID（最初の10件）" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "- 最初の **10 件の破損した市民 ID** をログファイルに **(Index:Version)** 形式で追加します（Scene Explorer で照合）。\n\n" +
+                  "- 最初の **25 件の破損した市民 ID** をログファイルに **(Index:Version)** 形式で追加します（Scene Explorer で照合）。\n\n" +
                   "- **プレビューのみ** — 何も削除しません。\n\n" +
                   "- ログファイルの場所:\n" +
                   "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
@@ -81,7 +81,7 @@ namespace CitizenCleaner
                 // LabelLocale = inline body under the button
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
                   "デバッグ用途：サンプル一覧をログ出力 — 何も削除しません。\n" +
-                  "破損エンティティの最初の10件のIDをログに列挙します。" },
+                  "破損エンティティの最初の25件のIDをログに列挙します。" },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "ステータス" },

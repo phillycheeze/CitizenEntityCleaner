@@ -72,7 +72,7 @@ namespace CitizenCleaner
                 // Debug preview
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.LogCorruptPreviewButton)), "LOG - ID corrompues (10 premières)" },
                 { m_Setting.GetOptionDescLocaleID(nameof(Setting.LogCorruptPreviewButton)),
-                  "- Ajoute au journal les 10 premières ID de citoyens corrompus **(Index:Version)** pour vérification dans Scene Explorer.\n\n" +
+                  "- Ajoute au journal les 25 premières ID de citoyens corrompus **(Index:Version)** pour vérification dans Scene Explorer.\n\n" +
                   "- **Aperçu uniquement** — rien n’est supprimé.\n\n" +
                   "- Fichier journal :\n" +
                   "%USERPROFILE%/AppData/LocalLow/Colossal Order/Cities Skylines II/logs/CitizenCleaner.log" },
@@ -80,7 +80,7 @@ namespace CitizenCleaner
                 // Sentence UNDER the button (multiline)
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.DebugCorruptNote)),
                   "Débogage : liste d’exemple — rien n’est supprimé.\n" +
-                  "Écrit dans le journal les 10 premières ID d’entités corrompues." },
+                  "Écrit dans le journal les 25 premières ID d’entités corrompues." },
 
                 // Displays
                 { m_Setting.GetOptionLabelLocaleID(nameof(Setting.CleanupStatusDisplay)), "Statut" },

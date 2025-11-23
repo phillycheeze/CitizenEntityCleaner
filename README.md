@@ -38,8 +38,9 @@ Everything is Optional ✅
 - Safe to remove anytime
 
 ℹ️ **Localization Support**
-- English, 简体中文 (Simplified Chinese), Français, Deutsch, Español, Italiano
-- 日本語, 한국어, Tiếng Việt, Português brasileiro.
+- English (en-US), Français (French), Deutsch (German), Español (Spanish), Italiano (Italian)
+- 한국어 (Korean), 日本語 (Japanese), Türkçe (Turkish), 简体中文 (Simplified Chinese)
+- Tiếng Việt (Vietnamese), Português brasileiro (Brazilian Portuguese)
 
 
 ## Usage
@@ -75,6 +76,7 @@ Not sure. It could be another mod or something introduced in a more recent patch
 - yenyang - feedback, coop development
 - Honu - testing, PR/coop development 
   - locale support (EN, DE,ES,FR,IT,JA,KO,PT,VI,ZH_CN)
+- ramazansancar - Turkish locale (TR)
 - Konsi - feedback
 - krzychu124 - feedback, code sharing
 - Noel - ZH_CN locale review

@@ -84,6 +84,7 @@ namespace CitizenCleaner
             var ko = new LocaleKO(m_Setting);
             var vi = new LocaleVI(m_Setting);
             var ptBR = new LocalePT_BR(m_Setting);
+            var tr = new LocaleTR(m_Setting);
 
 
             RegisterLocale("en-US", en);
@@ -96,6 +97,7 @@ namespace CitizenCleaner
             RegisterLocale("vi-VN", vi);
             RegisterLocale("pt-BR", ptBR);
             RegisterLocale("zh-HANS", zhCN);    // log shows this is used
+            RegisterLocale("tr-TR", tr);
 
             // Register ZH under several common ids so LocalizationManager can find matching one
             RegisterLocale("zh-CN", zhCN);      // fallback
